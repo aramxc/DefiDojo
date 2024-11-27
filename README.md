@@ -1,11 +1,11 @@
-# Web3 Learning Platform
+# Web3 Academy (Under Construction!)
+Project Goal:
 
-A decentralized application that helps users discover and reward the best educational content in the Web3 space. Users can search for learning resources, vote on the most helpful content, and reward content creators directly through smart contracts.
+To build a decentralized learning platform that helps users discover and reward the best educational content in the Web3 space. Users can search for learning resources, vote on the most helpful content, and reward content creators directly through smart contracts.
 
-## Project Overview
-This platform combines the power of blockchain technology with educational content curation, allowing the community to collectively identify and reward valuable learning resources in the Web3 ecosystem.
+Check back soon for updates!
 
-Thanks for stopping by! ~Aaron
+~ Aaron
 
 ## Getting Started
 
