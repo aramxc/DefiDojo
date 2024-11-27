@@ -11,10 +11,8 @@ Check back soon for updates!
 
 ### Prerequisites
 - Node.js (v16 or higher)
-- Python 3.8+
 - Hardhat
 - MetaMask wallet
-- Git
 
 ### Run the project locally
 1. Clone the repository
