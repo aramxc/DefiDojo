@@ -1,0 +1,77 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.cursorrules
+.eslintrc.js
+.prettierrc
+.eslintignore
+.editorconfig
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.vs/
+
+# Environment variables
+.env
+.env.*
+
+# Hardhat files
+cache/
+artifacts/
+typechain-types/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Package manager files
+yarn.lock
+package-lock.json
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional coverage directory
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Backend specific
+/server.js
+/server.js.map
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
