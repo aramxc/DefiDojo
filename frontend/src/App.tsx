@@ -25,12 +25,12 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-purple-50 flex flex-col items-center justify-center">
       <ToastContainer />
       {!account ? (
         <ConnectWalletButton setAccount={setAccount} />
       ) : (
-        <div className="contract-interactions">
+        <div className="contract-interactions bg-white shadow-lg rounded-xl p-8 border border-purple-200">
           <ContractInfo account={account} />
           <ContractActions />
         </div>

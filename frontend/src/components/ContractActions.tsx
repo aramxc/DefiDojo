@@ -47,32 +47,52 @@ const ContractActions = () => {
   };
 
   return (
-    <div>
-      <h2>Contract Actions</h2>
-      <div>
-        <input
-          type="number"
-          min="0"
-          step="0.0001"
-          value={depositValue}
-          onChange={(e) => setDepositValue(e.target.value)}
-          placeholder="Amount in ETH"
-          required
-        />
-        <button onClick={handleDeposit}>Deposit Funds</button>
-      </div>
-      <br />
-      <div>
-        <input
-          type="number"
-          min="0"
-          step="0.0001"
-          value={withdrawValue}
-          onChange={(e) => setWithdrawValue(e.target.value)}
-          placeholder="Amount in ETH"
-          required
-        />
-        <button onClick={handleWithdraw}>Withdraw Funds</button>
+    <div className="space-y-8">
+      <div />
+      <div className="bg-purple-50 rounded-lg p-6 shadow-sm space-y-6">
+        <div className="space-y-4">
+          <label className="block text-purple-700 font-medium mb-2">Deposit Funds</label>
+          <div className="flex space-x-4">
+            <input
+              type="number"
+              min="0"
+              step="0.0001"
+              value={depositValue}
+              onChange={(e) => setDepositValue(e.target.value)}
+              placeholder="Amount in ETH"
+              className="flex-1 px-4 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
+            />
+            <button 
+              onClick={handleDeposit}
+              className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200"
+            >
+              Deposit
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className="block text-purple-700 font-medium mb-2">Withdraw Funds</label>
+          <div className="flex space-x-4">
+            <input
+              type="number"
+              min="0"
+              step="0.0001"
+              value={withdrawValue}
+              onChange={(e) => setWithdrawValue(e.target.value)}
+              placeholder="Amount in ETH"
+              className="flex-1 px-4 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
+            />
+            <button 
+              onClick={handleWithdraw}
+              className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200"
+            >
+              Withdraw
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
