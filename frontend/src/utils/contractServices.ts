@@ -40,15 +40,25 @@ export const requestAccount = async () => {
   }
 };
 
-// Function to get balance in Eth (FYI, 1 eth = 10^18 wei!)
-export const getBalanceInEth = async (account: string) => {
+export const getContractBalance = async () => {
+  try {
+    const balance = await contract.getContractBalance();  // Call the contract's function
+    return formatEther(balance);
+  } catch (error) {
+    console.error('Error getting contract balance:', error);
+    return '0';
+  }
+};
+
+// Function to get wallet balance in Eth (FYI, 1 eth = 10^18 wei!)
+export const getWalletBalanceInEth = async (account: string) => {
   try {
     provider = new BrowserProvider(window.ethereum);
     const balanceWei = await provider.getBalance(account);
     const balanceEth = formatEther(balanceWei);
     return balanceEth;
   } catch (error) {
-    console.error('Error in getBalanceInEth:', error);
+    console.error('Error in getWalletBalanceInEth:', error);
     return '0';
   }
 };

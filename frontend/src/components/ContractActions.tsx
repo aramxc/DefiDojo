@@ -18,8 +18,9 @@ const ContractActions = () => {
         return;
       }
 
-      console.log('Deposit value:', depositValue);
       await depositFunds(depositValue);
+      
+      console.log('Deposit value:', depositValue);
     } catch (error: any) {
       toast.error(error?.reason);
     }
@@ -47,8 +48,8 @@ const ContractActions = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div />
+    <div className="space-y-6">
+      <div/>
       <div className="bg-purple-50 rounded-lg p-6 shadow-sm space-y-6">
         <div className="space-y-4">
           <label className="block text-purple-700 font-medium mb-2">Deposit Funds</label>
