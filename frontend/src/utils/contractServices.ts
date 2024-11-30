@@ -24,9 +24,6 @@ const initializeContract = async () => {
   }
 };
 
-// Initialize contract
-initializeContract();
-
 // Function to request account
 export const requestAccount = async () => {
   try {
@@ -40,10 +37,11 @@ export const requestAccount = async () => {
   }
 };
 
-export const getContractBalance = async () => {
+export const getContractBalance = async (): Promise<string> => {
   try {
-    const balance = await contract.getContractBalance();  // Call the contract's function
-    return formatEther(balance);
+    await initializeContract();
+    const balance = await contract.getContractBalance();
+    return formatEther(balance.toString());
   } catch (error) {
     console.error('Error getting contract balance:', error);
     return '0';
@@ -51,7 +49,7 @@ export const getContractBalance = async () => {
 };
 
 // Function to get wallet balance in Eth (FYI, 1 eth = 10^18 wei!)
-export const getWalletBalanceInEth = async (account: string) => {
+export const getWalletBalanceInEth = async (account: string): Promise<string> => {
   try {
     provider = new BrowserProvider(window.ethereum);
     const balanceWei = await provider.getBalance(account);
@@ -64,7 +62,8 @@ export const getWalletBalanceInEth = async (account: string) => {
 };
 
 // Function to deposit ETH into the contract
-export const depositFunds = async (depositValue: string) => {
+export const depositFunds = async (depositValue: string): Promise<void> => {
+  await initializeContract();
   const ethValue = parseEther(depositValue);
   toast.info(`Depositing ${depositValue} ETH into the contract...`);
   const depositTx = await contract.deposit({ value: ethValue });
@@ -73,8 +72,9 @@ export const depositFunds = async (depositValue: string) => {
 };
 
 // Function to withdraw ETH from the contract
-export const withdrawFunds = async (withdrawValue: string) => {
+export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
   try {
+    await initializeContract();
     const ethValue = parseEther(withdrawValue);
     toast.info(`Withdrawing ${withdrawValue} ETH from the contract...`);
     const withdrawTx = await contract.withdraw(ethValue);

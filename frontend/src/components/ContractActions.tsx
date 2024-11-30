@@ -5,7 +5,7 @@ import { depositFunds, withdrawFunds } from '../utils/contractServices';
 const ContractActions = () => {
   const [depositValue, setDepositValue] = useState('');
   const [withdrawValue, setWithdrawValue] = useState('');
-
+  
   const handleDeposit = async () => {
     try {
       if (!depositValue) {

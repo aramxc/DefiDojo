@@ -21,8 +21,9 @@ contract Lock {
     }
 
     // read functions do not require gas limit
+    // getContractBalance returns the contract's ETH balance
     function getContractBalance() public view returns (uint256) {
-        return address(this).balance;  // Built-in way to get contract's ETH balance
+        return address(this).balance;  // Return the contract's ETH balance
     }
 
     // write functions require gas limit
