@@ -3,7 +3,10 @@ import { ToastContainer } from 'react-toastify';
 import ConnectWalletButton from './components/ConnectWalletButton';
 import ContractInfo from './components/ContractInfo';
 import ContractActions from './components/ContractActions';
-import { requestAccount } from './utils/contractServices';
+import { requestAccount } from './services/web3/contract.service';
+import { PriceDisplay } from './components/PriceDisplay';
+// import { PriceChart } from './components/PriceChart';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
@@ -30,9 +33,17 @@ function App() {
       {!account ? (
         <ConnectWalletButton setAccount={setAccount} />
       ) : (
-        <div className="contract-interactions bg-white shadow-lg rounded-xl p-8 border border-purple-200">
-          <ContractInfo account={account} />
-          <ContractActions />
+        <div className="flex flex-col gap-4">
+          <div className="contract-interactions bg-white shadow-lg rounded-xl p-8 border border-purple-200">
+            <ContractInfo account={account} />
+            <ContractActions/>
+          </div>
+          <div className="price-display">
+            <PriceDisplay />
+          </div>
+          {/* <div className="price-chart">
+            <PriceChart symbol="BTC" />
+          </div> */}
         </div>
       )}
     </div>

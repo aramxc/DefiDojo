@@ -5,14 +5,15 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node server.ts",
-    "start-local": "nodemon --watch '*.ts' --exec ts-node server.ts",
+    "start": "ts-node src/server.ts",
+    "start-local": "nodemon --watch 'src/**/*.ts' --exec ts-node src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@flipsidecrypto/sdk": "^2.1.0",
     "@pythnetwork/pyth-evm-js": "^1.76.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

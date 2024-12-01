@@ -1,7 +1,7 @@
-import LOCK_ABI from './Lock_ABI.json';
+import LOCK_ABI from './abi/Lock_ABI.json';
 import { toast } from 'react-toastify';
 import { BrowserProvider, Contract, parseEther, formatEther, JsonRpcSigner } from 'ethers';
-import { CONTRACT_ADDRESS } from './constants';
+import { CONTRACT_ADDRESS } from '../../constants/constants';
 
 // Module level variables to store provider, signer, and contract
 let provider: BrowserProvider;
@@ -61,14 +61,37 @@ export const getWalletBalanceInEth = async (account: string): Promise<string> =>
   }
 };
 
+// Function to fetch both contract and wallet balances at once
+export const fetchBalances = async (account: string) => {
+  try {
+    const contractBal = await getContractBalance();
+    const walletBal = await getWalletBalanceInEth(account);
+    return {
+      contractBalance: Number(contractBal),
+      walletBalance: Number(walletBal)
+    };
+  } catch (error) {
+    console.error('Error fetching balances', error);
+    return {
+      contractBalance: 0,
+      walletBalance: 0
+    };
+  }
+};
+
 // Function to deposit ETH into the contract
 export const depositFunds = async (depositValue: string): Promise<void> => {
-  await initializeContract();
-  const ethValue = parseEther(depositValue);
-  toast.info(`Depositing ${depositValue} ETH into the contract...`);
-  const depositTx = await contract.deposit({ value: ethValue });
-  await depositTx.wait();
-  toast.success(`Deposit successful!`);
+  try {
+    await initializeContract();
+    const ethValue = parseEther(depositValue);
+    toast.info(`Depositing ${depositValue} ETH into the contract...`);
+    const depositTx = await contract.deposit({ value: ethValue });
+    await depositTx.wait();
+    toast.success(`Deposit successful!`);
+  } catch (error: any) {
+    toast.error(`Error depositing funds: ${error.message}`);
+    throw error;
+  }
 };
 
 // Function to withdraw ETH from the contract

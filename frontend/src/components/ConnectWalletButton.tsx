@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { requestAccount } from '../utils/contractServices';
+import { requestAccount } from '../services/web3/contract.service';
 
 interface ConnectWalletButtonProps {
   setAccount: (account: string | null) => void;

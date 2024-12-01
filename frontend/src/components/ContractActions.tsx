@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { depositFunds, withdrawFunds } from '../utils/contractServices';
+import { depositFunds, withdrawFunds } from '../services/web3/contract.service';
 
 const ContractActions = () => {
   const [depositValue, setDepositValue] = useState('');
