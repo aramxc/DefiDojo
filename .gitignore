@@ -51,3 +51,5 @@ coverage/
 # Cursor rules
 .cursorrules
 
+# Assets
+/assets

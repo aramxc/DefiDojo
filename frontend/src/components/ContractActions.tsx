@@ -49,49 +49,64 @@ const ContractActions = () => {
 
   return (
     <div className="space-y-6">
-      <div/>
-      <div className="bg-purple-50 rounded-lg p-6 shadow-sm space-y-6">
-        <div className="space-y-4">
-          <label className="block text-purple-700 font-medium mb-2">Deposit Funds</label>
-          <div className="flex space-x-4">
-            <input
-              type="number"
-              min="0"
-              step="0.0001"
-              value={depositValue}
-              onChange={(e) => setDepositValue(e.target.value)}
-              placeholder="Amount in ETH"
-              className="flex-1 px-4 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            />
-            <button 
-              onClick={handleDeposit}
-              className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200"
-            >
-              Deposit
-            </button>
-          </div>
-        </div>
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
+                    rounded-xl p-6 shadow-lg border border-slate-700/50">
+        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full 
+                      -translate-x-10 -translate-y-10 blur-2xl"></div>
 
-        <div className="space-y-4">
-          <label className="block text-purple-700 font-medium mb-2">Withdraw Funds</label>
-          <div className="flex space-x-4">
-            <input
-              type="number"
-              min="0"
-              step="0.0001"
-              value={withdrawValue}
-              onChange={(e) => setWithdrawValue(e.target.value)}
-              placeholder="Amount in ETH"
-              className="flex-1 px-4 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            />
-            <button 
-              onClick={handleWithdraw}
-              className="px-6 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200"
-            >
-              Withdraw
-            </button>
+        <div className="space-y-6">
+          {/* Deposit Section */}
+          <div className="space-y-4">
+            <label className="block text-gray-100 font-medium mb-2">Deposit Funds</label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                min="0"
+                step="0.0001"
+                value={depositValue}
+                onChange={(e) => setDepositValue(e.target.value)}
+                placeholder="Amount in ETH"
+                className="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-600 text-gray-100
+                         rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 
+                         focus:border-transparent placeholder-gray-500"
+                required
+              />
+              <button 
+                onClick={handleDeposit}
+                className="w-32 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white 
+                         font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 
+                         transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
+              >
+                Deposit
+              </button>
+            </div>
+          </div>
+
+          {/* Withdraw Section */}
+          <div className="space-y-4">
+            <label className="block text-gray-100 font-medium mb-2">Withdraw Funds</label>
+            <div className="flex gap-4">
+              <input
+                type="number"
+                min="0"
+                step="0.0001"
+                value={withdrawValue}
+                onChange={(e) => setWithdrawValue(e.target.value)}
+                placeholder="Amount in ETH"
+                className="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-600 text-gray-100
+                         rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 
+                         focus:border-transparent placeholder-gray-500"
+                required
+              />
+              <button 
+                onClick={handleWithdraw}
+                className="w-32 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white 
+                         font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 
+                         transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
+              >
+                Withdraw
+              </button>
+            </div>
           </div>
         </div>
       </div>

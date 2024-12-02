@@ -7,6 +7,9 @@ Check back soon for updates!
 
 ~ Aaron
 
+![Web3 Academy Current State](/assets/120224_current_state.png)
+Current state as of 12/2/24 ^
+
 ## Getting Started
 
 ### Prerequisites

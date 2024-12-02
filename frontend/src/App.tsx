@@ -28,22 +28,20 @@ function App() {
   }, []);
 
   return (
-    <div className="App min-h-screen bg-purple-50 flex flex-col items-center justify-center">
+    <div className="App min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6">
       <ToastContainer />
       {!account ? (
         <ConnectWalletButton setAccount={setAccount} />
       ) : (
-        <div className="flex flex-col gap-4">
-          <div className="contract-interactions bg-white shadow-lg rounded-xl p-8 border border-purple-200">
+        <div className="flex flex-col gap-6 w-full max-w-4xl">
+          <div className="contract-interactions flex flex-col gap-4">
             <ContractInfo account={account} />
             <ContractActions/>
           </div>
+          <div />
           <div className="price-display">
             <PriceDisplay />
           </div>
-          {/* <div className="price-chart">
-            <PriceChart symbol="BTC" />
-          </div> */}
         </div>
       )}
     </div>
