@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchBalances } from '../services/web3/contract.service';
-import { CONTRACT_ADDRESS } from '../constants/constants';
+import { CONTRACT_ADDRESS } from '../config/constants';
 
 const ContractInfo = ({ account }: { account: string }) => {
   const [contractBalance, setContractBalance] = useState(0);

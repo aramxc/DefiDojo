@@ -1,7 +1,7 @@
 import LOCK_ABI from './abi/Lock_ABI.json';
 import { toast } from 'react-toastify';
 import { BrowserProvider, Contract, parseEther, formatEther, JsonRpcSigner } from 'ethers';
-import { CONTRACT_ADDRESS } from '../../constants/constants';
+import { CONTRACT_ADDRESS } from '../../config/constants';
 
 // Module level variables to store provider, signer, and contract
 let provider: BrowserProvider;

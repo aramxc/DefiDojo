@@ -1,5 +1,5 @@
 import { Flipside, Query, QueryResultSet } from "@flipsidecrypto/sdk";
-import { config } from '../config/config';
+import { config } from '../config/constants';
 
 export class FlipsideService {
   private flipside: Flipside;

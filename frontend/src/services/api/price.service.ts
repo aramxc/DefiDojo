@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../constants/constants';
+import { API_BASE_URL } from '../../config/constants';
 
 export interface PriceData {
   id: string;
@@ -13,15 +13,18 @@ export class PriceService {
 
   async getLatestPrices(symbols: string[]): Promise<PriceData[]> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/latest?symbols=${symbols.join(',')}`
-      );
+      const url = `${this.baseUrl}/latest?symbols=${symbols.join(',')}`;
+      console.log('Fetching prices from:', url); 
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error('Failed to fetch price data');
       }
-
-      return await response.json();
+  
+      const data = await response.json();
+      console.log('Received price data:', data); 
+      return data;
     } catch (error) {
       console.error('Error fetching prices:', error);
       throw error;

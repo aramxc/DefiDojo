@@ -11,10 +11,25 @@ export class PriceController {
   getLatestPrices = async (req: Request, res: Response) => {
     try {
       const { symbols } = req.query;
-      const prices = await this.pythService.getPriceFeeds(symbols as string[]);
+      
+      // Validate symbols parameter
+      if (!symbols) {
+        return res.status(400).json({ error: 'Symbols parameter is required' });
+      }
+
+      // Convert query parameter to array
+      const symbolsArray = Array.isArray(symbols) 
+        ? symbols 
+        : symbols.toString().split(',');
+
+      const prices = await this.pythService.getPriceFeeds(symbolsArray as string[]);
       res.json(prices);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch prices' });
+      console.error('Error in getLatestPrices:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch prices',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   };
 }
