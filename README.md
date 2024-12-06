@@ -3,7 +3,7 @@ Project Goal:
 
 To build a decentralized learning platform that helps users discover and reward the best educational content in the Web3 space. Users can search for learning resources, vote on the most helpful content, and reward content creators directly through smart contracts.
 
-Check back soon for updates!
+Check back soon for updates! Currently in the process of building out frontend components..
 
 ~ Aaron
 
