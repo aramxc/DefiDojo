@@ -1,6 +1,6 @@
 # Crypto Learning API
 
-- This API provides a simple way to access crypto learning resources and price feeds. Uses both Flipside Crypto and Pyth Network APIs.
+- This API provides a simple way to access crypto learning resources and price feeds. Uses both Flipside Crypto, CoinGecko, and Pyth Network APIs.
 - API is deployed on ___ and is available at ___. # TODO: add deployment details
 - API is built with TypeScript and Express and follows a MVC (Model-View-Controller) architecture.
  - Routes define API endpoints (e.g. /api/prices/latest)
@@ -29,3 +29,5 @@ export const getLearningResources = async (topic: string) => {
 ### Flipside Crypto API Docs: https://docs.flipsidecrypto.com/api-reference
 
 ### Hermes API - Pyth Network Docs: https://hermes.pyth.network/docs/#/
+
+### CoinGecko API Docs: https://docs.coingecko.com/v3.0.1/reference/introduction

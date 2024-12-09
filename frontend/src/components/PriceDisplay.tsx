@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { priceService, PriceData } from '../services/api/price.service';
 import { Card, CardContent, Typography, CircularProgress } from '@mui/material';
 
-export const PriceDisplay: React.FC = () => {
+interface PriceDisplayProps {
+  onSelectSymbol: (symbol: string) => void;
+}
+
+export const PriceDisplay: React.FC<PriceDisplayProps> = ({ onSelectSymbol }) => {
     const [prices, setPrices] = useState<PriceData[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -35,6 +39,16 @@ export const PriceDisplay: React.FC = () => {
       return () => clearInterval(interval);
     }, []);
   
+    const handleSymbolClick = (symbol: string | undefined) => {
+      console.log('PriceDisplay: Symbol clicked:', symbol); // Add this log
+      if (symbol) {
+        console.log('PriceDisplay: Calling onSelectSymbol with:', symbol); // Add this log
+        onSelectSymbol(symbol);
+      } else {
+        console.error('Symbol is undefined');
+      }
+    };
+  
     if (loading) return (
         <div className="flex items-center justify-center h-48">
           <CircularProgress color="primary" />
@@ -45,10 +59,15 @@ export const PriceDisplay: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
           {prices.map((price) => (
             <Card 
-              key={price.id} 
-              className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
-                       p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 
-                       transition-all duration-300 border border-slate-700/50"
+            key={price.id} 
+            className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
+                     p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 
+                     transition-all duration-300 border border-slate-700/50 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Card clicked, symbol:', price.symbol);
+              handleSymbolClick(price.symbol);
+              }}
             >
               <CardContent>
                 <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full 

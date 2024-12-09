@@ -7,7 +7,6 @@ import { requestAccount } from './services/web3/contract.service';
 import { PriceDisplay } from './components/PriceDisplay';
 import { PriceAnalytics } from './components/PriceAnalytics';
 import 'react-toastify/dist/ReactToastify.css';
-import { PriceData } from './services/api/price.service';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Define a dark theme for the application
@@ -19,7 +18,12 @@ const darkTheme = createTheme({
 
 function App() {
   const [account, setAccount] = useState<string | null>(null);
-  const [prices, setPrices] = useState<PriceData[]>([]);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+
+  const handleSymbolSelect = (symbol: string) => {
+    console.log('App: Setting selected symbol:', symbol); // Add this log
+    setSelectedSymbol(symbol);
+  };
 
   useEffect(() => {
     // Request account from MetaMask
@@ -49,10 +53,10 @@ function App() {
               <ContractActions />
             </div>
             <div className="price-display">
-              <PriceDisplay />
+              <PriceDisplay onSelectSymbol={handleSymbolSelect} />
             </div>
             <div className="price-analytics">
-              <PriceAnalytics prices={prices} />
+              <PriceAnalytics symbol={selectedSymbol} />
             </div>
           </div>
         )}
