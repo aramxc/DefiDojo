@@ -22,6 +22,6 @@ Current state as of 12/2/24 ^
 1. Clone the repository
 2. Install dependencies in frontend and backend subdirectories
 3. Navigate to '/contracts' and run `npx hardhat node` to initialize the local blockchain
-4. Navigate to '/backend' and run 'npm run start-local' to start the backend server
+4. Navigate to '/backend' and run `npm run start-local` to start the backend server
 5. Navigate to '/frontend' and run `npm start` to start the frontend client
 
