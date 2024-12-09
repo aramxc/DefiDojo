@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Tabs, Tab, Table, TableBody, TableCell, TableContainer, 
-  TableHead, TableRow, Paper, Tooltip, IconButton, CircularProgress 
+  TableHead, TableRow, Paper, CircularProgress 
 } from '@mui/material';
-import { InfoOutlined, TrendingUp, TrendingDown } from '@mui/icons-material';
+import { TrendingUp, TrendingDown } from '@mui/icons-material';
 import { priceService, PriceData } from '../services/api/price.service';
 import { historicalPriceService, HistoricalPriceData } from '../services/api/historicalPrice.service';
 
-// Simple tab panel component for content switching
-const TabPanel: React.FC<{ children: React.ReactNode; isActive: boolean }> = ({ 
-  children, 
-  isActive 
-}) => isActive ? <>{children}</> : null;
+// TabPanel component for switching content
+const TabPanel: React.FC<{ children: React.ReactNode; isActive: boolean }> = ({ children, isActive }) => 
+  isActive ? <>{children}</> : null;
 
 interface PriceAnalyticsProps {
   symbol: string | null;
 }
-
 
 interface TimeframeData {
   label: string;
@@ -29,69 +26,53 @@ const TIMEFRAMES: TimeframeData[] = [
   { label: '30D', days: 30 },
 ];
 
+// Format price to a string with two decimal places
 const formatPrice = (price: any): string => {
-  // Handle string prices that might contain commas
-  if (typeof price === 'string') {
-    price = price.replace(/,/g, '');
-  }
-  
-  // Convert to number and handle any NaN cases
-  const numPrice = Number(price);
-  if (isNaN(numPrice)) {
-    console.error('Invalid price value:', price);
-    return '0.00';
-  }
-
-  return numPrice.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  const numPrice = Number(price.toString().replace(/,/g, ''));
+  return isNaN(numPrice) ? '0.00' : numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 export const PriceAnalytics: React.FC<PriceAnalyticsProps> = ({ symbol }) => {
-  // State management
   const [activeTab, setActiveTab] = useState(0);
   const [prices, setPrices] = useState<PriceData[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalPriceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState<TimeframeData>(TIMEFRAMES[0]);
 
-  // Data fetching logic
+  // Fetch price data based on the selected symbol and timeframe
   useEffect(() => {
-    if (symbol) {
-      const fetchPriceData = async () => {
-        try {
-          const [currentPrices, historical] = await Promise.all([
-            priceService.getLatestPrices([symbol]),
-            historicalPriceService.getHistoricalPrices(symbol, selectedTimeframe.days)
-          ]);
-          setPrices(currentPrices);
-          setHistoricalData(historical);
-        } catch (error) {
-          console.error('Price data fetch failed:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+    if (!symbol) return;
 
-      fetchPriceData();
-      const interval = setInterval(fetchPriceData, 30000);
-      return () => clearInterval(interval);
-    }
+    const fetchPriceData = async () => {
+      setLoading(true);
+      try {
+        const [currentPrices, historical] = await Promise.all([
+          priceService.getLatestPrices([symbol]),
+          historicalPriceService.getHistoricalPrices(symbol, selectedTimeframe.days)
+        ]);
+        setPrices(currentPrices);
+        setHistoricalData(historical);
+      } catch (error) {
+        console.error('Price data fetch failed:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPriceData();
+    const interval = setInterval(fetchPriceData, 30000);
+    return () => clearInterval(interval);
   }, [symbol, selectedTimeframe]);
 
+  // Calculate price change percentage
   const getPriceChange = (price: PriceData): number => {
     if (!historicalData?.prices.length) return 0;
-
-    const historicalPrices = historicalData.prices;
-    const oldestPrice = historicalPrices[0]?.price;
+    const oldestPrice = historicalData.prices[0]?.price;
     const currentPrice = parseFloat(price.price.toString());
-
-    if (!oldestPrice) return 0;
-    return parseFloat(((currentPrice - oldestPrice) / oldestPrice * 100).toFixed(2));
+    return oldestPrice ? parseFloat(((currentPrice - oldestPrice) / oldestPrice * 100).toFixed(2)) : 0;
   };
 
-  // Add timeframe selector
+  // Render timeframe selector buttons
   const renderTimeframeSelector = () => (
     <div className="flex gap-2 mb-4">
       {TIMEFRAMES.map((timeframe) => (
@@ -110,16 +91,7 @@ export const PriceAnalytics: React.FC<PriceAnalyticsProps> = ({ symbol }) => {
     </div>
   );
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <CircularProgress />
-      </div>
-    );
-  }
-
-  // Price table rendering
+  // Render price table
   const renderPriceTable = () => (
     <TableContainer component={Paper} className="bg-slate-800">
       <Table>
@@ -145,14 +117,9 @@ export const PriceAnalytics: React.FC<PriceAnalyticsProps> = ({ symbol }) => {
 
             return (
               <TableRow key={price.id} className="hover:bg-slate-700/50">
-                <TableCell className="text-gray-300 border-slate-700">
-                  {price.symbol}
-                </TableCell>
-                <TableCell className="text-gray-300 border-slate-700">
-                  ${formatPrice(price.price)}
-                </TableCell>
-                <TableCell className={`border-slate-700 flex items-center gap-2 
-                  ${isPriceUp ? 'text-green-400' : 'text-red-400'}`}>
+                <TableCell className="text-gray-300 border-slate-700">{price.symbol}</TableCell>
+                <TableCell className="text-gray-300 border-slate-700">${formatPrice(price.price)}</TableCell>
+                <TableCell className={`border-slate-700 flex items-center gap-2 ${isPriceUp ? 'text-green-400' : 'text-red-400'}`}>
                   {isPriceUp ? <TrendingUp /> : <TrendingDown />}
                   {Math.abs(priceChange)}%
                 </TableCell>
@@ -170,7 +137,6 @@ export const PriceAnalytics: React.FC<PriceAnalyticsProps> = ({ symbol }) => {
   return (
     <div className="bg-slate-800 rounded-xl p-4 shadow-lg">
       {renderTimeframeSelector()}
-      {/* Tab Navigation */}
       <Tabs 
         value={activeTab} 
         onChange={(_, newValue) => setActiveTab(newValue)}
@@ -181,9 +147,14 @@ export const PriceAnalytics: React.FC<PriceAnalyticsProps> = ({ symbol }) => {
         <Tab label="24h Summary" className="text-gray-300 hover:text-blue-400" />
       </Tabs>
 
-      {/* Tab Content */}
       <TabPanel isActive={activeTab === 0}>
-        {renderPriceTable()}
+        {loading ? (
+          <div className="flex items-center justify-center h-48">
+            <CircularProgress />
+          </div>
+        ) : (
+          renderPriceTable()
+        )}
       </TabPanel>
 
       <TabPanel isActive={activeTab === 1}>
