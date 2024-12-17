@@ -19,8 +19,6 @@ const ContractInfo = ({ account }: { account: string }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold text-gray-100 mb-6">Web3 Academy</h2>
-      
       {/* Wallet Card */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
                     rounded-xl p-6 shadow-lg hover:shadow-2xl

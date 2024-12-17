@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
 import ConnectWalletButton from './components/ConnectWalletButton';
 import ContractInfo from './components/ContractInfo';
 import ContractActions from './components/ContractActions';
-import { requestAccount } from './services/web3/contract.service';
 import { PriceDisplay } from './components/PriceDisplay';
 import { PriceAnalytics } from './components/PriceAnalytics';
+
+import NavigationBar from './components/NavigationBar';
+import AboutSection from './components/AboutSection';
 import 'react-toastify/dist/ReactToastify.css';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -17,52 +21,47 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const [account, setAccount] = useState<string | null>(null);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-
-  const handleSymbolSelect = (symbol: string) => {
-    console.log('App: Setting selected symbol:', symbol); // Add this log
-    setSelectedSymbol(symbol);
-  };
-
-  useEffect(() => {
-    // Request account from MetaMask
-    requestAccount().then(setAccount);
-
-    // Listen for account changes
-    if (window.ethereum) {
-      const handleAccountChange = (accounts: string[]) => {
-        setAccount(accounts[0] || null);
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountChange);
-      return () => window.ethereum?.removeListener('accountsChanged', handleAccountChange);
-    }
-  }, []);
-
   return (
     <ThemeProvider theme={darkTheme}>
-      <div className="App min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6">
-        <ToastContainer />
-        {!account ? (
-          <ConnectWalletButton setAccount={setAccount} />
-        ) : (
-          <div className="flex flex-col gap-6 w-full max-w-4xl">
-            <div className="contract-interactions flex flex-col gap-4">
-              <ContractInfo account={account} />
-              <ContractActions />
-            </div>
-            <div className="price-display">
-              <PriceDisplay onSelectSymbol={handleSymbolSelect} />
-            </div>
-            <div className="price-analytics">
-              <PriceAnalytics symbol={selectedSymbol} />
-            </div>
+      <Router>
+        <div className="App min-h-screen bg-slate-900 flex flex-col">
+          <NavigationBar />
+          <ToastContainer />
+          <div className="flex-grow flex flex-col items-center justify-center p-6">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<AboutSection />} />
+            </Routes>
           </div>
-        )}
-      </div>
+        </div>
+      </Router>
     </ThemeProvider>
   );
 }
+
+const Home = () => {
+  const [account, setAccount] = React.useState<string | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = React.useState<string | null>(null);
+
+  const handleSymbolSelect = (symbol: string) => {
+    console.log('App: Setting selected symbol:', symbol);
+    setSelectedSymbol(symbol);
+  };
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-4xl">
+      {!account ? (
+        <ConnectWalletButton setAccount={setAccount} />
+      ) : (
+        <div className="flex flex-col gap-6">
+          <ContractInfo account={account} />
+          <ContractActions />
+          <PriceDisplay onSelectSymbol={handleSymbolSelect} />
+          <PriceAnalytics symbol={selectedSymbol} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default App;

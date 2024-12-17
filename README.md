@@ -29,7 +29,7 @@ Current state as of 12/2/24 ^
 2. Run `npm install` in the root directory to install root dependencies
 3. Check node version: `node -v` and make sure you have v18 or higher
 4. Run `npm run install-all` to install all workspace dependencies
-5. Run `npm run dev` to start all services
+5. Run `npm run dev` to start all services locally
 
 This will automatically:
 - Start the local Hardhat node
@@ -55,3 +55,16 @@ If you prefer to run services individually:
 - `npm run start-frontend` - Start frontend development server
 - `npm run dev` - Start all services in the correct order
 
+### Future Improvements / TODO's
+
+#### Features
+- **User Profiles:** Allow users to create and customize profiles to track their learning progress and contributions.
+- **Content Curation:** Implement a recommendation system to suggest content based on user preferences and past interactions.
+- **Gamification:** Introduce badges and leaderboards to encourage user engagement and content creation.
+- **Mobile Support:** Develop a mobile-friendly version of the platform for better accessibility.
+
+#### Enhanced Styling
+- **Responsive Design:** Ensure the platform is fully responsive across all devices and screen sizes.
+- **Dark Mode:** Add a dark mode option for users who prefer a different visual experience.
+- **Custom Themes:** Allow users to select from a variety of themes to personalize their interface.
+- **Improved UI/UX:** Continuously refine the user interface and experience based on user feedback and testing.
