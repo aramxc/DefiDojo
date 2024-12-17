@@ -10,7 +10,7 @@ const AboutSection = () => {
 
       <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 
                      mb-8 text-center tracking-tight">
-        Cryptocurrency Information
+        Learning Resources
       </h2>
       <p className="text-gray-300 mb-8 text-center text-lg leading-relaxed max-w-2xl mx-auto">
         Explore the top cryptocurrencies and access resources to deepen your understanding.

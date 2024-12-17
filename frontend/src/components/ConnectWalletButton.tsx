@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { requestAccount } from '../services/web3/contract.service';
 
 interface ConnectWalletButtonProps {
@@ -9,12 +9,21 @@ const ConnectWalletButton = ({ setAccount }: ConnectWalletButtonProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const savedAccount = localStorage.getItem('connectedAccount');
+    if (savedAccount) {
+      setAccount(savedAccount);
+      setIsConnected(true);
+    }
+  }, [setAccount]);
+
   const connectWallet = async () => {
     setIsLoading(true);
     try {
       const account = await requestAccount();
       setAccount(account);
       setIsConnected(true);
+      localStorage.setItem('connectedAccount', account);
     } catch (error) {
       console.error('Error connecting wallet', error);
     } finally {
@@ -25,6 +34,7 @@ const ConnectWalletButton = ({ setAccount }: ConnectWalletButtonProps) => {
   const disconnectWallet = () => {
     setAccount(null);
     setIsConnected(false);
+    localStorage.removeItem('connectedAccount');
   };
 
   return (

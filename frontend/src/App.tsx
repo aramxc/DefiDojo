@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -6,12 +6,13 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ConnectWalletButton from './components/ConnectWalletButton';
 import ContractInfo from './components/ContractInfo';
 import ContractActions from './components/ContractActions';
-import { PriceDisplay } from './components/PriceDisplay';
 import { PriceAnalytics } from './components/PriceAnalytics';
 
 import NavigationBar from './components/NavigationBar';
-import AboutSection from './components/AboutSection';
+import LearningResources from './components/LearningResources';
+import Dashboard from './components/Dashboard';
 import 'react-toastify/dist/ReactToastify.css';
+import { DEFAULT_TICKER_SYMBOLS } from './config/constants';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -21,6 +22,16 @@ const darkTheme = createTheme({
 });
 
 function App() {
+  const [selectedTickers, setSelectedTickers] = useState<string[]>(DEFAULT_TICKER_SYMBOLS);
+
+  const handleAddTickers = (tickers: string[]) => {
+    setSelectedTickers((prev) => [...new Set([...prev, ...tickers])]);
+  };
+
+  const handleRemoveTicker = (symbol: string) => {
+    setSelectedTickers((prev) => prev.filter((ticker) => ticker !== symbol));
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <Router>
@@ -29,8 +40,8 @@ function App() {
           <ToastContainer />
           <div className="flex-grow flex flex-col items-center justify-center p-6">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<AboutSection />} />
+              <Route path="/" element={<Home selectedTickers={selectedTickers} onAddTickers={handleAddTickers} onRemoveTicker={handleRemoveTicker} />} />
+              <Route path="/about" element={<LearningResources />} />
             </Routes>
           </div>
         </div>
@@ -39,12 +50,11 @@ function App() {
   );
 }
 
-const Home = () => {
-  const [account, setAccount] = React.useState<string | null>(null);
-  const [selectedSymbol, setSelectedSymbol] = React.useState<string | null>(null);
+const Home = ({ selectedTickers, onAddTickers, onRemoveTicker }: { selectedTickers: string[], onAddTickers: (tickers: string[]) => void, onRemoveTicker: (symbol: string) => void }) => {
+  const [account, setAccount] = useState<string | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
   const handleSymbolSelect = (symbol: string) => {
-    console.log('App: Setting selected symbol:', symbol);
     setSelectedSymbol(symbol);
   };
 
@@ -56,7 +66,7 @@ const Home = () => {
         <div className="flex flex-col gap-6">
           <ContractInfo account={account} />
           <ContractActions />
-          <PriceDisplay onSelectSymbol={handleSymbolSelect} />
+          <Dashboard selectedTickers={selectedTickers} onAddTickers={onAddTickers} onRemoveTicker={onRemoveTicker} />
           <PriceAnalytics symbol={selectedSymbol} />
         </div>
       )}
