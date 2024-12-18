@@ -7,6 +7,8 @@ import { CONTRACT_ADDRESS } from '../../config/constants';
 let provider: BrowserProvider;
 let signer: JsonRpcSigner;
 let contract: Contract;
+let isInitializing = false;
+let isProcessingRequest = false;
 
 declare global {
   interface Window {
@@ -15,25 +17,40 @@ declare global {
 }
 
 const initializeContract = async () => {
-  if (typeof window.ethereum !== 'undefined') {
-    provider = new BrowserProvider(window.ethereum);
-    signer = await provider.getSigner();
-    contract = new Contract(CONTRACT_ADDRESS, LOCK_ABI, signer);
-  } else {
-    toast.error('Please install metamask!');
+  if (isInitializing) return;
+  
+  try {
+    isInitializing = true;
+    if (typeof window.ethereum !== 'undefined') {
+      provider = new BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      contract = new Contract(CONTRACT_ADDRESS, LOCK_ABI, signer);
+    } else {
+      toast.error('Please install metamask!');
+    }
+  } finally {
+    isInitializing = false;
   }
 };
 
 // Function to request account
 export const requestAccount = async () => {
+  if (isProcessingRequest) {
+    console.log('Request already in progress');
+    return null;
+  }
+
   try {
+    isProcessingRequest = true;
     const accounts = await window.ethereum.request({
       method: 'eth_requestAccounts',
     });
-    return accounts[0]; // return the first account
+    return accounts[0];
   } catch (error: any) {
     toast.error('Error requesting account', error.message);
     return null;
+  } finally {
+    isProcessingRequest = false;
   }
 };
 
@@ -60,7 +77,6 @@ export const getWalletBalanceInEth = async (account: string): Promise<string> =>
     return '0';
   }
 };
-
 // Function to fetch both contract and wallet balances at once
 export const fetchBalances = async (account: string) => {
   try {
@@ -108,3 +124,4 @@ export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
     throw error;
   }
 };
+

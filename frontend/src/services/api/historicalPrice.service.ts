@@ -1,12 +1,11 @@
 import { API_BASE_URL } from '../../config/constants';
 
 export interface HistoricalPriceData {
-  id: string;
-  symbol: string;
-  prices: {
-    timestamp: number;
-    price: number;
-  }[];
+  [key: string]: {
+    priceChange: number;
+    lowPrice: number;
+    highPrice: number;
+  };
 }
 
 export class HistoricalPriceService {

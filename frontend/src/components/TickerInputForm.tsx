@@ -7,36 +7,48 @@ interface TickerInputFormProps {
 }
 
 const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
-  const [inputValue, setInputValue] = useState<string[]>([]);
+  const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
 
-  const handleAddTickers = () => {
-    onAddTickers(inputValue);
-    setInputValue([]);
+  const handleSubmit = () => {
+    onAddTickers(selectedTickers);
+    setSelectedTickers([]);
   };
 
   return (
-    <div className="flex items-center space-x-4 p-4 bg-slate-800 rounded-lg shadow-md">
-      <Autocomplete
-        multiple
-        options={DEFAULT_TICKER_SYMBOLS}
-        value={inputValue}
-        onChange={(event, newValue) => setInputValue(newValue)}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            placeholder="Select tickers"
-            className="bg-slate-700 text-gray-300 focus:outline-none"
-          />
-        )}
-        className="flex-grow"
-      />
-      <button
-        onClick={handleAddTickers}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-      >
-        Add
-      </button>
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl 
+                    shadow-xl border border-slate-700/30 backdrop-blur-sm">
+      <div className="flex items-center space-x-4">
+        <Autocomplete
+          multiple
+          options={DEFAULT_TICKER_SYMBOLS}
+          value={selectedTickers}
+          onChange={(_, newValue) => setSelectedTickers(newValue)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              placeholder="Select tickers"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'rgba(148, 163, 184, 0.2)' },
+                  '&:hover fieldset': { borderColor: 'rgba(148, 163, 184, 0.4)' },
+                  '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
+                },
+                '& .MuiInputBase-input': { color: '#e2e8f0' },
+              }}
+            />
+          )}
+          className="flex-grow"
+        />
+        <button
+          onClick={handleSubmit}
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 
+                     text-white rounded-lg hover:shadow-lg hover:scale-105 
+                     transition-all duration-200 font-medium"
+        >
+          Add Tickers
+        </button>
+      </div>
     </div>
   );
 };

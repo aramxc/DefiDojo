@@ -16,65 +16,36 @@ const ContractInfo = ({ account }: { account: string }) => {
     updateBalances();
   }, [account]); 
 
-
   return (
     <div className="flex flex-col gap-4">
-      {/* Wallet Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
-                    rounded-xl p-6 shadow-lg hover:shadow-2xl
-                    transition-all duration-300 border border-slate-700/50">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full 
-                      -translate-x-10 -translate-y-10 blur-2xl"></div>
-        
-        <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center gap-2">
-          Wallet Info
-          <span className="text-xs px-2 py-1 bg-purple-500/20 rounded-full text-purple-300">
-            CONNECTED
-          </span>
-        </h3>
-
+      {/* Wallet Info Card */}
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-gray-100 mb-4">Wallet Info</h3>
         <div className="space-y-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-400 text-sm">Address</span>
-            <span className="font-mono text-sm bg-slate-800/50 px-3 py-2 rounded-lg text-gray-300 
-                          overflow-hidden overflow-ellipsis">{account}</span>
+          <div>
+            <span className="text-gray-400">Address</span>
+            <p className="font-mono text-sm text-gray-300">{account}</p>
           </div>
-          
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-400 text-sm">Balance</span>
-            <p className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-pink-300 
-                       bg-clip-text text-transparent">
+          <div>
+            <span className="text-gray-400">Balance</span>
+            <p className="font-bold text-2xl text-purple-400">
               {walletBalance.toFixed(4)} ETH
             </p>
           </div>
         </div>
       </div>
 
-      {/* Contract Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 
-                    rounded-xl p-6 shadow-lg hover:shadow-2xl 
-                    transition-all duration-300 border border-slate-700/50">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full 
-                      -translate-x-10 -translate-y-10 blur-2xl"></div>
-        
-        <h3 className="text-lg font-bold text-gray-100 mb-4 flex items-center gap-2">
-          Contract Info
-          <span className="text-xs px-2 py-1 bg-purple-500/20 rounded-full text-purple-300">
-            ACTIVE
-          </span>
-        </h3>
-
+      {/* Contract Info Card */}
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-gray-100 mb-4">Contract Info</h3>
         <div className="space-y-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-400 text-sm">Address</span>
-            <span className="font-mono text-sm bg-slate-800/50 px-3 py-2 rounded-lg text-gray-300 
-                          overflow-hidden overflow-ellipsis">{CONTRACT_ADDRESS}</span>
+          <div>
+            <span className="text-gray-400">Address</span>
+            <p className="font-mono text-sm text-gray-300">{CONTRACT_ADDRESS}</p>
           </div>
-          
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-400 text-sm">Balance</span>
-            <p className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-pink-300 
-                       bg-clip-text text-transparent">
+          <div>
+            <span className="text-gray-400">Balance</span>
+            <p className="font-bold text-2xl text-purple-400">
               {contractBalance.toFixed(4)} ETH
             </p>
           </div>
