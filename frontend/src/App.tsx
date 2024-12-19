@@ -6,13 +6,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ConnectWalletButton from './components/ConnectWalletButton';
 import ContractInfo from './components/ContractInfo';
 import ContractActions from './components/ContractActions';
-import { PriceAnalytics } from './components/PriceAnalytics';
+import ContractSidebar from './components/ContractSidebar';
 
 import NavigationBar from './components/NavigationBar';
 import LearningResources from './components/LearningResources';
 import Dashboard from './components/Dashboard';
 import 'react-toastify/dist/ReactToastify.css';
-import { DEFAULT_TICKER_SYMBOLS } from './config/constants';
 import { requestAccount } from './services/web3/contract.service';
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -23,8 +22,8 @@ const darkTheme = createTheme({
 
 function App() {
   const [account, setAccount] = useState<string | null>(null);
-  const [selectedTickers, setSelectedTickers] = useState<string[]>(DEFAULT_TICKER_SYMBOLS);
-
+  
+const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
   const handleAddTickers = (tickers: string[]) => {
     setSelectedTickers((prev) => [...new Set([...prev, ...tickers])]);
   };
@@ -86,43 +85,26 @@ interface HomeProps {
 }
 
 const Home = ({ account, setAccount, selectedTickers, onAddTickers, onRemoveTicker }: HomeProps) => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen">
       {!account ? (
-        <div className="max-w-4xl mx-auto px-6">
+        <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
           <ConnectWalletButton setAccount={setAccount} />
         </div>
       ) : (
-        <>
-          <div className="max-w-4xl mx-auto px-6 mb-6">
-            <ContractInfo account={account} />
-            <ContractActions />
+        <div className="flex">
+          {/* Sidebar */}
+          <ContractSidebar account={account} />
+          
+          {/* Main Content */}
+          <div className="flex-1 pl-12">
+            <Dashboard 
+              selectedTickers={selectedTickers} 
+              onAddTickers={onAddTickers} 
+              onRemoveTicker={onRemoveTicker}
+            />
           </div>
-          <Dashboard 
-            selectedTickers={selectedTickers} 
-            onAddTickers={onAddTickers} 
-            onRemoveTicker={onRemoveTicker}
-            onSelectSymbol={setSelectedSymbol}
-          />
-          {selectedSymbol && (
-            <div className="max-w-4xl mx-auto px-6 mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-200">
-                  Price Analytics: {selectedSymbol}
-                </h2>
-                <button
-                  onClick={() => setSelectedSymbol(null)}
-                  className="text-gray-400 hover:text-gray-200 transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-              <PriceAnalytics symbol={selectedSymbol} />
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );

@@ -42,8 +42,8 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ setAccount })
       onClick={handleWalletAction}
       disabled={isLoading}
       className={`
-        px-6 py-2 rounded-lg font-medium transition-all duration-200
-        flex items-center justify-center min-w-[180px]
+        px-6 py-3 rounded-lg font-medium transition-all duration-200
+        flex items-center justify-center min-w-[200px]
         ${isLoading ? 'opacity-75 cursor-not-allowed' : 'hover:scale-105 hover:shadow-lg'}
         ${isConnected 
           ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-500/25' 
