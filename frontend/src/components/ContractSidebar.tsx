@@ -31,15 +31,16 @@ const ContractSidebar: React.FC<ContractSidebarProps> = ({ account }) => {
         </button>
 
         {/* Sidebar Content */}
-        <div className={`h-full ${isExpanded ? 'opacity-100' : 'opacity-0'} 
-                      transition-opacity duration-300 overflow-y-auto
+        <div className={`h-full flex flex-col ${isExpanded ? 'opacity-100' : 'opacity-0'} 
+                      transition-opacity duration-300
                       ${isExpanded ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-          <div className="p-6 space-y-6">
+          {/* Top Section */}
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
             {/* Header */}
             <div className="flex items-center gap-3 pb-4 border-b border-slate-700/50">
               <Wallet className="text-purple-400" />
               <h2 className="text-xl font-bold text-gray-100">
-                Wallet & Contract Info
+                Wallet & Contract
               </h2>
             </div>
 
@@ -47,20 +48,10 @@ const ContractSidebar: React.FC<ContractSidebarProps> = ({ account }) => {
             <div className="space-y-6">
               <ContractInfo account={account} />
             </div>
+          </div>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-700/50"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-2 text-sm text-gray-500 bg-gradient-to-b from-slate-900 to-slate-800">
-                  Actions
-                </span>
-              </div>
-            </div>
-
-            {/* Contract Actions */}
+          {/* Bottom Section - Contract Actions */}
+          <div className="p-6 border-t border-slate-700/50 bg-slate-900/50">
             <ContractActions />
           </div>
         </div>
