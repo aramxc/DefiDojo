@@ -5,6 +5,8 @@ import { CONTRACT_ADDRESS } from '../config/constants';
 const ContractInfo = ({ account }: { account: string }) => {
   const [contractBalance, setContractBalance] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [walletCopied, setWalletCopied] = useState(false);
+  const [contractCopied, setContractCopied] = useState(false);
 
   useEffect(() => {
     const updateBalances = async () => {
@@ -20,6 +22,12 @@ const ContractInfo = ({ account }: { account: string }) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const handleCopy = async (text: string, setCopied: (value: boolean) => void) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Wallet Info Card */}
@@ -33,10 +41,10 @@ const ContractInfo = ({ account }: { account: string }) => {
                 {truncateAddress(account)}
               </p>
               <button 
-                onClick={() => navigator.clipboard.writeText(account)}
+                onClick={() => handleCopy(account, setWalletCopied)}
                 className="text-xs text-gray-400 hover:text-gray-200 transition-colors"
               >
-                Copy
+                {walletCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
           </div>
@@ -60,10 +68,10 @@ const ContractInfo = ({ account }: { account: string }) => {
                 {truncateAddress(CONTRACT_ADDRESS)}
               </p>
               <button 
-                onClick={() => navigator.clipboard.writeText(CONTRACT_ADDRESS)}
+                onClick={() => handleCopy(CONTRACT_ADDRESS, setContractCopied)}
                 className="text-xs text-gray-400 hover:text-gray-200 transition-colors"
               >
-                Copy
+                {contractCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
           </div>

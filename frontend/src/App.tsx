@@ -22,8 +22,9 @@ const darkTheme = createTheme({
 
 function App() {
   const [account, setAccount] = useState<string | null>(null);
-  
-const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+
   const handleAddTickers = (tickers: string[]) => {
     setSelectedTickers((prev) => [...new Set([...prev, ...tickers])]);
   };
@@ -51,24 +52,53 @@ const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
     <ThemeProvider theme={darkTheme}>
       <Router>
         <div className="App min-h-screen bg-slate-900">
-          <NavigationBar />
+          <NavigationBar 
+            isExpanded={isSidebarExpanded}
+            onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          />
           <ToastContainer />
-          <div className="w-full">
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <Home 
-                    account={account}
-                    setAccount={setAccount}
-                    selectedTickers={selectedTickers} 
-                    onAddTickers={handleAddTickers} 
-                    onRemoveTicker={handleRemoveTicker} 
-                  />
-                } 
+          
+          <div className="flex">
+            {/* Sidebar - Now shown based on account existence */}
+            {account && (
+              <ContractSidebar 
+                account={account}
+                isExpanded={isSidebarExpanded}
+                onClose={() => setIsSidebarExpanded(false)}
               />
-              <Route path="/about" element={<LearningResources />} />
-            </Routes>
+            )}
+            
+            {/* Main Content Area */}
+            <div className="flex-1">
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
+                    <Home 
+                      account={account}
+                      setAccount={setAccount}
+                      selectedTickers={selectedTickers} 
+                      onAddTickers={handleAddTickers} 
+                      onRemoveTicker={handleRemoveTicker}
+                    />
+                  } 
+                />
+                <Route 
+                  path="/about" 
+                  element={
+                    !account ? (
+                      <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
+                        <ConnectWalletButton setAccount={setAccount} />
+                      </div>
+                    ) : (
+                      <div className="p-6">
+                        <LearningResources />
+                      </div>
+                    )
+                  } 
+                />
+              </Routes>
+            </div>
           </div>
         </div>
       </Router>
@@ -84,7 +114,13 @@ interface HomeProps {
   onRemoveTicker: (symbol: string) => void;
 }
 
-const Home = ({ account, setAccount, selectedTickers, onAddTickers, onRemoveTicker }: HomeProps) => {
+const Home = ({ 
+  account, 
+  setAccount, 
+  selectedTickers, 
+  onAddTickers, 
+  onRemoveTicker 
+}: HomeProps) => {
   return (
     <div className="w-full min-h-screen">
       {!account ? (
@@ -92,18 +128,12 @@ const Home = ({ account, setAccount, selectedTickers, onAddTickers, onRemoveTick
           <ConnectWalletButton setAccount={setAccount} />
         </div>
       ) : (
-        <div className="flex">
-          {/* Sidebar */}
-          <ContractSidebar account={account} />
-          
-          {/* Main Content */}
-          <div className="flex-1 pl-12">
-            <Dashboard 
-              selectedTickers={selectedTickers} 
-              onAddTickers={onAddTickers} 
-              onRemoveTicker={onRemoveTicker}
-            />
-          </div>
+        <div className="flex-1 pl-12">
+          <Dashboard 
+            selectedTickers={selectedTickers} 
+            onAddTickers={onAddTickers} 
+            onRemoveTicker={onRemoveTicker}
+          />
         </div>
       )}
     </div>

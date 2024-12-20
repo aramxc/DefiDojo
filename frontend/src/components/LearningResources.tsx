@@ -72,32 +72,37 @@ const RESOURCES = [
 ];
 
 const LearningResources: React.FC = () => (
-  <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-10 rounded-2xl 
-                  shadow-2xl max-w-4xl mx-auto space-y-10 border border-slate-700/30 
-                  relative overflow-hidden">
-    {/* Decorative background elements */}
-    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 
-                    rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-    <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 
-                    rounded-full translate-x-1/2 translate-y-1/2 blur-3xl" />
+  <div className="min-h-screen py-8">
+    <div className="max-w-6xl mx-auto px-6 lg:px-8 space-y-8">
+      {/* Content wrapper with the same styling as Dashboard */}
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-10 rounded-2xl 
+                    shadow-2xl space-y-10 border border-slate-700/30 
+                    relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 
+                      rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 
+                      rounded-full translate-x-1/2 translate-y-1/2 blur-3xl" />
 
-    {/* Header */}
-    <div className="relative z-10">
-      <h2 className="text-4xl font-bold text-transparent bg-clip-text 
-                     bg-gradient-to-r from-blue-400 to-purple-400 
-                     mb-8 text-center tracking-tight">
-        Learning Resources
-      </h2>
-      <p className="text-gray-300 mb-8 text-center text-lg leading-relaxed max-w-2xl mx-auto">
-        Explore the top cryptocurrencies and access resources to deepen your understanding.
-      </p>
-    </div>
+        {/* Header */}
+        <div className="relative z-10">
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text 
+                       bg-gradient-to-r from-blue-400 to-purple-400 
+                       mb-8 text-center tracking-tight">
+            Learning Resources
+          </h2>
+          <p className="text-gray-300 mb-8 text-center text-lg leading-relaxed max-w-2xl mx-auto">
+            Explore the top cryptocurrencies and access resources to deepen your understanding.
+          </p>
+        </div>
 
-    {/* Resource cards */}
-    <div className="relative z-10 space-y-8">
-      {RESOURCES.map((resource, index) => (
-        <ResourceCard key={index} {...resource} />
-      ))}
+        {/* Resource cards */}
+        <div className="relative z-10 space-y-8">
+          {RESOURCES.map((resource, index) => (
+            <ResourceCard key={index} {...resource} />
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 );
