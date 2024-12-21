@@ -21,10 +21,13 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        const [data] = await priceService.getLatestPrices([symbol]);
-        setPriceData(data);
+        const prices = await priceService.getLatestPrices([symbol]);
+        const symbolData = prices.find(p => p.symbol.toUpperCase() === symbol.toUpperCase());
+        console.log('Price data for', symbol, ':', symbolData);
+        setPriceData(symbolData || null);
       } catch (error) {
         console.error('Failed to fetch price:', error);
+        setPriceData(null);
       } finally {
         setLoading(false);
       }

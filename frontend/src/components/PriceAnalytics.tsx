@@ -38,8 +38,12 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
           priceService.getLatestPrices([symbol]),
           historicalPriceService.getHistoricalPrices(symbol, selectedTimeframe.days)
         ]);
+        console.log('Current prices:', currentPrices);
+        console.log('Historical data:', historical);
         setPrices(currentPrices);
         setHistoricalData(historical);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }

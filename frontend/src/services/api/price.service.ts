@@ -1,11 +1,11 @@
 import { API_BASE_URL } from '../../config/constants';
 
 export interface PriceData {
-  id: string;
+  id?: string;
+  symbol: string;
   price: number;
-  conf: number;
-  timestamp: number;
-  symbol?: string;
+  conf?: number;
+  timestamp?: number;
 }
 
 export class PriceService {
@@ -24,10 +24,27 @@ export class PriceService {
   
       const data = await response.json();
       console.log('Received price data:', data); 
-      return data;
+
+      // For a single symbol, data contains prices array directly
+      if (data.prices && Array.isArray(data.prices)) {
+        const latestPrice = data.prices[data.prices.length - 1];
+        return [{
+          symbol: data.symbol,
+          price: latestPrice.price
+        }];
+      }
+
+      // If no valid price data is found
+      return symbols.map(symbol => ({
+        symbol,
+        price: 0
+      }));
     } catch (error) {
       console.error('Error fetching prices:', error);
-      throw error;
+      return symbols.map(symbol => ({
+        symbol,
+        price: 0
+      }));
     }
   }
 

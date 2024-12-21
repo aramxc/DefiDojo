@@ -24,10 +24,32 @@ export class HistoricalPriceService {
       }
 
       const data = await response.json();
-      return data;
+      console.log('Historical data received:', data);
+
+      // Calculate price change, low, and high from the prices array
+      const prices = data.prices.map((p: any) => p.price);
+      const firstPrice = prices[0];
+      const lastPrice = prices[prices.length - 1];
+      const priceChange = ((lastPrice - firstPrice) / firstPrice) * 100;
+      const lowPrice = Math.min(...prices);
+      const highPrice = Math.max(...prices);
+
+      return {
+        [symbol]: {
+          priceChange: Number(priceChange.toFixed(2)),
+          lowPrice: Number(lowPrice.toFixed(2)),
+          highPrice: Number(highPrice.toFixed(2))
+        }
+      };
     } catch (error) {
       console.error('HistoricalPriceService: Error:', error);
-      throw error;
+      return {
+        [symbol]: {
+          priceChange: 0,
+          lowPrice: 0,
+          highPrice: 0
+        }
+      };
     }
   }
 }
