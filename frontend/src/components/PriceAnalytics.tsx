@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, TableContainer, Paper } from '@mui/material';
 import { TrendingUp, TrendingDown } from '@mui/icons-material';
 import { priceService, PriceData} from '../services/api/price.service';
 import { historicalPriceService, HistoricalPriceData } from '../services/api/historicalPrice.service';
+
+// Cache interface
+interface HistoricalDataCache {
+  [symbol: string]: {
+    [timeframe: number]: {
+      data: HistoricalPriceData;
+      timestamp: number;
+    };
+  };
+}
 
 // Constants and Types
 type Timeframe = {
@@ -18,6 +28,9 @@ const TIMEFRAMES: Timeframe[] = [
   { label: '1Y', days: 365 }
 ];
 
+// Cache duration in milliseconds (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
+
 // Utility functions
 const formatPrice = (price: number): string => 
   Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -27,32 +40,84 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
   const [historicalData, setHistoricalData] = useState<HistoricalPriceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(TIMEFRAMES[0]);
+  const [cache, setCache] = useState<HistoricalDataCache>({});
 
+  // Function to check if cached data is still valid
+  const isCacheValid = useCallback((symbol: string, days: number) => {
+    const cachedData = cache[symbol]?.[days];
+    if (!cachedData) return false;
+    
+    const now = Date.now();
+    return (now - cachedData.timestamp) < CACHE_DURATION;
+  }, [cache]);
+
+  // Function to fetch all timeframes for a symbol
+  const fetchAllTimeframes = useCallback(async (symbol: string) => {
+    setLoading(true);
+    try {
+      const allPromises = TIMEFRAMES.map(async (timeframe) => {
+        // Check cache first
+        if (isCacheValid(symbol, timeframe.days)) {
+          return;
+        }
+
+        const data = await historicalPriceService.getHistoricalPrices(symbol, timeframe.days);
+        setCache(prevCache => ({
+          ...prevCache,
+          [symbol]: {
+            ...(prevCache[symbol] || {}),
+            [timeframe.days]: {
+              data,
+              timestamp: Date.now()
+            }
+          }
+        }));
+      });
+
+      await Promise.all(allPromises);
+    } catch (error) {
+      console.error('Error fetching historical data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isCacheValid]);
+
+  // Effect for initial load and symbol change
   useEffect(() => {
     if (!symbol) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [currentPrices, historical] = await Promise.all([
-          priceService.getLatestPrices([symbol]),
-          historicalPriceService.getHistoricalPrices(symbol, selectedTimeframe.days)
-        ]);
-        console.log('Current prices:', currentPrices);
-        console.log('Historical data:', historical);
+        // Fetch current prices
+        const currentPrices = await priceService.getLatestPrices([symbol]);
         setPrices(currentPrices);
-        setHistoricalData(historical);
+
+        // Fetch all historical data if not cached
+        await fetchAllTimeframes(symbol);
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(() => {
+      // Only update current prices on interval, not historical data
+      priceService.getLatestPrices([symbol]).then(setPrices);
+    }, 120000); // 2 minutes
+
     return () => clearInterval(interval);
-  }, [symbol, selectedTimeframe]);
+  }, [symbol, fetchAllTimeframes]);
+
+  // Effect for timeframe changes
+  useEffect(() => {
+    if (!symbol) return;
+    
+    // Use cached data if available
+    if (cache[symbol]?.[selectedTimeframe.days]) {
+      setHistoricalData(cache[symbol][selectedTimeframe.days].data);
+    }
+  }, [symbol, selectedTimeframe, cache]);
 
   if (loading) {
     return (

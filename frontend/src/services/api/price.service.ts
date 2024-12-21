@@ -25,20 +25,12 @@ export class PriceService {
       const data = await response.json();
       console.log('Received price data:', data); 
 
-      // For a single symbol, data contains prices array directly
-      if (data.prices && Array.isArray(data.prices)) {
-        const latestPrice = data.prices[data.prices.length - 1];
-        return [{
-          symbol: data.symbol,
-          price: latestPrice.price
-        }];
-      }
-
-      // If no valid price data is found
-      return symbols.map(symbol => ({
-        symbol,
-        price: 0
+      // Convert the formatted price string to a number
+      return data.map((item: any) => ({
+        symbol: item.symbol,
+        price: parseFloat(item.price.replace(/,/g, ''))
       }));
+
     } catch (error) {
       console.error('Error fetching prices:', error);
       return symbols.map(symbol => ({
