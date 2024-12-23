@@ -5,7 +5,7 @@ const router = Router();
 const historicalPriceController = new HistoricalPriceController();
 
 
-router.get('/historical/:coinId/:days', (req: Request, res: Response) => {
+router.get('/historical/:coinId/:timeframe', (req: Request, res: Response) => {
     try {
         historicalPriceController.getHistoricalPrices(req, res);
     } catch (error) {
