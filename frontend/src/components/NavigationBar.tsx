@@ -51,7 +51,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) =
       {/* Center-aligned navigation links with proper spacing */}
       <div className="flex-1 flex justify-end items-center space-x-8 pl-32"> {/* Added pl-32 to account for the left section */}
         <NavLink to="/">Home</NavLink>
-        <NavLink to="/about">Learning</NavLink>
+        <NavLink to="/learning">Learning</NavLink>
       </div>
     </div>
   </nav>

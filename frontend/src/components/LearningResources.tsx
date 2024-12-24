@@ -72,9 +72,9 @@ const RESOURCES = [
 ];
 
 const LearningResources: React.FC = () => (
-  <div className="min-h-screen py-8">
-    <div className="max-w-6xl mx-auto px-6 lg:px-8 space-y-8">
-      {/* Content wrapper with the same styling as Dashboard */}
+  <div className="min-h-screen py-8 px-6">
+    <div className="space-y-8">
+      {/* Content wrapper */}
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-10 rounded-2xl 
                     shadow-2xl space-y-10 border border-slate-700/30 
                     relative overflow-hidden">

@@ -3,16 +3,15 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import PaymentsSidebar from './components/sidebar/SidebarContainer';
 import ConnectWalletButton from './components/ConnectWalletButton';
-import ContractInfo from './components/ContractInfo';
-import ContractActions from './components/ContractActions';
-import ContractSidebar from './components/ContractSidebar';
-
 import NavigationBar from './components/NavigationBar';
-import LearningResources from './components/LearningResources';
 import Dashboard from './components/Dashboard';
+import LearningResources from './components/LearningResources';
+
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
+
 // Define a dark theme for the application
 const darkTheme = createTheme({
   palette: {
@@ -59,46 +58,43 @@ function App() {
           <ToastContainer />
           
           <div className="flex">
-            {/* Sidebar - Now shown based on account existence */}
             {account && (
-              <ContractSidebar 
+              <PaymentsSidebar 
                 account={account}
                 isExpanded={isSidebarExpanded}
                 onClose={() => setIsSidebarExpanded(false)}
               />
             )}
             
-            {/* Main Content Area */}
-            <div className="flex-1">
-              <Routes>
-                <Route 
-                  path="/" 
-                  element={
-                    <Home 
-                      account={account}
-                      setAccount={setAccount}
-                      selectedTickers={selectedTickers} 
-                      onAddTickers={handleAddTickers} 
-                      onRemoveTicker={handleRemoveTicker}
-                    />
-                  } 
-                />
-                <Route 
-                  path="/about" 
-                  element={
-                    !account ? (
-                      <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
-                        <ConnectWalletButton setAccount={setAccount} />
-                      </div>
-                    ) : (
-                      <div className="p-6">
-                        <LearningResources />
-                      </div>
-                    )
-                  } 
-                />
-              </Routes>
-            </div>
+            <Routes>
+              <Route 
+                path="/" 
+                element={
+                  <Home 
+                    account={account}
+                    setAccount={setAccount}
+                    selectedTickers={selectedTickers}
+                    onAddTickers={handleAddTickers}
+                    onRemoveTicker={handleRemoveTicker}
+                    isSidebarExpanded={isSidebarExpanded}
+                  />
+                } 
+              />
+              <Route 
+                path="/learning" 
+                element={
+                  account ? (
+                    <div className="flex-1 max-w-6xl mx-auto">
+                      <LearningResources />
+                    </div>
+                  ) : (
+                    <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
+                      <ConnectWalletButton setAccount={setAccount} />
+                    </div>
+                  )
+                }
+              />
+            </Routes>
           </div>
         </div>
       </Router>
@@ -112,6 +108,7 @@ interface HomeProps {
   selectedTickers: string[];
   onAddTickers: (tickers: string[]) => void;
   onRemoveTicker: (symbol: string) => void;
+  isSidebarExpanded: boolean;
 }
 
 const Home = ({ 
@@ -119,7 +116,8 @@ const Home = ({
   setAccount, 
   selectedTickers, 
   onAddTickers, 
-  onRemoveTicker 
+  onRemoveTicker,
+  isSidebarExpanded
 }: HomeProps) => {
   return (
     <div className="w-full min-h-screen">
@@ -128,7 +126,7 @@ const Home = ({
           <ConnectWalletButton setAccount={setAccount} />
         </div>
       ) : (
-        <div className="flex-1 pl-12">
+        <div className="flex-1 max-w-6xl mx-auto">
           <Dashboard 
             selectedTickers={selectedTickers} 
             onAddTickers={onAddTickers} 

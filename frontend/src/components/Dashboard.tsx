@@ -17,8 +17,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 space-y-8">
+    <div className="min-h-screen py-8 px-6">
+      <div className="space-y-8">
         {/* Ticker input section */}
         <div className="w-full">
           <TickerInputForm onAddTickers={onAddTickers} />
