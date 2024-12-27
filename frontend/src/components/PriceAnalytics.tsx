@@ -4,19 +4,33 @@ import { historicalPriceService, TimeframeType } from '../services/api/historica
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
 
-// Formatting functions for different timeframes
+
 const formatTimestamp = (timestamp: number, timeframe: TimeframeType): string => {
-  const date = new Date(timestamp);
+  const date = new Date(timestamp * (timestamp < 1e12 ? 1000 : 1));
+  
   switch (timeframe) {
     case '1D':
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
     case '7D':
-      return date.toLocaleDateString([], { weekday: 'short', hour: '2-digit' });
+      return date.toLocaleDateString([], { 
+        weekday: 'short',
+        day: 'numeric'
+      });
     case '1M':
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { 
+        month: 'short',
+        day: 'numeric'
+      });
     case '6M':
     case '1Y':
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { 
+        month: 'short',
+        year: '2-digit'
+      });
     default:
       return date.toLocaleString();
   }
@@ -131,18 +145,36 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
       {currentData.length > 0 && (
         <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={currentData}>
+            <LineChart 
+              data={currentData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
               <XAxis 
                 dataKey="timestamp"
                 tickFormatter={(ts) => formatTimestamp(ts, timeframe)}
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 tick={{ fill: '#9CA3AF' }}
+                minTickGap={50}
+                ticks={currentData.map(d => d.timestamp).filter((_, i, arr) => {
+                  const interval = timeframe === '1D' ? 6 
+                    : timeframe === '7D' ? 7
+                    : timeframe === '1M' ? 8
+                    : timeframe === '6M' ? 6
+                    : 12;
+                  return i % Math.ceil(arr.length / interval) === 0;
+                })}
               />
               <YAxis 
                 domain={['auto', 'auto']}
-                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                tickFormatter={(value) => {
+                  if (value >= 1000) {
+                    return `$${(value/1000).toFixed(1)}k`;
+                  }
+                  return `$${value}`;
+                }}
                 tick={{ fill: '#9CA3AF' }}
+                width={80}
               />
               <Tooltip 
                 labelFormatter={(ts) => formatTimestamp(ts, timeframe)}
