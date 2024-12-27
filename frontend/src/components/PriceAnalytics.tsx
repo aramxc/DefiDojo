@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { historicalPriceService, TimeframeType } from '../services/api/historicalPrice.service';
+import { useTimezone, TIMEZONE_OPTIONS } from '../contexts/TimezoneContext';
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
 
 
-const formatTimestamp = (timestamp: number, timeframe: TimeframeType): string => {
+const formatTimestamp = (timestamp: number, timeframe: TimeframeType, timezone: string): string => {
   const date = new Date(timestamp * (timestamp < 1e12 ? 1000 : 1));
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: timezone,
+    hour12: true,
+  };
   
   switch (timeframe) {
     case '1D':
-      return date.toLocaleTimeString([], { 
-        hour: '2-digit', 
+      return date.toLocaleString('en-US', { 
+        ...options,
+        hour: 'numeric',
         minute: '2-digit',
-        hour12: false 
       });
     case '7D':
-      return date.toLocaleDateString([], { 
+      return date.toLocaleString('en-US', { 
+        ...options,
         weekday: 'short',
-        day: 'numeric'
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
       });
     case '1M':
       return date.toLocaleDateString([], { 
@@ -37,6 +45,7 @@ const formatTimestamp = (timestamp: number, timeframe: TimeframeType): string =>
 };
 
 export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) => {
+  const { selectedTimezone, setTimezone } = useTimezone();
   const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
   const [currentData, setCurrentData] = useState<Array<{ timestamp: number; price: number }>>([]);
   const [loading, setLoading] = useState(false);
@@ -103,20 +112,39 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
 
   return (
     <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6">
-      {/* Timeframe Buttons */}
-      <div className="flex gap-2 mb-6">
-        {TIMEFRAMES.map(tf => (
-          <button
-            key={tf}
-            onClick={() => setTimeframe(tf)}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 
-              ${timeframe === tf 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}
-          >
-            {tf}
-          </button>
-        ))}
+      {/* Add Timezone Selector */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-2">
+          {TIMEFRAMES.map(tf => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 
+                ${timeframe === tf 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+        
+        <select
+          value={selectedTimezone.value}
+          onChange={(e) => {
+            const newTimezone = TIMEZONE_OPTIONS.find(tz => tz.value === e.target.value);
+            if (newTimezone) setTimezone(newTimezone);
+          }}
+          className="bg-slate-700 text-white rounded-lg px-3 py-2 text-sm
+                     border border-slate-600 hover:border-slate-500 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {TIMEZONE_OPTIONS.map(tz => (
+            <option key={tz.value} value={tz.value}>
+              {tz.label} ({tz.offset})
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Price Display */}
@@ -151,7 +179,7 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
             >
               <XAxis 
                 dataKey="timestamp"
-                tickFormatter={(ts) => formatTimestamp(ts, timeframe)}
+                tickFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone.value)}
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 tick={{ fill: '#9CA3AF' }}
@@ -177,7 +205,7 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
                 width={80}
               />
               <Tooltip 
-                labelFormatter={(ts) => formatTimestamp(ts, timeframe)}
+                labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone.value)}
                 formatter={(value: any) => [
                   `$${Number(value).toLocaleString(undefined, {
                     maximumFractionDigits: 2

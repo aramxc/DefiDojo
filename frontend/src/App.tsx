@@ -11,6 +11,7 @@ import LearningResources from './components/LearningResources';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
+import { TimezoneProvider } from './contexts/TimezoneContext';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -48,57 +49,59 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <Router>
-        <div className="App min-h-screen bg-slate-900">
-          <NavigationBar 
-            isExpanded={isSidebarExpanded}
-            onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-          />
-          <ToastContainer />
-          
-          <div className="flex">
-            {account && (
-              <PaymentsSidebar 
-                account={account}
-                isExpanded={isSidebarExpanded}
-                onClose={() => setIsSidebarExpanded(false)}
-              />
-            )}
+    <TimezoneProvider>
+      <ThemeProvider theme={darkTheme}>
+        <Router>
+          <div className="App min-h-screen bg-slate-900">
+            <NavigationBar 
+              isExpanded={isSidebarExpanded}
+              onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+            />
+            <ToastContainer />
             
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <Home 
-                    account={account}
-                    setAccount={setAccount}
-                    selectedTickers={selectedTickers}
-                    onAddTickers={handleAddTickers}
-                    onRemoveTicker={handleRemoveTicker}
-                    isSidebarExpanded={isSidebarExpanded}
-                  />
-                } 
-              />
-              <Route 
-                path="/learning" 
-                element={
-                  account ? (
-                    <div className="flex-1 max-w-6xl mx-auto">
-                      <LearningResources />
-                    </div>
-                  ) : (
-                    <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
-                      <ConnectWalletButton setAccount={setAccount} />
-                    </div>
-                  )
-                }
-              />
-            </Routes>
+            <div className="flex">
+              {account && (
+                <PaymentsSidebar 
+                  account={account}
+                  isExpanded={isSidebarExpanded}
+                  onClose={() => setIsSidebarExpanded(false)}
+                />
+              )}
+              
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
+                    <Home 
+                      account={account}
+                      setAccount={setAccount}
+                      selectedTickers={selectedTickers}
+                      onAddTickers={handleAddTickers}
+                      onRemoveTicker={handleRemoveTicker}
+                      isSidebarExpanded={isSidebarExpanded}
+                    />
+                  } 
+                />
+                <Route 
+                  path="/learning" 
+                  element={
+                    account ? (
+                      <div className="flex-1 max-w-6xl mx-auto">
+                        <LearningResources />
+                      </div>
+                    ) : (
+                      <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
+                        <ConnectWalletButton setAccount={setAccount} />
+                      </div>
+                    )
+                  }
+                />
+              </Routes>
+            </div>
           </div>
-        </div>
-      </Router>
-    </ThemeProvider>
+        </Router>
+      </ThemeProvider>
+    </TimezoneProvider>
   );
 }
 
