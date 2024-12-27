@@ -3,15 +3,15 @@ import React, { createContext, useContext, useState } from 'react';
 export type TimezoneOption = {
   label: string;
   value: string;
-  offset: string;
+  abbrev: string;
 };
 
 export const TIMEZONE_OPTIONS: TimezoneOption[] = [
-  { label: 'UTC', value: 'UTC', offset: 'UTC+0' },
-  { label: 'ET', value: 'America/New_York', offset: 'UTC-5' },
-  { label: 'CT', value: 'America/Chicago', offset: 'UTC-6' },
-  { label: 'MT', value: 'America/Denver', offset: 'UTC-7' },
-  { label: 'PT', value: 'America/Los_Angeles', offset: 'UTC-8' },
+  { label: 'Eastern', value: 'America/New_York', abbrev: 'ET' },
+  { label: 'Central', value: 'America/Chicago', abbrev: 'CT' },
+  { label: 'Mountain', value: 'America/Denver', abbrev: 'MT' },
+  { label: 'Pacific', value: 'America/Los_Angeles', abbrev: 'PT' },
+  { label: 'UTC', value: 'UTC', abbrev: 'UTC' },
 ];
 
 type TimezoneContextType = {

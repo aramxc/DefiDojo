@@ -5,45 +5,6 @@ import { useTimezone, TIMEZONE_OPTIONS } from '../contexts/TimezoneContext';
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
 
-
-const formatTimestamp = (timestamp: number, timeframe: TimeframeType, timezone: string): string => {
-  const date = new Date(timestamp * (timestamp < 1e12 ? 1000 : 1));
-  const options: Intl.DateTimeFormatOptions = {
-    timeZone: timezone,
-    hour12: true,
-  };
-  
-  switch (timeframe) {
-    case '1D':
-      return date.toLocaleString('en-US', { 
-        ...options,
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    case '7D':
-      return date.toLocaleString('en-US', { 
-        ...options,
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-      });
-    case '1M':
-      return date.toLocaleDateString([], { 
-        month: 'short',
-        day: 'numeric'
-      });
-    case '6M':
-    case '1Y':
-      return date.toLocaleDateString([], { 
-        month: 'short',
-        year: '2-digit'
-      });
-    default:
-      return date.toLocaleString();
-  }
-};
-
 export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) => {
   const { selectedTimezone, setTimezone } = useTimezone();
   const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
@@ -56,6 +17,53 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
     lowPrice: 0,
     highPrice: 0
   });
+
+  const formatTimestamp = (timestamp: number, timeframe: TimeframeType): string => {
+    const date = new Date(timestamp / 1000);
+    
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: selectedTimezone.value,
+      hour12: true,
+    };
+
+    switch (timeframe) {
+      case '1D':
+        return date.toLocaleString('en-US', {
+          ...options,
+          hour: 'numeric',
+          minute: '2-digit',
+        }).toLowerCase();
+      case '7D':
+        const weekdayTime = date.toLocaleString('en-US', {
+          ...options,
+          weekday: 'short',
+          hour: 'numeric',
+        });
+        return weekdayTime.replace(',', '');
+      case '1M':
+        return date.toLocaleString('en-US', {
+          ...options,
+          month: 'short',
+          day: 'numeric',
+        });
+      case '6M':
+        return date.toLocaleString('en-US', {
+          timeZone: selectedTimezone.value,
+          month: 'short',
+          day: 'numeric',
+          year: '2-digit'
+        });
+      case '1Y':
+        return date.toLocaleString('en-US', {
+          timeZone: selectedTimezone.value,
+          month: 'short',
+          day: 'numeric',
+          year: '2-digit'
+        });
+      default:
+        return date.toLocaleString('en-US', options);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,7 +149,7 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
         >
           {TIMEZONE_OPTIONS.map(tz => (
             <option key={tz.value} value={tz.value}>
-              {tz.label} ({tz.offset})
+              {tz.label} ({tz.abbrev})
             </option>
           ))}
         </select>
@@ -179,7 +187,7 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
             >
               <XAxis 
                 dataKey="timestamp"
-                tickFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone.value)}
+                tickFormatter={(ts) => formatTimestamp(ts, timeframe)}
                 type="number"
                 domain={['dataMin', 'dataMax']}
                 tick={{ fill: '#9CA3AF' }}
@@ -205,7 +213,7 @@ export const PriceAnalytics: React.FC<{ symbol: string | null }> = ({ symbol }) 
                 width={80}
               />
               <Tooltip 
-                labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone.value)}
+                labelFormatter={(ts) => formatTimestamp(ts, timeframe)}
                 formatter={(value: any) => [
                   `$${Number(value).toLocaleString(undefined, {
                     maximumFractionDigits: 2
