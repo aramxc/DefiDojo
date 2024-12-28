@@ -71,14 +71,23 @@ export class HistoricalPriceController {
             const { from, to } = this.getTimeRange(timeframe);
             const data = await this.coinGeckoService.getHistoricalRangeData(geckoId, from, to);
             
+            if (!data.prices || !Array.isArray(data.prices)) {
+                throw new Error('Invalid data format received from CoinGecko');
+            }
+
             const formattedData = {
                 id: geckoId,
                 symbol: symbol,
                 timeframe,
-                prices: data.prices.map(([timestamp, price]: [number, number]) => ({
-                    timestamp: timestamp * 1000,
-                    price
-                }))
+                data: data.prices.map((pricePoint: [number, number], i: number) => ({
+                    timestamp: pricePoint[0],
+                    price: pricePoint[1],
+                    marketCap: data.market_caps[i][1]
+                })),
+                metrics: {
+                    price: this.calculateMetrics(data.prices.map(p => p[1])),
+                    marketCap: this.calculateMetrics(data.market_caps.map(m => m[1]))
+                }
             };
 
             this.cache.set(cacheKey, formattedData, this.getCacheTTL(timeframe));
@@ -88,4 +97,12 @@ export class HistoricalPriceController {
             res.status(500).json({ error: 'Failed to fetch historical data' });
         }
     };
+
+    private calculateMetrics(prices: number[]) {
+        return {
+            high: Math.max(...prices),
+            low: Math.min(...prices),
+            change: ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100
+        };
+    }
 } 

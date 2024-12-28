@@ -1,11 +1,24 @@
 import { API_BASE_URL } from '../../config/constants';
 
+export interface HistoricalMetrics {
+  high: number;
+  low: number;
+  change: number;
+}
+
+export interface HistoricalDataPoint {
+  timestamp: number;
+  price: number;
+  marketCap: number;
+}
+
 export interface HistoricalPriceData {
   [key: string]: {
-    priceChange: number;
-    lowPrice: number;
-    highPrice: number;
-    prices: Array<{ timestamp: number; price: number }>;
+    data: HistoricalDataPoint[];
+    metrics: {
+      price: HistoricalMetrics;
+      marketCap: HistoricalMetrics;
+    };
   };
 }
 
@@ -41,7 +54,6 @@ export class HistoricalPriceService {
     try {
       const cacheKey = `${symbol}-${timeframe}`;
       
-      // Check cache first
       if (this.isCacheValid(cacheKey)) {
         const cached = this.cache.get(cacheKey);
         if (cached) return cached.data;
@@ -56,25 +68,16 @@ export class HistoricalPriceService {
 
       const data = await response.json();
       
-      // Calculate price metrics
-      const prices = data.prices;
-      const firstPrice = prices[0].price;
-      const lastPrice = prices[prices.length - 1].price;
-      const priceChange = ((lastPrice - firstPrice) / firstPrice) * 100;
-      const allPrices = prices.map((p: any) => p.price);
-      const lowPrice = Math.min(...allPrices);
-      const highPrice = Math.max(...allPrices);
-
       const formattedData = {
         [symbol]: {
-          priceChange: Number(priceChange.toFixed(2)),
-          lowPrice: Number(lowPrice.toFixed(2)),
-          highPrice: Number(highPrice.toFixed(2)),
-          prices: data.prices
+          data: data.data,
+          metrics: {
+            price: data.metrics.price,
+            marketCap: data.metrics.marketCap
+          }
         }
       };
 
-      // Cache the result
       this.cache.set(cacheKey, {
         data: formattedData,
         timestamp: Date.now()
@@ -85,10 +88,11 @@ export class HistoricalPriceService {
       console.error('HistoricalPriceService: Error:', error);
       return {
         [symbol]: {
-          priceChange: 0,
-          lowPrice: 0,
-          highPrice: 0,
-          prices: []
+          data: [],
+          metrics: {
+            price: { high: 0, low: 0, change: 0 },
+            marketCap: { high: 0, low: 0, change: 0 }
+          }
         }
       };
     }

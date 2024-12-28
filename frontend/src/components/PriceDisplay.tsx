@@ -34,7 +34,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
     };
 
     fetchPrice();
-    const interval = setInterval(fetchPrice, 120000); // 2 minutes
+    const interval = setInterval(fetchPrice, 120000); // 2 min, 1000 = 1 second for real time
     return () => clearInterval(interval);
   }, [symbol]);
 
