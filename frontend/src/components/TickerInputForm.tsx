@@ -24,6 +24,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
             options={DEFAULT_TICKER_SYMBOLS}
             value={selectedTickers}
             onChange={(_, newValue) => setSelectedTickers(newValue)}
+            disableCloseOnSelect
             renderInput={(params) => (
               <TextField
                 {...params}

@@ -105,4 +105,5 @@ export class HistoricalPriceController {
             change: ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100
         };
     }
+    
 } 
