@@ -7,9 +7,9 @@ Check back soon for updates! Currently in the process of building out frontend c
 
 ~ Aaron
 
-![Screenshot 2024-12-23 at 12 44 30 PM](https://github.com/user-attachments/assets/3676ca2b-0b73-43b5-ab14-7027203f391b)
+![Screenshot 2024-12-30 at 2 33 44 PM](https://github.com/user-attachments/assets/ecc2b48a-b67b-4800-a4e8-a0d9f1855425)
 
-Current state as of 12/23/24 ^
+Current state as of 12/30/24 ^
 
 ## Getting Started
 
