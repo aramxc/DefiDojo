@@ -37,15 +37,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) =
         >
           <Menu />
         </button>
-        
-        {/* Logo/Title - Now positioned next to the menu button */}
-        <Link 
-          to="/" 
-          className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 
-                     text-xl font-bold tracking-tight hover:scale-105 transition-transform duration-200"
-        >
-          Web3 Academy
-        </Link>
       </div>
 
       {/* Center-aligned navigation links with proper spacing */}

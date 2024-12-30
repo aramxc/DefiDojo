@@ -15,50 +15,75 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl 
-                    shadow-xl border border-slate-700/30 backdrop-blur-sm w-full">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-grow">
-          <Autocomplete
-            multiple
-            options={DEFAULT_TICKER_SYMBOLS}
-            value={selectedTickers}
-            onChange={(_, newValue) => setSelectedTickers(newValue)}
-            disableCloseOnSelect
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                placeholder="Select tickers to track"
-                fullWidth
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(148, 163, 184, 0.2)' },
-                    '&:hover fieldset': { borderColor: 'rgba(148, 163, 184, 0.4)' },
-                    '&.Mui-focused fieldset': { borderColor: '#3b82f6' },
-                  },
-                  '& .MuiInputBase-input': { 
-                    color: '#e2e8f0',
-                    fontSize: '0.95rem',
-                  },
-                  '& .MuiInputBase-root': {
-                    padding: '4px 8px',
-                  },
-                }}
-              />
-            )}
-          />
+    <div className="relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-800/95 to-slate-900" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-500/5" />
+      
+      <div className="relative p-6 rounded-xl border border-slate-700/50 shadow-xl">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-grow">
+            <Autocomplete
+              multiple
+              options={DEFAULT_TICKER_SYMBOLS}
+              value={selectedTickers}
+              onChange={(_, newValue) => setSelectedTickers(newValue)}
+              disableCloseOnSelect
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  placeholder="Select tickers to track"
+                  fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(30, 41, 59, 0.5)',
+                      backdropFilter: 'blur(8px)',
+                      borderRadius: '0.75rem',
+                      '& fieldset': { 
+                        borderColor: 'rgba(148, 163, 184, 0.1)',
+                        borderWidth: '1px',
+                      },
+                      '&:hover fieldset': { 
+                        borderColor: 'rgba(59, 130, 246, 0.5)' 
+                      },
+                      '&.Mui-focused fieldset': { 
+                        borderColor: '#3b82f6',
+                        borderWidth: '1px',
+                      },
+                    },
+                    '& .MuiInputBase-input': { 
+                      color: '#e2e8f0',
+                      fontSize: '0.95rem',
+                      padding: '0.5rem',
+                    },
+                    '& .MuiChip-root': {
+                      backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                      borderRadius: '0.5rem',
+                      border: '1px solid rgba(96, 165, 250, 0.2)',
+                      color: '#93c5fd',
+                      '& .MuiChip-deleteIcon': {
+                        color: '#93c5fd',
+                        '&:hover': { color: '#3b82f6' },
+                      },
+                    },
+                  }}
+                />
+              )}
+            />
+          </div>
+          <button
+            onClick={handleSubmit}
+            className="w-full sm:w-auto px-6 py-3 
+                     bg-gradient-to-r from-blue-500 to-blue-400
+                     text-white font-medium rounded-xl shadow-lg 
+                     hover:shadow-blue-500/25 backdrop-blur-sm border border-blue-500/20
+                     hover:from-blue-500 hover:to-blue-400
+                     transform hover:-translate-y-0.5
+                     transition-all duration-200 whitespace-nowrap min-w-[140px]"
+          >
+            Add Tickers
+          </button>
         </div>
-        <button
-          onClick={handleSubmit}
-          className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 
-                     text-white font-medium rounded-lg shadow-lg shadow-blue-500/25
-                     hover:shadow-blue-500/40 hover:from-blue-600 hover:to-blue-700
-                     transition-all duration-200 whitespace-nowrap min-w-[140px]
-                     focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
-        >
-          Add Tickers
-        </button>
       </div>
     </div>
   );

@@ -13,10 +13,14 @@ export interface CoinInfo {
         homepage: string[];
         whitepaper: string;
         subreddit_url: string;
+        github_url: string[];
     };
     description: {
         en: string;
     };
+    sentiment_votes_up_percentage: number;
+    sentiment_votes_down_percentage: number;
+    genesis_date: string;
 }
 
 class CoinInfoService {
