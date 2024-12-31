@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ContentList } from '../components/learning/content/ContentList';
 import { ContentSubmission } from '../components/learning/content/ContentSubmission';
 import { LearningPaths } from '../components/learning/paths/LearningPaths';
-import { Tab } from '@headlessui/react';
+import { TabGroup, TabList, Tab } from '@headlessui/react';
 
 const LearningHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -13,6 +13,19 @@ const LearningHub: React.FC = () => {
     { name: 'Learning Paths', icon: '🎓' },
     { name: 'Submit Content', icon: '✍️' },
   ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 0:
+        return <ContentList />;
+      case 1:
+        return <LearningPaths />;
+      case 2:
+        return <ContentSubmission />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen py-8 px-6">
@@ -29,9 +42,9 @@ const LearningHub: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <Tab.Group onChange={setActiveTab}>
-          <Tab.List className="flex space-x-2 rounded-xl bg-slate-800/50 p-1">
-            {tabs.map((tab, index) => (
+        <TabGroup onChange={setActiveTab}>
+          <TabList className="flex space-x-2 rounded-xl bg-slate-800/50 p-1">
+            {tabs.map((tab) => (
               <Tab
                 key={tab.name}
                 className={({ selected }) =>
@@ -48,9 +61,9 @@ const LearningHub: React.FC = () => {
                 </span>
               </Tab>
             ))}
-          </Tab.List>
+          </TabList>
 
-          <Tab.Panels className="mt-8">
+          <div className="mt-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -59,19 +72,11 @@ const LearningHub: React.FC = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <Tab.Panel>
-                  <ContentList />
-                </Tab.Panel>
-                <Tab.Panel>
-                  <LearningPaths />
-                </Tab.Panel>
-                <Tab.Panel>
-                  <ContentSubmission />
-                </Tab.Panel>
+                {renderContent()}
               </motion.div>
             </AnimatePresence>
-          </Tab.Panels>
-        </Tab.Group>
+          </div>
+        </TabGroup>
       </div>
     </div>
   );

@@ -21,7 +21,8 @@
     "latest": "^0.2.0",
     "node": "^20.18.1",
     "node-cache": "^5.1.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "snowflake-sdk": "^2.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

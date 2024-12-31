@@ -66,6 +66,28 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
                         '&:hover': { color: '#3b82f6' },
                       },
                     },
+                    // Style the dropdown menu
+                    '& .MuiAutocomplete-popper': {
+                      '& .MuiPaper-root': {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        backdropFilter: 'blur(8px)',
+                        borderRadius: '0.75rem',
+                        border: '1px solid rgba(148, 163, 184, 0.1)',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      },
+                      '& .MuiAutocomplete-option': {
+                        color: '#e2e8f0',
+                        '&[aria-selected="true"]': {
+                          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        },
+                      },
+                    },
                   }}
                 />
               )}
