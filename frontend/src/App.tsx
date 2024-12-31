@@ -6,8 +6,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PaymentsSidebar from './components/sidebar/SidebarContainer';
 import ConnectWalletButton from './components/ConnectWalletButton';
 import NavigationBar from './components/NavigationBar';
-import Dashboard from './components/Dashboard';
-import LearningResources from './components/LearningResources';
+import Dashboard from './pages/Dashboard';
+import LearningHub from './pages/LearningHub';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
@@ -87,7 +87,7 @@ function App() {
                   element={
                     account ? (
                       <div className="flex-1 max-w-6xl mx-auto">
-                        <LearningResources />
+                        <LearningHub />
                       </div>
                     ) : (
                       <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">

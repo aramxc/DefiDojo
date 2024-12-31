@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { PriceDisplay } from './PriceDisplay';
-import { PriceAnalytics } from './PriceAnalytics';
-import TickerInputForm from './TickerInputForm';
+import { PriceDisplay } from '../components/PriceDisplay';
+import { PriceAnalytics } from '../components/PriceAnalytics';
+import TickerInputForm from '../components/TickerInputForm';
 
 interface DashboardProps {
   selectedTickers: string[];
