@@ -21,7 +21,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <div className="space-y-8">
         {/* Ticker input section */}
         <div className="w-full">
-          <TickerInputForm onAddTickers={onAddTickers} />
+          <TickerInputForm onAddTickers={onAddTickers}/>
         </div>
 
         {/* Price display grid */}

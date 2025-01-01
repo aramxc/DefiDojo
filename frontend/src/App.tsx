@@ -12,6 +12,7 @@ import LearningHub from './pages/LearningHub';
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
 import { TimezoneProvider } from './contexts/TimezoneContext';
+import CreateUserForm from './components/CreateUserForm';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -24,6 +25,8 @@ function App() {
   const [account, setAccount] = useState<string | null>(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+  const [hasProfile, setHasProfile] = useState(false);
+ 
 
   const handleAddTickers = (tickers: string[]) => {
     setSelectedTickers((prev) => [...new Set([...prev, ...tickers])]);
@@ -47,6 +50,22 @@ function App() {
       return () => window.ethereum?.removeListener('accountsChanged', handleAccountChange);
     }
   }, []);
+
+  // Check for existing profile when wallet connects
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (account) {
+        try {
+          const response = await fetch(`/api/users/wallet/${account}`);
+          setHasProfile(response.ok);
+        } catch (error) {
+          console.error('Error checking profile:', error);
+        }
+      }
+    };
+
+    checkProfile();
+  }, [account]);
 
   return (
     <TimezoneProvider>
@@ -122,12 +141,35 @@ const Home = ({
   onRemoveTicker,
   isSidebarExpanded
 }: HomeProps) => {
+  const [hasProfile, setHasProfile] = useState(false);
+
+  // Check for existing profile when wallet connects
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (account) {
+        try {
+          const response = await fetch(`/api/users/wallet/${account}`);
+          setHasProfile(response.ok);
+        } catch (error) {
+          console.error('Error checking profile:', error);
+        }
+      }
+    };
+
+    checkProfile();
+  }, [account]);
+
   return (
     <div className="w-full min-h-screen">
       {!account ? (
         <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
           <ConnectWalletButton setAccount={setAccount} />
         </div>
+      ) : !hasProfile ? (
+        <CreateUserForm 
+          onSuccess={() => setHasProfile(true)}
+          walletAddress={account}
+        />
       ) : (
         <div className="flex-1 max-w-6xl mx-auto">
           <Dashboard 

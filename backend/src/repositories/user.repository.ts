@@ -1,82 +1,74 @@
 import { getConnection } from '../config/snowflake.config';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcrypt';
-
-export interface UserProfile {
-  userId: string;
-  email?: string;
-  username: string;
-  walletAddress?: string;
-  passwordHash?: string;
-}
+import { UserProfile, AuthMethod } from '@shared/types/user.types'
 
 export class UserRepository {
-  private connection;
-
-  constructor() {
-    this.connection = getConnection();
-  }
-
-  async createUser(profile: Partial<UserProfile>): Promise<UserProfile> {
+  async createUser(data: {
+    username: string;
+    walletAddress?: string;
+    email?: string;
+    authMethod: AuthMethod;
+  }): Promise<UserProfile> {
     const userId = uuidv4();
-    const passwordHash = profile.passwordHash 
-      ? await bcrypt.hash(profile.passwordHash, 10) 
-      : null;
-
     const query = `
-      INSERT INTO profiles (
-        user_id, email, username, wallet_address, password_hash
-      ) VALUES (
-        ?, ?, ?, ?, ?
+      INSERT INTO users (
+        user_id, 
+        username, 
+        wallet_address, 
+        email, 
+        auth_method,
+        created_at
       )
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP())
+      RETURNING *
     `;
 
+    const binds: any[] = [
+      userId,
+      data.username,
+      data.walletAddress || null,
+      data.email || null,
+      data.authMethod
+    ];
+
     return new Promise((resolve, reject) => {
-      this.connection.execute({
+      getConnection().execute({
         sqlText: query,
-        binds: [
-          userId,
-          profile.email || null,
-          profile.username,
-          profile.walletAddress || null,
-          passwordHash
-        ],
+        binds,
         complete: (err, _stmt, rows) => {
           if (err) {
             reject(err);
+          } else if (!rows?.length) {
+            reject(new Error('Failed to create user: No rows returned'));
           } else {
-            resolve({
-              userId,
-              ...profile,
-              passwordHash: undefined
-            });
+            resolve(rows[0] as UserProfile);
           }
         }
       });
     });
   }
 
-  async findByWalletAddress(walletAddress: string): Promise<UserProfile | null> {
+  async findByIdentifier(identifier: string): Promise<UserProfile | null> {
     const query = `
-      SELECT user_id, email, username, wallet_address 
-      FROM profiles 
-      WHERE wallet_address = ?
+      SELECT * FROM users 
+      WHERE wallet_address = ? 
+      OR email = ?
     `;
 
     return new Promise((resolve, reject) => {
-      this.connection.execute({
+      getConnection().execute({
         sqlText: query,
-        binds: [walletAddress],
+        binds: [identifier, identifier],
         complete: (err, _stmt, rows) => {
           if (err) {
             reject(err);
+          } else if (!rows?.length) {
+            resolve(null);
           } else {
-            resolve(rows[0] || null);
+            resolve(rows[0] as UserProfile);
           }
         }
       });
     });
   }
-
-  // Add more repository methods as needed
 }
