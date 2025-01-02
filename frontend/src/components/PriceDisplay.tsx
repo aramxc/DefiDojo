@@ -5,9 +5,10 @@ import { priceService, PriceData } from '../services/api/price.service';
 import { coinInfoService, CoinInfo } from '../services/api/coinInfo.service';
 
 interface PriceDisplayProps {
-  onSelectSymbol: (symbol: string) => void;
   symbol: string;
   onRemove: () => void;
+  onSelectSymbol: (symbol: string) => void;
+  // controlsOffset?: string;
 }
 
 const LoadingSpinner = () => (
@@ -16,7 +17,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol }) => {
+export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol}) => {
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [coinInfo, setCoinInfo] = useState<CoinInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
           setLastUpdateTime(new Date());
         })
         .catch(console.error);
-    }, 120000);
+    }, 120000); // 120000ms = 2 minutes
 
     return () => clearInterval(interval);
   }, [symbol]);

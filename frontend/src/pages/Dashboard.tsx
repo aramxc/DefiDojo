@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { PriceDisplay } from '../components/PriceDisplay';
+import React, { useState, useEffect } from 'react';
+// import { PriceDisplay } from '../components/PriceDisplay';
 import { PriceAnalytics } from '../components/PriceAnalytics';
 import TickerInputForm from '../components/TickerInputForm';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortablePriceDisplay } from '../components/SortablePriceDisplay';
 
 interface DashboardProps {
   selectedTickers: string[];
@@ -15,6 +18,36 @@ const Dashboard: React.FC<DashboardProps> = ({
   onRemoveTicker,
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  
+  // Update items whenever selectedTickers changes
+  const [items, setItems] = useState(selectedTickers);
+
+  // Add this useEffect to sync items with selectedTickers
+  useEffect(() => {
+    setItems(selectedTickers);
+  }, [selectedTickers]);
+
+  // Configure sensors for drag interactions
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end
+  const handleDragEnd = (event: any) => {
+    const {active, over} = event;
+    
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen py-8 px-6">
@@ -25,16 +58,28 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Price display grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">    
-          {selectedTickers.map((ticker) => (
-            <PriceDisplay
-              key={ticker}
-              symbol={ticker}
-              onRemove={() => onRemoveTicker(ticker)}
-              onSelectSymbol={setSelectedSymbol}
-            />
-          ))}
-        </div>
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext 
+            items={items}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">    
+              {items.map((ticker) => (
+                <SortablePriceDisplay
+                  key={ticker}
+                  id={ticker}
+                  symbol={ticker}
+                  onRemove={() => onRemoveTicker(ticker)}
+                  onSelectSymbol={setSelectedSymbol}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         {/* Analytics Section */}
         {selectedSymbol && (
