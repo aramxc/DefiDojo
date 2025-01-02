@@ -6,4 +6,4 @@ export const CONTRACT_ABI = Lock_ABI;
 export const API_BASE_URL = 'http://localhost:8080/api'; // local backend address
 
 // Define the default ticker symbols
-export const DEFAULT_TICKER_SYMBOLS = ['ADA', 'DOGE', 'ETH', 'BTC', 'SOL', 'SUI', 'XRP'].sort();
+export const TICKER_SYMBOLS = ['ADA', 'APT', 'DOGE', 'ETH', 'BTC', 'SOL', 'SUI', 'XRP'].sort();

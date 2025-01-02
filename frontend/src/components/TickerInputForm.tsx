@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
-import { DEFAULT_TICKER_SYMBOLS } from '../config/constants';
+import { TICKER_SYMBOLS } from '../config/constants';
 
 interface TickerInputFormProps {
   onAddTickers: (tickers: string[]) => void;
@@ -24,7 +24,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
           <div className="flex-grow">
             <Autocomplete
               multiple
-              options={DEFAULT_TICKER_SYMBOLS}
+              options={TICKER_SYMBOLS}
               value={selectedTickers}
               onChange={(_, newValue) => setSelectedTickers(newValue)}
               disableCloseOnSelect

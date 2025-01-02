@@ -30,6 +30,7 @@ export const config = {
 */
 export const SYMBOL_TO_PYTH_ID: Record<string, string> = {
   'ADA': '0x2a01deaec9e51a579277b34b122399984d0bbf57e2458a7e42fecd2829867a0d',
+  'APT': '0x03ae4db29ed4ae33d323568895aa00337e658e348b37509f5372ae51f0af00d5',
   'BTC': '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
   'DOGE': '0xdcef50dd0a4cd2dcc17e45df1676dcb336a11a61c69df7a0299b0150c672d25c',
   'ETH': '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
@@ -41,6 +42,7 @@ export const SYMBOL_TO_PYTH_ID: Record<string, string> = {
 
 export const SYMBOL_TO_COINGECKO_ID: Record<string, string> = {
   'ADA': 'cardano',
+  'APT': 'aptos',
   'BTC': 'bitcoin',
   'DOGE': 'dogecoin',
   'ETH': 'ethereum',
