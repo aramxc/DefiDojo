@@ -8,12 +8,11 @@ import ConnectWalletButton from './components/ConnectWalletButton';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
-import SignUpPage from './pages/SignUpPage';
+import CreateUserForm from './components/CreateUserForm';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
 import { TimezoneProvider } from './contexts/TimezoneContext';
-import CreateUserForm from './components/CreateUserForm';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -116,14 +115,6 @@ function App() {
                     )
                   }
                 />
-                <Route 
-                  path="/signup" 
-                  element={
-                    <div className="flex-1 max-w-6xl mx-auto p-6">
-                      <SignUpPage />
-                    </div>
-                  }
-                />
               </Routes>
             </div>
           </div>
@@ -169,13 +160,15 @@ const Home = ({
   }, [account]);
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full">
       {!account ? (
         <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
           <ConnectWalletButton setAccount={setAccount} />
         </div>
       ) : !hasProfile ? (
         <CreateUserForm 
+          isOpen={true}
+          onClose={() => {}} // No-op since we want to force profile creation
           onSuccess={() => setHasProfile(true)}
           walletAddress={account}
         />
