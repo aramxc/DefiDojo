@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { AuthMethod } from '../../../shared/src/types/user.types';
 import { requestAccount } from '../services/web3/contract.service';
-
-interface UserData {
-  username: string;
-  authMethod: AuthMethod;
-  walletAddress?: string;
-  email?: string;
-  password?: string;
-}
+import { UserService } from '../services/api/user.service';
+// import type { CreateUserData } from '../services/api/user.service';
 
 interface CreateUserFormProps {
   onSuccess: () => void;
-  walletAddress: string;
+  walletAddress?: string;
 }
 
+const userService = new UserService();
+
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, walletAddress }) => {
-  const [authMethod, setAuthMethod] = useState<AuthMethod>('wallet');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
+    walletAddress: walletAddress || '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,37 +25,30 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, walletAddres
     setIsLoading(true);
 
     try {
-      let userData: UserData = {
+      await userService.createUser({
         username: formData.username,
-        authMethod,
-      };
-
-      if (authMethod === 'wallet') {
-        userData.walletAddress = walletAddress;
-      } else {
-        if (!formData.email || !formData.password) {
-          throw new Error('Email and password required');
-        }
-        userData.email = formData.email;
-        userData.password = formData.password;
-      }
-
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+        email: formData.email,
+        password: formData.password,
+        walletAddress: formData.walletAddress || null,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create user');
-      }
 
       toast.success('Profile created successfully!');
       onSuccess();
     } catch (error) {
+      console.error('Error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create profile');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleConnectWallet = async () => {
+    try {
+      const account = await requestAccount();
+      setFormData(prev => ({ ...prev, walletAddress: account }));
+      toast.success('Wallet connected successfully!');
+    } catch (error) {
+      toast.error('Failed to connect wallet');
     }
   };
 
@@ -68,36 +56,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, walletAddres
     <div className="max-w-md mx-auto p-6 bg-slate-800 rounded-lg shadow-lg">
       <h2 className="text-xl font-bold mb-4">Create Your Profile</h2>
       
-      <div className="mb-4">
-        <div className="flex gap-4 mb-4">
-          <button
-            type="button"
-            onClick={() => setAuthMethod('wallet')}
-            className={`flex-1 py-2 px-4 rounded ${
-              authMethod === 'wallet' 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-slate-700 text-gray-300'
-            }`}
-          >
-            Use Wallet
-          </button>
-          <button
-            type="button"
-            onClick={() => setAuthMethod('email')}
-            className={`flex-1 py-2 px-4 rounded ${
-              authMethod === 'email' 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-slate-700 text-gray-300'
-            }`}
-          >
-            Use Email
-          </button>
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Username</label>
+          <label className="block text-sm font-medium mb-1">
+            Username <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
             value={formData.username}
@@ -108,28 +71,48 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, walletAddres
           />
         </div>
 
-        {authMethod === 'email' && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-                minLength={8}
-              />
-            </div>
-          </>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Email <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Password <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            className="w-full p-2 rounded bg-slate-700 border border-slate-600"
+            required
+            minLength={8}
+          />
+        </div>
+
+        {!formData.walletAddress && (
+          <button
+            type="button"
+            onClick={handleConnectWallet}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          >
+            Connect Wallet (Optional)
+          </button>
+        )}
+
+        {formData.walletAddress && (
+          <div className="p-2 bg-slate-700 rounded border border-slate-600">
+            <p className="text-sm">Connected Wallet:</p>
+            <p className="text-xs text-gray-400 truncate">{formData.walletAddress}</p>
+          </div>
         )}
 
         <button

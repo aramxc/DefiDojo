@@ -8,6 +8,7 @@ import ConnectWalletButton from './components/ConnectWalletButton';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
+import SignUpPage from './pages/SignUpPage';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
@@ -113,6 +114,14 @@ function App() {
                         <ConnectWalletButton setAccount={setAccount} />
                       </div>
                     )
+                  }
+                />
+                <Route 
+                  path="/signup" 
+                  element={
+                    <div className="flex-1 max-w-6xl mx-auto p-6">
+                      <SignUpPage />
+                    </div>
                   }
                 />
               </Routes>

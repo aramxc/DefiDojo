@@ -44,6 +44,15 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) =
         <NavLink to="/">Dashboard</NavLink>
         <NavLink to="/learning">Learning</NavLink>
       </div>
+
+      <div className="flex items-center gap-4">
+        <Link
+          to="/signup"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-4 rounded hover:opacity-90 transition-opacity"
+        >
+          Sign Up
+        </Link>
+      </div>
     </div>
   </nav>
 );

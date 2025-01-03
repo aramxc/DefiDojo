@@ -37,7 +37,7 @@ export const connectToSnowflake = (schema: 'PUBLIC' | 'USERS' = 'PUBLIC'): Promi
   connection = createSnowflakeConnection(schema);
   
   return new Promise((resolve, reject) => {
-    connection.connect((err, conn) => {
+    connection.connect((err) => {
       if (err) {
         reject(err);
       } else {
