@@ -131,7 +131,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                                bg-clip-text text-transparent">
                     Create Your Profile
                   </h2>
-                  <p className="text-slate-400 mt-2">Join the DeFi community today</p>
+                  <p className="text-slate-400 mt-2">Join the Dojo today 🥷</p>
                 </motion.div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
