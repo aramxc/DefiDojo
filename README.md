@@ -1,4 +1,4 @@
-# Defi Dojo (Under Construction!)
+# Welcome to the Dojo! 🥷
 Project Goal:
 
 To build a decentralized crypto analytics and learning platform that helps users discover and reward the best educational content in the Web3 and Defi space. Users can see price analytics for most of the top trading cryptocurrencies in terms of market cap (adding more in the future), find learning resources on each, vote on the most helpful content, and eventually reward content creators and other community members directly through smart contracts.
