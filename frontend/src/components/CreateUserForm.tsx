@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { requestAccount } from '../services/web3/contract.service';
 import { UserService } from '../services/api/user.service';
-// import type { CreateUserData } from '../services/api/user.service';
 
 interface CreateUserFormProps {
   onSuccess: () => void;

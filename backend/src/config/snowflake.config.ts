@@ -40,10 +40,21 @@ export const connectToSnowflake = (schema: 'PUBLIC' | 'USERS' = 'PUBLIC'): Promi
     connection.connect((err) => {
       if (err) {
         reject(err);
-      } else {
-        console.log(`Successfully connected to Snowflake using schema: ${schema}`);
-        resolve();
+        return;
       }
+
+      // After connecting, set the warehouse
+      connection.execute({
+        sqlText: `USE WAREHOUSE ${process.env.SNOWFLAKE_WAREHOUSE}`,
+        complete: (warehouseErr) => {
+          if (warehouseErr) {
+            reject(warehouseErr);
+          } else {
+            console.log(`Successfully connected to Snowflake using schema: ${schema} and warehouse: ${process.env.SNOWFLAKE_WAREHOUSE}`);
+            resolve();
+          }
+        }
+      });
     });
   });
 };
@@ -55,11 +66,27 @@ export const getConnection = () => {
   return connection;
 };
 
-// Add a utility to switch schemas on an existing connection
+// Utility function to switch schemas on an existing connection
 export const useSchema = (schema: 'PUBLIC' | 'USERS'): Promise<void> => {
   return new Promise((resolve, reject) => {
     getConnection().execute({
       sqlText: `USE SCHEMA ${schema}`,
+      complete: (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    });
+  });
+};
+
+// Utility function to ensure warehouse is set
+export const ensureWarehouse = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    getConnection().execute({
+      sqlText: `USE WAREHOUSE ${process.env.SNOWFLAKE_WAREHOUSE}`,
       complete: (err) => {
         if (err) {
           reject(err);

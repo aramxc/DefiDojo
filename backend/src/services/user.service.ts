@@ -8,10 +8,10 @@ export class UserService {
     this.userRepository = new UserRepository();
   }
 
-  // Initialize Snowflake connection when service starts
+  // Initialize with PUBLIC schema by default
   static async initialize() {
     try {
-      await connectToSnowflake('USERS');
+      await connectToSnowflake('PUBLIC');
       console.log('UserService: Snowflake connection initialized');
     } catch (error) {
       console.error('Failed to initialize Snowflake connection:', error);

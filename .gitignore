@@ -56,3 +56,8 @@ coverage/
 
 # Assets
 /assets
+
+# Snowflake
+snowflake_logs/
+
+TODO.md

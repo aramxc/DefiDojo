@@ -35,3 +35,6 @@ package-lock.json
 # Python specific
 __pycache__/
 *.py[cod]
+
+# Snowflake
+snowflake.log
