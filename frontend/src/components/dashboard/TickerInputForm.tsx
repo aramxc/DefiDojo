@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
-import { TICKER_SYMBOLS } from '../config/constants';
+import { TICKER_SYMBOLS } from '../../config/constants';
 
 interface TickerInputFormProps {
   onAddTickers: (tickers: string[]) => void;

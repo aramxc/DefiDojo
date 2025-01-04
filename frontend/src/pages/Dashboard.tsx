@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 // import { PriceDisplay } from '../components/PriceDisplay';
-import { PriceAnalytics } from '../components/PriceAnalytics';
-import TickerInputForm from '../components/TickerInputForm';
+import { PriceAnalytics } from '../components/dashboard/PriceAnalytics';
+import TickerInputForm from '../components/dashboard/TickerInputForm';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
-import { SortablePriceDisplay } from '../components/SortablePriceDisplay';
+import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
 
 interface DashboardProps {
   selectedTickers: string[];

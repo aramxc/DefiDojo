@@ -14,7 +14,6 @@ export class PriceService {
   async getLatestPrices(symbols: string[]): Promise<PriceData[]> {
     try {
       const url = `${this.baseUrl}/latest?symbols=${symbols.join(',')}`;
-      console.log('Fetching prices from:', url); 
       
       const response = await fetch(url);
       
@@ -23,7 +22,6 @@ export class PriceService {
       }
   
       const data = await response.json();
-      console.log('Received price data:', data); 
 
       // Convert the formatted price string to a number
       return data.map((item: any) => ({
