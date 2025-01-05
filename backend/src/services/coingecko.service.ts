@@ -4,6 +4,7 @@ import { config } from '../config/constants';
 export interface HistoricalRangeData {
     prices: [number, number][];
     market_caps: [number, number][];
+    total_volumes: [number, number][];
 }
 
 export interface CoinInfo {
@@ -43,7 +44,7 @@ export class CoinGeckoService {
             },
         });
         
-        if (!response.data.prices || !response.data.market_caps) {
+        if (!response.data.prices || !response.data.market_caps || !response.data.total_volumes) {
             throw new Error('Invalid data format from CoinGecko API');
         }
 

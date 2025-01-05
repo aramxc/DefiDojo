@@ -10,6 +10,7 @@ export interface HistoricalDataPoint {
   timestamp: number;
   price: number;
   marketCap: number;
+  volume: number;
 }
 
 export interface HistoricalPriceData {
@@ -18,6 +19,7 @@ export interface HistoricalPriceData {
     metrics: {
       price: HistoricalMetrics;
       marketCap: HistoricalMetrics;
+      volume: HistoricalMetrics;
     };
   };
 }
@@ -28,6 +30,7 @@ export class HistoricalPriceService {
   private baseUrl = `${API_BASE_URL}/prices`;
   private cache: Map<string, { data: HistoricalPriceData; timestamp: number }> = new Map();
 
+  // TTL = Time To Live
   private getCacheTTL(timeframe: TimeframeType): number {
     switch (timeframe) {
       case '1D': 
@@ -78,7 +81,8 @@ export class HistoricalPriceService {
           data: data.data,
           metrics: {
             price: data.metrics.price,
-            marketCap: data.metrics.marketCap
+            marketCap: data.metrics.marketCap,
+            volume: data.metrics.volume
           }
         }
       };
@@ -96,7 +100,8 @@ export class HistoricalPriceService {
           data: [],
           metrics: {
             price: { high: 0, low: 0, change: 0 },
-            marketCap: { high: 0, low: 0, change: 0 }
+            marketCap: { high: 0, low: 0, change: 0 },
+            volume: { high: 0, low: 0, change: 0 }
           }
         }
       };

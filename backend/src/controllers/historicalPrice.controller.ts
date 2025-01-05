@@ -71,22 +71,30 @@ export class HistoricalPriceController {
             const { from, to } = this.getTimeRange(timeframe);
             const data = await this.coinGeckoService.getHistoricalRangeData(geckoId, from, to);
             
-            if (!data.prices || !Array.isArray(data.prices)) {
-                throw new Error('Invalid data format received from CoinGecko');
+            if (!data?.prices?.length || !data?.market_caps?.length || !data?.total_volumes?.length) {
+                throw new Error('Incomplete or invalid data received from CoinGecko');
             }
+
+            const dataLength = Math.min(
+                data.prices.length,
+                data.market_caps.length,
+                data.total_volumes.length
+            );
 
             const formattedData = {
                 id: geckoId,
                 symbol: symbol,
                 timeframe,
-                data: data.prices.map((pricePoint: [number, number], i: number) => ({
-                    timestamp: pricePoint[0],
-                    price: pricePoint[1],
-                    marketCap: data.market_caps[i][1]
+                data: Array.from({ length: dataLength }, (_, i) => ({
+                    timestamp: data.prices[i]?.[0] ?? 0,
+                    price: data.prices[i]?.[1] ?? 0,
+                    marketCap: data.market_caps[i]?.[1] ?? 0,
+                    volume: data.total_volumes[i]?.[1] ?? 0
                 })),
                 metrics: {
-                    price: this.calculateMetrics(data.prices.map(p => p[1])),
-                    marketCap: this.calculateMetrics(data.market_caps.map(m => m[1]))
+                    price: this.calculateMetrics(data.prices.map(p => p?.[1] ?? 0)),
+                    marketCap: this.calculateMetrics(data.market_caps.map(m => m?.[1] ?? 0)),
+                    volume: this.calculateMetrics(data.total_volumes.map(v => v?.[1] ?? 0))
                 }
             };
 
@@ -94,7 +102,10 @@ export class HistoricalPriceController {
             res.json(formattedData);
         } catch (error) {
             console.error('Historical price error:', error);
-            res.status(500).json({ error: 'Failed to fetch historical data' });
+            res.status(500).json({ 
+                error: 'Failed to fetch historical data',
+                message: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     };
 

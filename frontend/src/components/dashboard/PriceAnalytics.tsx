@@ -5,7 +5,7 @@ import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
 import { CircularProgress } from '@mui/material';;
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
-type DataType = 'price' | 'marketCap';
+type DataType = 'price' | 'marketCap' | 'volume';
 
 // Helper functions
 const formatTimestamp = (timestamp: number, timeframe: string, timezone: string): string => {
@@ -26,9 +26,11 @@ const formatTimestamp = (timestamp: number, timeframe: string, timezone: string)
     }
 };
 
-const formatValue = (value: number | null | undefined, isMarketCap: boolean): string => {
+const formatValue = (value: number | null | undefined, type: DataType): string => {
     if (value == null) return 'N/A';
-    return isMarketCap ? `$${(value / 1e9).toFixed(2)}B` : `$${value.toLocaleString()}`;
+    if (type === 'marketCap') return `$${(value / 1e9).toFixed(2)}B`;
+    if (type === 'volume') return `$${(value / 1e6).toFixed(2)}M`;
+    return `$${value.toLocaleString()}`;
 };
 
 const formatChange = (change: number | undefined): string => {
@@ -69,17 +71,62 @@ const PriceChart = memo(({
         <YAxis 
           dataKey={dataType}
           domain={['auto', 'auto']}
-          tickFormatter={(value) => formatValue(value, dataType === 'marketCap')}
+          tickFormatter={(value) => {
+            if (value === 0) return '$0';
+            
+            const scales = [
+                { threshold: 1e12, suffix: 'T' },
+                { threshold: 1e9, suffix: 'B' },
+                { threshold: 1e6, suffix: 'M' },
+                { threshold: 1e3, suffix: 'K' },
+            ];
+            
+            const scale = scales.find(s => Math.abs(value) >= s.threshold);
+            
+            if (scale) {
+                const scaledValue = value / scale.threshold;
+                return `$${scaledValue.toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                })}${scale.suffix}`;
+            }
+            
+            return `$${value.toLocaleString('en-US')}`;
+          }}
           tick={{ fill: '#94A3B8' }}
           stroke="#334155"
           width={80}
         />
         <Tooltip 
           labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
-          formatter={(value: any) => [
-            formatValue(value, dataType === 'marketCap'), 
-            dataType === 'price' ? 'Price' : 'Market Cap'
-          ]}
+          formatter={(value: any) => {
+            const scales = [
+                { threshold: 1e12, suffix: 'T' },
+                { threshold: 1e9, suffix: 'B' },
+                { threshold: 1e6, suffix: 'M' },
+                { threshold: 1e3, suffix: 'K' },
+            ];
+            
+            const scale = scales.find(s => Math.abs(value) >= s.threshold);
+            
+            let formattedValue;
+            if (scale) {
+                const scaledValue = value / scale.threshold;
+                formattedValue = `$${scaledValue.toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                })}${scale.suffix}`;
+            } else {
+                formattedValue = `$${value.toLocaleString('en-US')}`;
+            }
+
+            return [
+                formattedValue, 
+                dataType === 'price' ? 'Price' : 
+                dataType === 'marketCap' ? 'Market Cap' : 
+                'Volume'
+            ];
+          }}
           contentStyle={{
             backgroundColor: 'rgba(30, 41, 59, 0.9)',
             backdropFilter: 'blur(8px)',
@@ -112,7 +159,7 @@ const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: Da
         }`}>
           {metric === 'change' 
             ? formatChange(metrics[dataType]?.[metric])
-            : formatValue(metrics[dataType]?.[metric], dataType === 'marketCap')}
+            : formatValue(metrics[dataType]?.[metric], dataType)}
         </span>
       </div>
     ))}
@@ -172,7 +219,7 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         {/* Data Type Toggle */}
                         <div className="flex items-center gap-2">
-                            {['price', 'marketCap'].map((type) => (
+                            {['price', 'marketCap', 'volume'].map((type) => (
                                 <button 
                                     key={type}
                                     onClick={() => setDataType(type as DataType)}
@@ -201,6 +248,8 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
                                 >
                                     {type === 'marketCap' ? (
                                         <span className="whitespace-nowrap">Market Cap</span>
+                                    ) : type === 'volume' ? (
+                                        <span className="whitespace-nowrap">Volume</span>
                                     ) : (
                                         'Price'
                                     )}
