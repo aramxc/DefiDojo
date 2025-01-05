@@ -72,10 +72,13 @@ function App() {
       <ThemeProvider theme={darkTheme}>
         <Router>
           <div className="App min-h-screen bg-slate-900">
-            <NavigationBar 
-              isExpanded={isSidebarExpanded}
-              onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-            />
+            <div className="w-full">
+              <NavigationBar 
+                isExpanded={isSidebarExpanded}
+                onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                account={account || undefined}
+              />
+            </div>
             <ToastContainer />
             
             <div className="flex">

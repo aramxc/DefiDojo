@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu } from '@mui/icons-material';
 import CreateUserForm from './CreateUserForm';
+import { truncateAddress } from '../utils';
 
 interface NavLinkProps {
   to: string;
@@ -10,6 +11,7 @@ interface NavLinkProps {
 interface NavigationBarProps {
   isExpanded: boolean;
   onToggle: () => void;
+  account?: string;
 }
 
 // Reusable NavLink component with hover effects
@@ -24,7 +26,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, children }) => (
   </Link>
 );
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) => {
+const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle, account }) => {
   const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   const handleSignupSuccess = () => {
@@ -37,9 +39,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) =
     <>
       <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 
                     p-6 shadow-lg border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="container mx-auto flex items-center">
-          {/* Menu Button */}
-          <div className="absolute left-4 flex items-center space-x-4">
+        <div className="px-4 mx-auto flex items-center">
+          {/* Left section: Menu button and Logo */}
+          <div className="flex items-center space-x-4">
             <button
               onClick={onToggle}
               className="p-2 text-gray-400 hover:text-gray-200 transition-colors rounded-lg
@@ -50,30 +52,39 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle }) =
             </button>
           </div>
 
-          {/* Center-aligned navigation links */}
-          <div className="flex-1 flex justify-end items-center space-x-8 pl-32">
-            <NavLink to="/">Dashboard</NavLink>
-            <NavLink to="/learning">Learning</NavLink>
-          </div>
+          {/* Push everything else to the right */}
+          <div className="flex-1 flex justify-end items-center">
+            {/* Navigation links */}
+            <div className="flex items-center space-x-8 mr-8">
+              <NavLink to="/">Dashboard</NavLink>
+              <NavLink to="/learning">Learning</NavLink>
+            </div>
 
-          {/* Action buttons with consistent spacing */}
-          <div className="flex items-center ml-16 space-x-4">
-            <button
-              onClick={() => setIsSignupOpen(true)}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white 
-                       py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
-                       hover:shadow-lg hover:shadow-purple-500/20"
-            >
-              Sign Up
-            </button>
-            <Link
-              to="/"
-              className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white 
-                       py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
-                       hover:shadow-lg hover:shadow-blue-500/20"
-            >
-              Upgrade
-            </Link>
+            {/* Action buttons and wallet */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsSignupOpen(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white 
+                         py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
+                         hover:shadow-lg hover:shadow-purple-500/20"
+              >
+                Sign Up
+              </button>
+              <Link
+                to="/"
+                className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white 
+                         py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
+                         hover:shadow-lg hover:shadow-blue-500/20"
+              >
+                Upgrade
+              </Link>
+              
+              {account && (
+                <div className="text-gray-300 py-2 px-4 rounded-lg font-mono text-sm">
+                  {truncateAddress(account)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
