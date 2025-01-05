@@ -3,7 +3,7 @@ import { BarChart, Info } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { priceService, PriceData } from '../../services/api/price.service';
 import { coinInfoService, CoinInfo } from '../../services/api/coinInfo.service';
-import { Switch } from '@mui/material';
+import { Switch, CircularProgress } from '@mui/material';
 
 interface PriceDisplayProps {
   symbol: string;
@@ -18,7 +18,7 @@ const formatPrice = (price: number): string =>
 const PriceValue = memo(({ price }: { price: number | undefined }) => (
   <div className="font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                   bg-clip-text text-transparent tracking-tight text-4xl">
-    ${price ? formatPrice(price) : '--'}
+    ${price ? formatPrice(price) : <CircularProgress size={20} />}
   </div>
 ));
 

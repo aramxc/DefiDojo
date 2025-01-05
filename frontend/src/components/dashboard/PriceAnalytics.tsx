@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { historicalPriceService, TimeframeType } from '../../services/api/historicalPrice.service';
 import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
-import { CircularProgress } from '@mui/material';;
+import { CircularProgress } from '@mui/material';
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
 type DataType = 'price' | 'marketCap' | 'volume';
