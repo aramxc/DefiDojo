@@ -231,10 +231,17 @@ export const PriceAnalytics = memo(({ symbol, onClose }: PriceAnalyticsProps) =>
                     <motion.h2 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-cyan-300 
-                                  bg-clip-text text-transparent"
+                        className="flex items-center gap-3 text-2xl font-semibold"
                     >
-                        {symbol} Analytics
+
+                        {/* Title Text */}
+                        <span className="bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
+                           {symbol} Analytics
+                        </span>
+
+                        {/* Decorative Line */}
+                        <div className="flex-1 h-px bg-gradient-to-r from-blue-400/20 via-cyan-300/20 to-transparent 
+                                        max-w-[180px] self-center ml-2" />
                     </motion.h2>
 
                     {/* Data Type Toggle and Metrics */}
