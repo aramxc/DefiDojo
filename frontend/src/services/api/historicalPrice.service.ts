@@ -30,12 +30,17 @@ export class HistoricalPriceService {
 
   private getCacheTTL(timeframe: TimeframeType): number {
     switch (timeframe) {
-      case '1D': return 30 * 1000; // 30 seconds
-      case '7D':
-      case '1M': return 30 * 60 * 1000; // 30 minutes
+      case '1D': 
+        return 15 * 60 * 1000; // 15 minutes
+      case '7D': 
+        return 12 * 60 * 60 * 1000; // 12 hours
+      case '1M':
+        return 24 * 60 * 60 * 1000; // 24 hours
       case '6M':
-      case '1Y': return 12 * 60 * 60 * 1000; // 12 hours
-      default: return 30 * 60 * 1000;
+      case '1Y':
+        return 7 * 24 * 60 * 60 * 1000; // 7 days
+      default:
+        return 15 * 60 * 1000; // default to 15 minutes
     }
   }
 

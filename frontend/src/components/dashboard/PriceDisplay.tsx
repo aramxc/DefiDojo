@@ -15,12 +15,6 @@ interface PriceDisplayProps {
 const formatPrice = (price: number): string => 
   price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const LoadingSpinner = () => (
-  <div className="flex justify-center p-8">
-    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-  </div>
-);
-
 const PriceValue = memo(({ price }: { price: number | undefined }) => (
   <div className="font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                   bg-clip-text text-transparent tracking-tight text-4xl">
@@ -280,9 +274,6 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                       },
                     }}
                   />
-                  <span className={`text-xs ${isRealTime ? 'text-emerald-400' : 'text-gray-400'}`}>
-                    {isRealTime ? '1s' : '2m'}
-                  </span>
                 </div>
                 <span className="text-xs text-gray-400">Updated {timeAgo}</span>
               </div>
