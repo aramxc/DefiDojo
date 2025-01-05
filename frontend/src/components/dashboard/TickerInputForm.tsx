@@ -96,14 +96,20 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({ onAddTickers }) => {
           <button
             onClick={handleSubmit}
             className="w-full sm:w-auto px-6 py-3 
-                     bg-gradient-to-r from-blue-500 to-blue-400
-                     text-white font-medium rounded-xl shadow-lg 
-                     hover:shadow-blue-500/25 backdrop-blur-sm border border-blue-500/20
-                     hover:from-blue-500 hover:to-blue-400
-                     transform hover:-translate-y-0.5
-                     transition-all duration-200 whitespace-nowrap min-w-[140px]"
+                     relative overflow-hidden rounded-lg font-medium text-sm
+                     text-white transition-all duration-200
+                     before:absolute before:inset-0 
+                     before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                     before:backdrop-blur-xl
+                     after:absolute after:inset-0 
+                     after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                     shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                     hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
+                     hover:before:from-blue-500/30 hover:before:to-cyan-500/30
+                     active:transform active:scale-95
+                     whitespace-nowrap min-w-[140px]"
           >
-            Add Tickers
+            <span className="relative z-10">Add Tickers</span>
           </button>
         </div>
       </div>

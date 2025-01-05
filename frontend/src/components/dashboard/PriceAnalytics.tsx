@@ -1,8 +1,9 @@
 import React, { useState, useEffect, memo, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import { historicalPriceService, TimeframeType } from '../../services/api/historicalPrice.service';
 import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
 import { CircularProgress } from '@mui/material';
+import { motion } from 'framer-motion';
 
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
 type DataType = 'price' | 'marketCap' | 'volume';
@@ -37,6 +38,27 @@ const formatChange = (change: number | undefined): string => {
     return `${(change ?? 0).toFixed(2)}%`;
 };
 
+// Helper function for Y-axis formatting
+const formatYAxisValue = (value: number, type: DataType): string => {
+    if (value === 0) return '0';
+    
+    if (type === 'marketCap') {
+        if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+    } else if (type === 'volume') {
+        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+        if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
+    } else {
+        // Price formatting
+        if (value >= 1e3) return `$${value.toLocaleString()}`;
+        return `$${value.toFixed(2)}`;
+    }
+    
+    return `$${value.toLocaleString()}`;
+};
+
 const PriceChart = memo(({ 
   data, 
   dataType, 
@@ -48,103 +70,77 @@ const PriceChart = memo(({
   timeframe: TimeframeType,
   selectedTimezone: string
 }) => (
-  <div className="h-[400px] mt-6">
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart 
-        data={data}
-        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-      >
-        <defs>
-          <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#60a5fa" />
-          </linearGradient>
-        </defs>
-        <XAxis 
-          dataKey="timestamp"
-          tickFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
-          type="number"
-          domain={['dataMin', 'dataMax']}
-          tick={{ fill: '#94A3B8' }}
-          stroke="#334155"
-        />
-        <YAxis 
-          dataKey={dataType}
-          domain={['auto', 'auto']}
-          tickFormatter={(value) => {
-            if (value === 0) return '$0';
-            
-            const scales = [
-                { threshold: 1e12, suffix: 'T' },
-                { threshold: 1e9, suffix: 'B' },
-                { threshold: 1e6, suffix: 'M' },
-                { threshold: 1e3, suffix: 'K' },
-            ];
-            
-            const scale = scales.find(s => Math.abs(value) >= s.threshold);
-            
-            if (scale) {
-                const scaledValue = value / scale.threshold;
-                return `$${scaledValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 2
-                })}${scale.suffix}`;
-            }
-            
-            return `$${value.toLocaleString('en-US')}`;
-          }}
-          tick={{ fill: '#94A3B8' }}
-          stroke="#334155"
-          width={80}
-        />
-        <Tooltip 
-          labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
-          formatter={(value: any) => {
-            const scales = [
-                { threshold: 1e12, suffix: 'T' },
-                { threshold: 1e9, suffix: 'B' },
-                { threshold: 1e6, suffix: 'M' },
-                { threshold: 1e3, suffix: 'K' },
-            ];
-            
-            const scale = scales.find(s => Math.abs(value) >= s.threshold);
-            
-            let formattedValue;
-            if (scale) {
-                const scaledValue = value / scale.threshold;
-                formattedValue = `$${scaledValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 2
-                })}${scale.suffix}`;
-            } else {
-                formattedValue = `$${value.toLocaleString('en-US')}`;
-            }
-
-            return [
-                formattedValue, 
-                dataType === 'price' ? 'Price' : 
-                dataType === 'marketCap' ? 'Market Cap' : 
-                'Volume'
-            ];
-          }}
-          contentStyle={{
-            backgroundColor: 'rgba(30, 41, 59, 0.9)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(148, 163, 184, 0.1)',
-            borderRadius: '0.75rem',
-            color: '#F3F4F6',
-          }}
-        />
-        <Line 
-          type="monotone"
-          dataKey={dataType}
-          stroke="url(#lineGradient)"
-          strokeWidth={2.5}
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart 
+      data={data}
+      margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
+    >
+      <defs>
+        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#38bdf8" />
+          <stop offset="50%" stopColor="#22d3ee" />
+          <stop offset="100%" stopColor="#38bdf8" />
+        </linearGradient>
+        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.01" />
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <XAxis 
+        dataKey="timestamp"
+        tickFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
+        type="number"
+        domain={['dataMin', 'dataMax']}
+        tick={{ fill: '#94A3B8' }}
+        stroke="#334155"
+        dy={10}
+      />
+      <YAxis 
+        dataKey={dataType}
+        domain={['auto', 'auto']}
+        tickFormatter={(value) => formatYAxisValue(value, dataType)}
+        tick={{ fill: '#94A3B8' }}
+        stroke="#334155"
+        width={80}
+      />
+      <Tooltip 
+        contentStyle={{
+          backgroundColor: 'rgba(30, 41, 59, 0.9)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(148, 163, 184, 0.1)',
+          borderRadius: '0.75rem',
+          color: '#F3F4F6',
+        }}
+        labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
+        formatter={(value: any) => [formatValue(value, dataType), dataType]}
+      />
+      <Area
+        type="monotone"
+        dataKey={dataType}
+        stroke="none"
+        fill="url(#areaGradient)"
+        fillOpacity={1}
+      />
+      <Line 
+        type="monotone"
+        dataKey={dataType}
+        stroke="url(#lineGradient)"
+        strokeWidth={2}
+        dot={false}
+        filter="url(#glow)"
+        style={{
+          filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.3))'
+        }}
+      />
+    </LineChart>
+  </ResponsiveContainer>
 ));
 
 const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: DataType }) => (
@@ -166,8 +162,12 @@ const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: Da
   </div>
 ));
 
-// Main component
-export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
+interface PriceAnalyticsProps {
+  symbol: string;
+  onClose: () => void;
+}
+
+export const PriceAnalytics = memo(({ symbol, onClose }: PriceAnalyticsProps) => {
     const { selectedTimezone, setTimezone } = useTimezone();
     const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
     const [dataType, setDataType] = useState<DataType>('price');
@@ -210,11 +210,33 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
         if (!metrics) return <div>No metrics available</div>;
 
         return (
-            <div className="relative overflow-hidden rounded-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-800/95 to-slate-900" />
+            <div className="relative overflow-hidden rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.03)] group">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-500/5" />
                 
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-20
+                             w-8 h-8 flex items-center justify-center
+                             rounded-full bg-red-500/5 text-red-300
+                             hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
+                >
+                    ×
+                </motion.button>
+                
                 <div className="relative p-6 space-y-6">
+                    {/* Title Section */}
+                    <motion.h2 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-2xl font-semibold bg-gradient-to-r from-blue-400 to-cyan-300 
+                                  bg-clip-text text-transparent"
+                    >
+                        {symbol} Analytics
+                    </motion.h2>
+
                     {/* Data Type Toggle and Metrics */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         {/* Data Type Toggle */}
@@ -230,29 +252,24 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
                                         text-sm
                                         transition-all duration-200
                                         ${dataType === type 
-                                            ? `bg-gradient-to-r from-blue-400 to-cyan-300 
-                                               text-slate-900
-                                               shadow-lg 
-                                               border border-blue-400/20 
-                                               hover:shadow-blue-400/25
-                                               hover:from-blue-400 hover:to-cyan-400
-                                               transform hover:-translate-y-0.5` 
-                                            : `bg-slate-800/50 
-                                               text-gray-400 
-                                               border border-slate-700/50
+                                            ? `relative overflow-hidden
+                                               text-white
+                                               before:absolute before:inset-0 
+                                               before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                                               before:backdrop-blur-xl
+                                               after:absolute after:inset-0 
+                                               after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                                               shadow-[0_0_10px_rgba(59,130,246,0.1)]` 
+                                            : `text-gray-400 
                                                hover:text-white 
-                                               hover:bg-slate-700/50
-                                               hover:border-slate-600/50`
+                                               hover:bg-slate-700/50`
                                         }
                                     `}
                                 >
-                                    {type === 'marketCap' ? (
-                                        <span className="whitespace-nowrap">Market Cap</span>
-                                    ) : type === 'volume' ? (
-                                        <span className="whitespace-nowrap">Volume</span>
-                                    ) : (
-                                        'Price'
-                                    )}
+                                    <span className="relative z-10">
+                                        {type === 'marketCap' ? 'Market Cap' : 
+                                         type === 'volume' ? 'Volume' : 'Price'}
+                                    </span>
                                 </button>
                             ))}
                         </div>
@@ -276,23 +293,21 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
                                         text-sm
                                         transition-all duration-200
                                         ${timeframe === tf 
-                                            ? `bg-gradient-to-r from-blue-500 to-blue-400 
+                                            ? `relative overflow-hidden
                                                text-white
-                                               shadow-lg 
-                                               border border-blue-500/20 
-                                               hover:shadow-blue-500/25
-                                               hover:from-blue-500 hover:to-blue-400
-                                               transform hover:-translate-y-0.5` 
-                                            : `bg-slate-800/50 
-                                               text-gray-400 
-                                               border border-slate-700/50
+                                               before:absolute before:inset-0 
+                                               before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                                               before:backdrop-blur-xl
+                                               after:absolute after:inset-0 
+                                               after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                                               shadow-[0_0_10px_rgba(59,130,246,0.1)]` 
+                                            : `text-gray-400 
                                                hover:text-white 
-                                               hover:bg-slate-700/50
-                                               hover:border-slate-600/50`
+                                               hover:bg-slate-700/50`
                                         }
                                     `}
                                 >
-                                    {tf}
+                                    <span className="relative z-10">{tf}</span>
                                 </button>
                             ))}
                         </div>
@@ -307,57 +322,50 @@ export const PriceAnalytics = memo(({ symbol }: { symbol: string | null }) => {
                                         const newTimezone = TIMEZONE_OPTIONS.find(tz => tz.value === e.target.value);
                                         if (newTimezone) setTimezone(newTimezone);
                                     }}
-                                    className="bg-slate-700/50 text-white text-xs px-3 py-2 pr-8 rounded-lg 
-                                       border border-white/10 backdrop-blur-sm 
-                                       hover:bg-slate-700/70 transition-colors duration-200
-                                       appearance-none cursor-pointer"
-                                    style={{
-                                        WebkitAppearance: 'none',
-                                        MozAppearance: 'none'
-                                    }}
+                                    className="bg-slate-800/50 text-white text-xs px-3 py-2 pr-8 rounded-lg 
+                                             border border-white/5 backdrop-blur-sm 
+                                             hover:bg-slate-700/50 transition-colors duration-200
+                                             focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                 >
                                     {TIMEZONE_OPTIONS.map((tz) => (
-                                        <option 
-                                            key={tz.value} 
-                                            value={tz.value}
-                                            className="text-xs bg-slate-800 py-1"
-                                        >
+                                        <option key={tz.value} value={tz.value}>
                                             {tz.label} ({tz.abbrev})
                                         </option>
                                     ))}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                                    <svg 
-                                        className="w-4 h-4 text-gray-400" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path 
-                                            strokeLinecap="round" 
-                                            strokeLinejoin="round" 
-                                            strokeWidth={2} 
-                                            d="M19 9l-7 7-7-7" 
-                                        />
-                                    </svg>
-                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Chart */}
+                    {/* Chart with enhanced glow and consistent padding */}
                     {currentData.length > 0 && (
-                        <PriceChart 
-                            data={currentData}
-                            dataType={dataType}
-                            timeframe={timeframe}
-                            selectedTimezone={selectedTimezone.value}
-                        />
+                        <div className="relative h-[400px] mt-6">
+                            {/* Enhanced glow effects */}
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-teal-500/5" />
+                            <div className="absolute inset-[1px] rounded-xl bg-slate-800/95 backdrop-blur-xl" />
+                            
+                            {/* Chart container with consistent padding */}
+                            <div className="relative h-full rounded-xl border border-white/5 
+                                          before:absolute before:inset-0 
+                                          before:bg-gradient-to-br before:from-blue-500/3 before:via-transparent before:to-cyan-500/3
+                                          before:rounded-xl">
+                                <div className="absolute inset-0 flex flex-col">
+                                    <div className="flex-1 px-6 pt-6 pb-8"> {/* Adjusted padding */}
+                                        <PriceChart 
+                                            data={currentData}
+                                            dataType={dataType}
+                                            timeframe={timeframe}
+                                            selectedTimezone={selectedTimezone.value}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
         );
-    }, [currentData, metrics, loading, error, dataType, timeframe, setTimezone, selectedTimezone, symbol]);
+    }, [currentData, metrics, loading, error, dataType, timeframe, setTimezone, selectedTimezone, symbol, onClose]);
 
     return content;
 });

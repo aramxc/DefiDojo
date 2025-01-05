@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo, useMemo } from 'react';
 import { BarChart, Info } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { priceService, PriceData } from '../../services/api/price.service';
 import { coinInfoService, CoinInfo } from '../../services/api/coinInfo.service';
 import { Switch, CircularProgress } from '@mui/material';
@@ -15,10 +15,35 @@ interface PriceDisplayProps {
 const formatPrice = (price: number): string => 
   price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const LoadingAnimation = () => (
+  <motion.div 
+    animate={{ 
+      background: [
+        "linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%)",
+      ],
+      backgroundPosition: ["200% 0", "-200% 0"],
+    }}
+    transition={{ duration: 1.5, repeat: Infinity }}
+    className="h-8 w-32 rounded-md"
+  />
+);
+
 const PriceValue = memo(({ price }: { price: number | undefined }) => (
-  <div className="font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                  bg-clip-text text-transparent tracking-tight text-4xl">
-    ${price ? formatPrice(price) : <CircularProgress size={20} />}
+  <div className="font-bold relative w-fit">
+    {price ? (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative w-fit">
+        <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
+        <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                      bg-clip-text text-transparent tracking-tight text-4xl">
+          ${formatPrice(price)}
+        </span>
+      </motion.div>
+    ) : (
+      <LoadingAnimation />
+    )}
   </div>
 ));
 
@@ -219,7 +244,10 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
   );
 
   return (
-    <div className="relative perspective-1000">
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="relative perspective-1000 group"
+    >
       <motion.div
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6 }}
@@ -227,69 +255,103 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
-        <div className="backface-hidden relative group h-full rounded-xl shadow-lg 
-                     hover:shadow-2xl transform hover:-translate-y-1 
-                     transition-all duration-300 border border-slate-700/50">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-800/95 to-slate-900" />
-          <div className="relative p-6">
-            <CardControls />
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                {coinInfo?.image?.thumb && (
-                  <img src={coinInfo.image.thumb} alt={symbol} 
-                       className="w-8 h-8 rounded-full ring-1 ring-white/10" />
-                )}
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-gray-100">{symbol.toUpperCase()}</h3>
-                  <span className="text-sm text-gray-400">{coinInfo?.name || ''}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <PriceValue price={priceData?.price} />
-                <div className="h-px bg-gradient-to-r from-slate-700/50 via-slate-700/25 to-transparent" />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${
-                      isRealTime ? 'bg-green-400 animate-pulse' : 'bg-blue-500'
-                    }`} />
-                    <span className="text-xs text-gray-400">
-                      {isRealTime ? 'Real-time' : 'Live Price'}
-                    </span>
+        <div className="backface-hidden relative h-full rounded-xl overflow-hidden
+                      shadow-[0_0_10px_rgba(59,130,246,0.03)] 
+                      before:absolute before:inset-0 
+                      before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                      before:backdrop-blur-xl hover:before:opacity-90 
+                      after:absolute after:inset-0 
+                      after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
+                      after:opacity-0 hover:after:opacity-100 
+                      after:transition-opacity">
+          <AnimatePresence>
+            {!isFlipped && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="relative p-6 z-10"
+              >
+                <CardControls />
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    {coinInfo?.image?.thumb && (
+                      <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
+                        <img 
+                          src={coinInfo.image.thumb} 
+                          alt={symbol} 
+                          className="relative w-8 h-8 rounded-full"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-gray-100">{symbol.toUpperCase()}</h3>
+                      <span className="text-sm text-gray-400">{coinInfo?.name || ''}</span>
+                    </div>
                   </div>
-                  <Switch
-                    checked={isRealTime}
-                    onChange={() => setIsRealTime(!isRealTime)}
-                    size="small"
-                    className="!ml-2"
-                    sx={{
-                      '& .MuiSwitch-switchBase.Mui-checked': {
-                        color: '#10B981',
-                      },
-                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                        backgroundColor: '#10B981',
-                      },
-                    }}
-                  />
+
+                  <div className="space-y-2">
+                    <PriceValue price={priceData?.price} />
+                    <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent"></div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          isRealTime 
+                            ? 'bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.3)] animate-pulse' 
+                            : 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.3)]'
+                        }`} />
+                        <span className="text-xs text-gray-400">
+                          {isRealTime ? 'Real-time' : 'Live Price'}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={isRealTime}
+                        onChange={() => setIsRealTime(!isRealTime)}
+                        size="small"
+                        className="!ml-2"
+                        sx={{
+                          '& .MuiSwitch-switchBase.Mui-checked': {
+                            color: '#10B981',
+                          },
+                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                            backgroundColor: '#10B981',
+                          },
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-400">Updated {timeAgo}</span>
+                  </div>
                 </div>
-                <span className="text-xs text-gray-400">Updated {timeAgo}</span>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Back of card */}
-        <div className="backface-hidden absolute top-0 left-0 w-full h-full group 
-                     bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-lg 
-                     border border-slate-700/50"
-             style={{ transform: 'rotateY(180deg)' }}>
-          <CardControls isBackside />
-          <BackContent />
-        </div>
+        <AnimatePresence>
+          {isFlipped && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="backface-hidden absolute top-0 left-0 w-full h-full
+                       rounded-xl overflow-hidden
+                       shadow-[0_0_10px_rgba(59,130,246,0.03)]
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                       before:backdrop-blur-xl"
+              style={{ transform: 'rotateY(180deg)' }}
+            >
+              <CardControls isBackside />
+              <BackContent />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };

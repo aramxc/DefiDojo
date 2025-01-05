@@ -4,79 +4,87 @@ import { Menu } from '@mui/icons-material';
 import CreateUserForm from './CreateUserForm';
 import { truncateAddress } from '../utils';
 
+// Types
 interface NavLinkProps {
   to: string;
   children: React.ReactNode;
 }
+
 interface NavigationBarProps {
   isExpanded: boolean;
   onToggle: () => void;
   account?: string;
 }
 
-// Reusable NavLink component with hover effects
-const NavLink: React.FC<NavLinkProps> = ({ to, children }) => (
-  <Link 
-    to={to} 
-    className="text-gray-300 hover:text-white relative group py-2"
-  >
-    <span>{children}</span>
-    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 
-                   group-hover:w-full transition-all duration-300"></span>
+// Shared style constants
+const GRADIENT = "from-blue-400 via-cyan-400 to-teal-400";
+const TRANSITION = "transition-all duration-200";
+
+// Reusable NavLink with hover effect
+const NavLink = ({ to, children }: NavLinkProps) => (
+  <Link to={to} className="text-gray-300 hover:text-white relative group py-2">
+    {children}
+    <span className={`absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r ${GRADIENT} 
+                     group-hover:w-full ${TRANSITION}`} />
   </Link>
 );
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle, account }) => {
+const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) => {
   const [isSignupOpen, setIsSignupOpen] = useState(false);
-
-  const handleSignupSuccess = () => {
-    setIsSignupOpen(false);
-    // Add any additional success handling (like showing a welcome message)
-    // Could also redirect to dashboard or show onboarding
-  };
 
   return (
     <>
       <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 
-                    p-6 shadow-lg border-b border-slate-700/50 backdrop-blur-sm">
+                     p-6 shadow-lg border-b border-slate-700/50 backdrop-blur-sm">
         <div className="px-4 mx-auto flex items-center">
-          {/* Left section: Menu button and Logo */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={onToggle}
-              className="p-2 text-gray-400 hover:text-gray-200 transition-colors rounded-lg
-                         hover:bg-slate-700/50"
-              aria-label="Toggle sidebar"
-            >
-              <Menu />
-            </button>
-          </div>
+          <button
+            onClick={onToggle}
+            className="p-2 text-gray-400 hover:text-gray-200 transition-colors rounded-lg
+                     hover:bg-slate-700/50"
+          >
+            <Menu />
+          </button>
 
-          {/* Push everything else to the right */}
           <div className="flex-1 flex justify-end items-center">
-            {/* Navigation links */}
             <div className="flex items-center space-x-8 mr-8">
               <NavLink to="/">Dashboard</NavLink>
               <NavLink to="/learning">Learning</NavLink>
             </div>
 
-            {/* Action buttons and wallet */}
             <div className="flex items-center space-x-4">
+              {/* Sign Up Button */}
               <button
                 onClick={() => setIsSignupOpen(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white 
-                         py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
-                         hover:shadow-lg hover:shadow-purple-500/20"
+                className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
+                         text-white transition-all duration-200
+                         before:absolute before:inset-0 
+                         before:bg-gradient-to-r before:from-fuchsia-500/80 before:via-violet-500/80 before:to-indigo-500/80
+                         after:absolute after:inset-0 
+                         after:bg-gradient-to-r after:from-fuchsia-500/40 after:via-violet-500/40 after:to-indigo-500/40
+                         hover:shadow-[0_0_20px_rgba(217,70,239,0.4)]
+                         active:transform active:scale-95"
               >
-                Sign Up
+                <span className="relative z-10">Sign Up</span>
               </button>
+
+              {/* Upgrade Button */}
               <Link
                 to="/"
-                className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white 
-                         py-2 px-4 rounded hover:opacity-90 transition-all duration-300 
-                         hover:shadow-lg hover:shadow-blue-500/20"
+                className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
+                         text-white transition-all duration-200
+                         before:absolute before:inset-0 
+                         before:bg-gradient-to-r before:from-blue-400 before:via-cyan-300 before:to-teal-400
+                         before:opacity-50 before:transition-all before:duration-200
+                         after:absolute after:inset-0 
+                         after:bg-gradient-to-r after:from-blue-400 after:via-cyan-300 after:to-teal-400
+                         after:opacity-50
+                         shadow-[0_0_12px_rgba(34,211,238,0.25)]
+                         hover:shadow-[0_0_20px_rgba(34,211,238,0.35)]
+                         active:transform active:scale-95"
               >
-                Upgrade
+                <span className={`relative z-10 bg-gradient-to-r ${GRADIENT} bg-clip-text`}>
+                  Upgrade
+                </span>
               </Link>
               
               {account && (
@@ -89,12 +97,11 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isExpanded, onToggle, acc
         </div>
       </nav>
 
-      {/* Signup Modal */}
       <CreateUserForm
         isOpen={isSignupOpen}
         onClose={() => setIsSignupOpen(false)}
-        onSuccess={handleSignupSuccess}
-        walletAddress={undefined} // Add wallet address if available
+        onSuccess={() => setIsSignupOpen(false)}
+        walletAddress={undefined}
       />
     </>
   );

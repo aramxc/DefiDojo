@@ -71,14 +71,12 @@ function App() {
     <TimezoneProvider>
       <ThemeProvider theme={darkTheme}>
         <Router>
-          <div className="App min-h-screen bg-slate-900">
-            <div className="w-full">
-              <NavigationBar 
-                isExpanded={isSidebarExpanded}
-                onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                account={account || undefined}
-              />
-            </div>
+          <div className="min-h-screen bg-slate-900">
+            <NavigationBar 
+              isExpanded={isSidebarExpanded}
+              onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+              account={account || undefined}
+            />
             <ToastContainer />
             
             <div className="flex">
@@ -90,35 +88,35 @@ function App() {
                 />
               )}
               
-              <Routes>
-                <Route 
-                  path="/" 
-                  element={
-                    <Home 
-                      account={account}
-                      setAccount={setAccount}
-                      selectedTickers={selectedTickers}
-                      onAddTickers={handleAddTickers}
-                      onRemoveTicker={handleRemoveTicker}
-                      isSidebarExpanded={isSidebarExpanded}
-                    />
-                  } 
-                />
-                <Route 
-                  path="/learning" 
-                  element={
-                    account ? (
-                      <div className="flex-1 max-w-6xl mx-auto">
+              <div className="flex-1">
+                <Routes>
+                  <Route 
+                    path="/" 
+                    element={
+                      <Home 
+                        account={account}
+                        setAccount={setAccount}
+                        selectedTickers={selectedTickers}
+                        onAddTickers={handleAddTickers}
+                        onRemoveTicker={handleRemoveTicker}
+                        isSidebarExpanded={isSidebarExpanded}
+                      />
+                    } 
+                  />
+                  <Route 
+                    path="/learning" 
+                    element={
+                      account ? (
                         <LearningHub />
-                      </div>
-                    ) : (
-                      <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
-                        <ConnectWalletButton setAccount={setAccount} />
-                      </div>
-                    )
-                  }
-                />
-              </Routes>
+                      ) : (
+                        <div className="flex justify-center items-center min-h-screen">
+                          <ConnectWalletButton setAccount={setAccount} />
+                        </div>
+                      )
+                    }
+                  />
+                </Routes>
+              </div>
             </div>
           </div>
         </Router>
@@ -146,7 +144,6 @@ const Home = ({
 }: HomeProps) => {
   const [hasProfile, setHasProfile] = useState(false);
 
-  // Check for existing profile when wallet connects
   useEffect(() => {
     const checkProfile = async () => {
       if (account) {
@@ -162,29 +159,31 @@ const Home = ({
     checkProfile();
   }, [account]);
 
+  if (!account) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <ConnectWalletButton setAccount={setAccount} />
+      </div>
+    );
+  }
+
+  if (!hasProfile) {
+    return (
+      <CreateUserForm 
+        isOpen={true}
+        onClose={() => {}} 
+        onSuccess={() => setHasProfile(true)}
+        walletAddress={account}
+      />
+    );
+  }
+
   return (
-    <div className="w-full">
-      {!account ? (
-        <div className="max-w-4xl mx-auto px-6 flex justify-center items-center min-h-screen">
-          <ConnectWalletButton setAccount={setAccount} />
-        </div>
-      ) : !hasProfile ? (
-        <CreateUserForm 
-          isOpen={true}
-          onClose={() => {}} // No-op since we want to force profile creation
-          onSuccess={() => setHasProfile(true)}
-          walletAddress={account}
-        />
-      ) : (
-        <div className="flex-1 max-w-6xl mx-auto">
-          <Dashboard 
-            selectedTickers={selectedTickers} 
-            onAddTickers={onAddTickers} 
-            onRemoveTicker={onRemoveTicker}
-          />
-        </div>
-      )}
-    </div>
+    <Dashboard 
+      selectedTickers={selectedTickers} 
+      onAddTickers={onAddTickers} 
+      onRemoveTicker={onRemoveTicker}
+    />
   );
 };
 
