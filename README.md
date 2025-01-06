@@ -9,7 +9,7 @@ Check back soon for updates! Currently in the process of building out frontend c
 
 ![Screenshot 2025-01-05 at 9 05 08 PM](https://github.com/user-attachments/assets/66091bf7-7f92-4e03-b19c-1119845e6425)
 
-Current state as of 12/30/24 ^
+Current state as of 1/6/25 ^
 
 ## Getting Started
 
