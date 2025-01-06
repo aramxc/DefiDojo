@@ -201,8 +201,3 @@ ORDER BY 2 DESC, 3 DESC;
 - Adjust date ranges based on your needs
 - Some queries require admin access to INTERNAL schema
 - Consider performance impact of long date ranges
-
-## Need Help?
-Contact the data team:
-- Slack: #data-engineering
-- Email: data-team@yourdapp.com
