@@ -93,7 +93,7 @@ SELECT
     sr.active_subscribers,
     sr.total_revenue,
     sr.avg_subscription_price
-FROM INTERNAL.SUBSCRIPTION_REVENUE sr
+FROM INTERNAL.SUBSCRIPTION_REVENUE_VIEW sr
 WHERE sr.month >= DATEADD('month', -6, CURRENT_DATE())
 ORDER BY sr.month DESC, sr.total_revenue DESC;
 
@@ -119,7 +119,7 @@ SELECT
     COUNT(DISTINCT user_id) as total_users,
     AVG(total_queries) as avg_queries_per_user,
     AVG(active_days) as avg_active_days
-FROM INTERNAL.USER_ENGAGEMENT
+FROM INTERNAL.USER_ENGAGEMENT_VIEW
 WHERE last_activity >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 GROUP BY subscription_type
 ORDER BY avg_queries_per_user DESC;
@@ -131,7 +131,7 @@ SELECT
     ue.active_days,
     ue.subscription_type,
     DATE_TRUNC('day', ue.last_activity) as last_active
-FROM INTERNAL.USER_ENGAGEMENT ue
+FROM INTERNAL.USER_ENGAGEMENT_VIEW ue
 JOIN USERS.PROFILES p ON ue.user_id = p.user_id
 WHERE ue.last_activity >= DATEADD(day, -30, CURRENT_TIMESTAMP())
 ORDER BY ue.total_queries DESC
@@ -150,7 +150,7 @@ SELECT
     pn.message,
     pn.created_at,
     uav.days_remaining
-FROM USERS.PENDING_NOTIFICATIONS pn
+FROM USERS.PENDING_NOTIFICATIONS_VIEW pn
 JOIN USERS.PROFILES p ON pn.user_id = p.user_id
 JOIN USERS.USER_ACCESS_VIEW uav ON pn.user_id = uav.user_id
 ORDER BY pn.created_at DESC;

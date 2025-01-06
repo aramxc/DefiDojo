@@ -182,7 +182,7 @@ Contains views and tables for business metrics and analytics.
 
 ### INTERNAL Schema Views
 
-1. **RENEWAL_METRICS**
+1. **RENEWAL_METRICS_VIEW**
    - **Description**: Subscription renewal analysis
    - **Purpose**: Track and analyze subscription renewal patterns
    - **Key Metrics**:
@@ -193,7 +193,7 @@ Contains views and tables for business metrics and analytics.
    - **Access**: Admin only
    - **Updates**: Daily
 
-2. **SUBSCRIPTION_HEALTH**
+2. **SUBSCRIPTION_HEALTH_VIEW**
    - **Description**: Overall subscription system health monitoring
    - **Purpose**: Monitor active subscriptions and identify trends
    - **Key Metrics**:
@@ -206,7 +206,7 @@ Contains views and tables for business metrics and analytics.
    - **Access**: Admin only
    - **Updates**: Real-time
 
-3. **SUBSCRIPTION_REVENUE**
+3. **SUBSCRIPTION_REVENUE_VIEW**
    - **Description**: Revenue analytics and tracking
    - **Purpose**: Monitor and analyze revenue streams
    - **Key Metrics**:
@@ -219,7 +219,7 @@ Contains views and tables for business metrics and analytics.
    - **Access**: Admin only
    - **Updates**: Daily
 
-4. **USER_ENGAGEMENT**
+4. **USER_ENGAGEMENT_VIEW**
    - **Description**: User activity and engagement metrics
    - **Purpose**: Track user interaction with the platform
    - **Key Metrics**:
@@ -249,7 +249,7 @@ Contains views and tables for business metrics and analytics.
      - USERS.USER_SUBSCRIPTIONS
    - **Notes**: Primary method for checking user access rights
 
-2. **PENDING_NOTIFICATIONS**
+2. **PENDING_NOTIFICATIONS_VIEW**
    - **Description**: View for managing notification delivery
    - **Purpose**: Track and process pending notifications
    - **Key Fields**:
