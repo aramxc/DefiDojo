@@ -206,9 +206,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                     <motion.button
                       type="button"
                       onClick={handleConnectWallet}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      // transition={{ delay: 0.5 }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="w-full p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 
@@ -221,9 +221,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
                   {formData.walletAddress && (
                     <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      // transition={{ delay: 0.5 }}
                       className="p-3 rounded-lg bg-slate-800/50 border border-slate-600"
                     >
                       <p className="text-sm text-slate-300">Connected Wallet</p>
@@ -235,9 +235,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                   <motion.button
                     type="submit"
                     disabled={isLoading}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
+                    // initial={{ opacity: 0 }}
+                    // animate={{ opacity: 1 }}
+                    // transition={{ delay: 0.6 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full p-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 
