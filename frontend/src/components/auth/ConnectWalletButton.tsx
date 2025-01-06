@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { requestAccount } from '../services/web3/contract.service';
+import { requestAccount } from '../../services/web3/contract.service';
 
 interface ConnectWalletButtonProps {
   setAccount: (account: string | null) => void;

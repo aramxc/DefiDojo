@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { requestAccount } from '../services/web3/contract.service';
-import { UserService } from '../services/api/user.service';
+import { requestAccount } from '../../services/web3/contract.service';
+import { UserService } from '../../services/api/user.service';
 
 interface CreateUserFormProps {
   onSuccess: () => void;

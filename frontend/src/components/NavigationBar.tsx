@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu } from '@mui/icons-material';
-import CreateUserForm from './CreateUserForm';
+import CreateUserForm from './auth/CreateUserForm';
 import { truncateAddress } from '../utils';
-
+import UpgradeModal from './premium/UpgradePremiumModal';
 // Types
 interface NavLinkProps {
   to: string;
@@ -31,6 +31,7 @@ const NavLink = ({ to, children }: NavLinkProps) => (
 
 const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) => {
   const [isSignupOpen, setIsSignupOpen] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   return (
     <>
@@ -69,12 +70,16 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
 
               {/* Upgrade Button */}
               <Link
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsUpgradeOpen(true);
+                }}
                 to="/"
                 className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
                          text-white transition-all duration-200
                          before:absolute before:inset-0 
                          before:bg-gradient-to-r before:from-blue-400 before:via-cyan-300 before:to-teal-400
-                         before:opacity-50 before:transition-all before:duration-200
+                         before:opacity-70 before:transition-all before:duration-200
                          after:absolute after:inset-0 
                          after:bg-gradient-to-r after:from-blue-400 after:via-cyan-300 after:to-teal-400
                          after:opacity-50
@@ -82,9 +87,7 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
                          hover:shadow-[0_0_20px_rgba(34,211,238,0.35)]
                          active:transform active:scale-95"
               >
-                <span className={`relative z-10 bg-gradient-to-r ${GRADIENT} bg-clip-text`}>
-                  Upgrade
-                </span>
+                <span className="relative z-10">Upgrade</span>
               </Link>
               
               {account && (
@@ -102,6 +105,12 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
         onClose={() => setIsSignupOpen(false)}
         onSuccess={() => setIsSignupOpen(false)}
         walletAddress={undefined}
+      />
+
+      <UpgradeModal
+        isOpen={isUpgradeOpen}
+        onClose={() => setIsUpgradeOpen(false)}
+        walletAddress={account}
       />
     </>
   );

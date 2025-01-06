@@ -5,11 +5,11 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 
 import PaymentsSidebar from './components/sidebar/SidebarContainer';
-import ConnectWalletButton from './components/ConnectWalletButton';
+import ConnectWalletButton from './components/auth/ConnectWalletButton';
 import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
-import CreateUserForm from './components/CreateUserForm';
+import CreateUserForm from './components/auth/CreateUserForm';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
