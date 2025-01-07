@@ -53,6 +53,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Fetch coin info once
   useEffect(() => {
@@ -113,51 +114,69 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
   }, [isRealTime]);
 
   const BackContent = () => (
-    <div className="p-6 space-y-4 text-gray-300">
-      <h3 className="text-lg font-semibold text-gray-100">About {coinInfo?.name}</h3>
-      
-      {coinInfo?.description?.en && (
-        <p className="text-sm leading-relaxed line-clamp-4">
-          {coinInfo.description.en}
-        </p>
-      )}
-      
-      <div className="space-y-3">
-        <div className="h-px bg-gradient-to-r from-slate-700/50 via-slate-700/25 to-transparent" />
-        
+    <div className="flex flex-col h-full" onClick={(e) => e.stopPropagation()}>
+      {/* Top section with title and controls */}
+      <div className="flex items-center justify-between p-4">
+        <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
+          About {coinInfo?.name}
+        </h3>
+        <CardControls isBackside />
+      </div>
+
+      {/* Gradient HR matching front card */}
+      <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent" />
+
+      {/* Main content section */}
+      <div className="flex-1 p-6">
         <div className="grid grid-cols-2 gap-4 text-sm">
           {coinInfo?.genesis_date && (
             <div>
-              <span className="text-gray-400">Launch Date:</span>
-              <div>{new Date(coinInfo.genesis_date).toLocaleDateString()}</div>
+              <span className="text-gray-500">Launch Date</span>
+              <div className="text-gray-300 mt-1 font-medium">
+                {new Date(coinInfo.genesis_date).toLocaleDateString()}
+              </div>
             </div>
           )}
           
           {coinInfo?.sentiment_votes_up_percentage && (
             <div>
-              <span className="text-gray-400">Community Sentiment:</span>
-              <div className="flex items-center gap-1">
-                <span className="text-green-400">
+              <span className="text-gray-500">Community Sentiment</span>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-green-500 font-medium">
                   {coinInfo.sentiment_votes_up_percentage}%
                 </span>
-                <span>positive</span>
+                <span className="text-gray-300">positive</span>
               </div>
             </div>
           )}
         </div>
+      </div>
 
-        <div className="h-px bg-gradient-to-r from-slate-700/50 via-slate-700/25 to-transparent" />
-        
-        <div className="flex flex-wrap gap-2">
+      {/* Bottom gradient HR */}
+      <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent" />
+
+      {/* Bottom links section */}
+      <div className="flex-shrink-0 p-4">
+        <div className="flex flex-wrap gap-2 justify-center">
           {coinInfo?.links?.whitepaper && (
             <a
               href={coinInfo.links.whitepaper}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1 text-xs rounded-full bg-white/5 hover:bg-white/10 
-                       transition-colors duration-200"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1.5 text-xs rounded-lg 
+                       relative overflow-hidden
+                       text-gray-400 hover:text-gray-200
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                       before:backdrop-blur-xl
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
+                       transition-all duration-200"
             >
-              Whitepaper
+              <span className="relative z-10">Whitepaper</span>
             </a>
           )}
           {coinInfo?.links?.homepage?.[0] && (
@@ -165,10 +184,20 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
               href={coinInfo.links.homepage[0]}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1 text-xs rounded-full bg-white/5 hover:bg-white/10 
-                       transition-colors duration-200"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1.5 text-xs rounded-lg 
+                       relative overflow-hidden
+                       text-gray-400 hover:text-gray-200
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                       before:backdrop-blur-xl
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
+                       transition-all duration-200"
             >
-              Website
+              <span className="relative z-10">Website</span>
             </a>
           )}
           {coinInfo?.links?.subreddit_url && (
@@ -176,10 +205,20 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
               href={coinInfo.links.subreddit_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1 text-xs rounded-full bg-white/5 hover:bg-white/10 
-                       transition-colors duration-200"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1.5 text-xs rounded-lg 
+                       relative overflow-hidden
+                       text-gray-400 hover:text-gray-200
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                       before:backdrop-blur-xl
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
+                       transition-all duration-200"
             >
-              Reddit
+              <span className="relative z-10">Reddit</span>
             </a>
           )}
         </div>
@@ -188,7 +227,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
   );
 
   const CardControls = ({ isBackside = false }) => (
-    <div className="absolute top-3 right-3 flex gap-2">
+    <div className="absolute top-3 right-3 flex gap-2 z-50">
       {!isBackside && (
         <>
           <button 
@@ -219,7 +258,10 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
       )}
       {isBackside && (
         <button 
-          onClick={() => setIsFlipped(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFlipped(false);
+          }}
           className="w-8 h-8 flex items-center justify-center
                    rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
                    hover:bg-white/10 hover:text-white transition-all duration-200"
@@ -298,32 +340,29 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${
-                          isRealTime 
-                            ? 'bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.3)] animate-pulse' 
-                            : 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.3)]'
-                        }`} />
-                        <span className="text-xs text-gray-400">
-                          {isRealTime ? 'Real-time' : 'Live Price'}
-                        </span>
-                      </div>
-                      <Switch
-                        checked={isRealTime}
-                        onChange={() => setIsRealTime(!isRealTime)}
-                        size="small"
-                        className="!ml-2"
-                        sx={{
-                          '& .MuiSwitch-switchBase.Mui-checked': {
-                            color: '#10B981',
-                          },
-                          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                            backgroundColor: '#10B981',
-                          },
-                        }}
-                      />
+                      <div className={`w-1.5 h-1.5 rounded-full ${
+                        isRealTime 
+                          ? 'bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.3)] animate-pulse' 
+                          : 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.3)]'
+                      }`} />
+                      <span className="text-xs text-gray-400">
+                        {isRealTime ? 'Real-time' : 'Live Price'}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-400">Updated {timeAgo}</span>
+                    <Switch
+                      checked={isRealTime}
+                      onChange={() => setIsRealTime(!isRealTime)}
+                      size="small"
+                      className="!ml-2"
+                      sx={{
+                        '& .MuiSwitch-switchBase.Mui-checked': {
+                          color: '#10B981',
+                        },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                          backgroundColor: '#10B981',
+                        },
+                      }}
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -340,14 +379,17 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
               exit={{ opacity: 0 }}
               className="backface-hidden absolute top-0 left-0 w-full h-full
                        rounded-xl overflow-hidden
-                       shadow-[0_0_10px_rgba(59,130,246,0.03)]
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
-                       before:backdrop-blur-xl"
+                       shadow-[0_0_10px_rgba(59,130,246,0.03)]"
               style={{ transform: 'rotateY(180deg)' }}
             >
-              <CardControls isBackside />
-              <BackContent />
+              {/* Match the front card's gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 backdrop-blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-500/5" />
+              
+              {/* Content container */}
+              <div className="relative h-full z-10">
+                <BackContent />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
