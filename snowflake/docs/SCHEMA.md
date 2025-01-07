@@ -22,42 +22,34 @@ Contains core data accessible to all authenticated users.
      - `MARKET_CAP_RANK NUMBER(38,0)` - Market capitalization ranking
      - `CREATED_AT TIMESTAMP_NTZ(9)` - Record creation timestamp (DEFAULT CURRENT_TIMESTAMP())
      - `UPDATED_AT TIMESTAMP_NTZ(9)` - Last update timestamp (DEFAULT CURRENT_TIMESTAMP())
-   - **Notes**: Central reference table for all supported assets
+     - `BLOCK_TIME_IN_MINUTES NUMBER(38,0)` - Average block time in minutes
+     - `HASHING_ALGORITHM VARCHAR(100)` - Mining/consensus hashing algorithm
+     - `DESCRIPTION VARCHAR(16777216)` - Detailed asset description
+     - `HOMEPAGE_URL VARCHAR(500)` - Official website URL
+     - `WHITEPAPER_URL VARCHAR(500)` - Whitepaper document URL
+     - `SUBREDDIT_URL VARCHAR(500)` - Reddit community URL
+     - `IMAGE_URL VARCHAR(500)` - Asset logo/image URL
+     - `COUNTRY_ORIGIN VARCHAR(100)` - Country where project originated
+     - `GENESIS_DATE DATE` - Launch date of the asset
+     - `TOTAL_SUPPLY NUMBER(38,0)` - Total token supply
+     - `MAX_SUPPLY NUMBER(38,0)` - Maximum possible token supply
+     - `CIRCULATING_SUPPLY NUMBER(38,0)` - Current circulating supply
+     - `GITHUB_FORKS NUMBER(38,0)` - Number of GitHub repository forks
+     - `GITHUB_STARS NUMBER(38,0)` - Number of GitHub repository stars
+     - `GITHUB_SUBSCRIBERS NUMBER(38,0)` - Number of GitHub repository subscribers
+     - `GITHUB_TOTAL_ISSUES NUMBER(38,0)` - Total number of GitHub issues
+     - `GITHUB_CLOSED_ISSUES NUMBER(38,0)` - Number of closed GitHub issues
+     - `GITHUB_PULL_REQUESTS_MERGED NUMBER(38,0)` - Number of merged pull requests
+     - `GITHUB_PULL_REQUEST_CONTRIBUTORS NUMBER(38,0)` - Number of pull request contributors
+     - `BID_ASK_SPREAD_PERCENTAGE FLOAT` - Current bid-ask spread percentage
+   - **Notes**: 
+     - Central reference table for all supported assets
+     - Includes detailed metadata and GitHub metrics
+     - Tracks both technical and market-related information
    - **Relationships**: Referenced by PRICE_HISTORY and other price-related tables
 
-2. **PRICE_HISTORY**
-   - **Description**: Consolidated price history from multiple sources
-   - **Primary Key**: ID
-   - **Indexes**: (ASSET_ID, TIMESTAMP, DATA_SOURCE)
-   - **Columns**:
-     - `ID NUMBER(38,0)` - Unique identifier (IDENTITY, PRIMARY KEY)
-     - `ASSET_ID VARCHAR(10)` - Reference to ASSETS table
-     - `TIMESTAMP TIMESTAMP_NTZ(9)` - Time of price record
-     - `PRICE_USD NUMBER(18,8)` - Price in USD
-     - `MARKET_CAP_USD NUMBER(38,0)` - Market capitalization
-     - `VOLUME_24H_USD NUMBER(38,0)` - 24-hour trading volume
-     - `HIGH_24H_USD NUMBER(18,8)` - 24-hour high price
-     - `LOW_24H_USD NUMBER(18,8)` - 24-hour low price
-     - `DATA_SOURCE VARCHAR(50)` - Source of price data (e.g., 'PYTH', 'COINGECKO')
-     - `CONFIDENCE_INTERVAL NUMBER(18,8)` - Confidence level of price data
-     - `CREATED_AT TIMESTAMP_NTZ(9)` - Record creation timestamp (DEFAULT CURRENT_TIMESTAMP())
-   - **Notes**: 
-     - Stores raw price data from multiple sources
-     - Used as source for PRICE_HISTORY_FREE and PRICE_HISTORY_PREMIUM
-     - Includes confidence metrics for price accuracy
-
-3. **PRICE_HISTORY_FREE**
-   - **Description**: Stores basic historical price data available to all users
-   - **Retention**: 1 year of historical data
-   - **Columns**:
-     - `ID NUMBER(38,0)` - Unique identifier (IDENTITY, PRIMARY KEY)
-     - `ASSET_ID VARCHAR(10)` - Token identifier (e.g., 'BTC', 'ETH')
-     - `TIMESTAMP TIMESTAMP_NTZ(9)` - Time of price record
-   - **Access**: Available to all authenticated users
-   - **Notes**: Limited to last 12 months of data
-
-4. **PRICE_HISTORY_PREMIUM**
-   - **Description**: Stores detailed historical data and advanced metrics
+2. **PRICE_HISTORY_COMPLETE**
+   - **Description**: Stores detailed historical data and advanced metrics, single source of truth.
    - **Retention**: Full historical data
    - **Columns**:
      - `ID NUMBER(38,0)` - Unique identifier (IDENTITY, PRIMARY KEY)
@@ -75,6 +67,20 @@ Contains core data accessible to all authenticated users.
      - `CREATED_AT TIMESTAMP_NTZ(9)` - Record creation timestamp
    - **Access**: Available only to premium subscribers
    - **Notes**: Contains advanced analytics and full history
+
+#### Views
+1. **PRICE_HISTORY_FREE**
+   - **Description**: View into PRICE_HISTORY_COMPLETE for free users
+   - **Columns**:
+     - `ID NUMBER(38,0)` - Unique identifier (IDENTITY, PRIMARY KEY)
+     - `ASSET_ID VARCHAR(10)` - Token identifier
+     - `TIMESTAMP TIMESTAMP_NTZ(9)` - Time of price record
+     - `PRICE_USD NUMBER(18,8)` - Price in USD
+     - `MARKET_CAP_USD NUMBER(38,0)` - Market capitalization
+     - `VOLUME_24H_USD NUMBER(38,0)` - 24-hour trading volume   
+    - **Access**: Available to all authenticated users
+    - **Notes**: Limited to last 12 months of data
+
 
 ### USERS Schema
 Manages user profiles, subscriptions, permissions, and notifications.

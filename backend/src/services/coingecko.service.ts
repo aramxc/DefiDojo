@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config } from '../config/constants';
+import { config, validateCoinGeckoKey } from '../config/constants';
 
 export interface HistoricalRangeData {
     prices: [number, number][];
@@ -34,6 +34,12 @@ export class CoinGeckoService {
         this.baseUrl = config.coinGeckoBaseUrl;
     }
 
+    async getCoinList(): Promise<any> {
+        const url = `${this.baseUrl}/coins/list`;
+        const response = await axios.get(url);
+        return response.data;
+    }
+
     async getHistoricalRangeData(coinId: string, from: number, to: number): Promise<HistoricalRangeData> {
         const url = `${this.baseUrl}/coins/${coinId}/market_chart/range`;
         const response = await axios.get(url, {
@@ -52,14 +58,15 @@ export class CoinGeckoService {
     }
 
     async getCoinInfo(coinId: string): Promise<any> {
+        validateCoinGeckoKey();
         const url = `${this.baseUrl}/coins/${coinId}`;
         const response = await axios.get(url, {
             params: {
-                localization: false, 
-                tickers: false,      
-                market_data: false, 
+                localization: false,
+                tickers: false,
+                market_data: true,
                 community_data: false,
-                developer_data: false,
+                developer_data: true,
                 sparkline: false
             }
         });
@@ -68,6 +75,21 @@ export class CoinGeckoService {
             throw new Error('Invalid data format from CoinGecko API');
         }
             
+        return response.data;
+    }
+
+    async getTopCoins(limit: number = 200): Promise<any> {
+        validateCoinGeckoKey();
+        const url = `${this.baseUrl}/coins/markets`;
+        const response = await axios.get(url, {
+            params: {
+                vs_currency: 'usd',
+                order: 'market_cap_desc',
+                per_page: limit,
+                page: 1,
+                sparkline: false
+            }
+        });
         return response.data;
     }
 }
