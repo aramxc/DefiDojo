@@ -48,12 +48,7 @@ const PriceValue = memo(({ price }: { price: number | undefined }) => (
 ));
 
 // Move BackContent outside and memoize it
-const BackContent = memo(({ 
-    assetInfo, 
-    isLoading, 
-    error, 
-    CardControls 
-}: { 
+const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: { 
     assetInfo: CoinInfo | null;
     isLoading: boolean;
     error: string | null;
@@ -75,12 +70,41 @@ const BackContent = memo(({
         <div className="flex flex-col h-full" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4">
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
-                    About {assetInfo.name}
+                    About {assetInfo?.NAME}
                 </h3>
                 <CardControls isBackside />
             </div>
-            
-            {/* Rest of your content */}
+
+            <div className="flex-1 p-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                    {assetInfo?.GENESIS_DATE && (
+                        <div>
+                            <span className="text-gray-500">Launch Date</span>
+                            <div className="text-gray-300 mt-1 font-medium">
+                                {new Date(assetInfo.GENESIS_DATE).toLocaleDateString()}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {assetInfo?.GITHUB_STARS && (
+                        <div>
+                            <span className="text-gray-500">GitHub Stars</span>
+                            <div className="text-gray-300 mt-1 font-medium">
+                                {assetInfo.GITHUB_STARS.toLocaleString()}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {assetInfo?.DESCRIPTION && (
+                    <div className="mt-4">
+                        <span className="text-gray-500">About</span>
+                        <div className="text-gray-300 mt-1 text-sm line-clamp-4">
+                            {assetInfo.DESCRIPTION}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 });
@@ -259,11 +283,11 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                 <CardControls />
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    {assetInfo?.image_url && (
+                    {assetInfo?.IMAGE_URL && (
                       <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
                         <img 
-                          src={assetInfo.image_url} 
+                          src={assetInfo.IMAGE_URL} 
                           alt={symbol} 
                           className="relative w-8 h-8 rounded-full"
                         />
@@ -271,7 +295,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                     )}
                     <div className="space-y-1">
                       <h3 className="text-lg font-bold text-gray-100">{symbol.toUpperCase()}</h3>
-                      <span className="text-sm text-gray-400">{assetInfo?.name || ''}</span>
+                      <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
                     </div>
                   </div>
 

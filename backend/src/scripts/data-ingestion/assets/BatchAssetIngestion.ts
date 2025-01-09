@@ -199,24 +199,12 @@ export class AssetIngestion {
                 ON target.ASSET_ID = source.ASSET_ID
                 WHEN MATCHED THEN
                     UPDATE SET
-                        NAME = source.NAME,
-                        SYMBOL = source.SYMBOL,
-                        COINGECKO_ID = source.COINGECKO_ID,
-                        IS_ACTIVE = source.IS_ACTIVE,
-                        MARKET_CAP_RANK = source.MARKET_CAP_RANK,
-                        BLOCK_TIME_IN_MINUTES = source.BLOCK_TIME_IN_MINUTES,
-                        HASHING_ALGORITHM = source.HASHING_ALGORITHM,
-                        DESCRIPTION = source.DESCRIPTION,
-                        HOMEPAGE_URL = source.HOMEPAGE_URL,
-                        WHITEPAPER_URL = source.WHITEPAPER_URL,
-                        SUBREDDIT_URL = source.SUBREDDIT_URL,
-                        IMAGE_URL = source.IMAGE_URL,
-                        COUNTRY_ORIGIN = source.COUNTRY_ORIGIN,
-                        GENESIS_DATE = source.GENESIS_DATE,
-                        TOTAL_SUPPLY = source.TOTAL_SUPPLY,
-                        MAX_SUPPLY = source.MAX_SUPPLY,
-                        CIRCULATING_SUPPLY = source.CIRCULATING_SUPPLY,
-                        GITHUB_REPOS = source.GITHUB_REPOS,
+                        NAME = COALESCE(target.NAME, source.NAME),
+                        SYMBOL = COALESCE(target.SYMBOL, source.SYMBOL),
+                        DESCRIPTION = COALESCE(target.DESCRIPTION, source.DESCRIPTION),
+                        GENESIS_DATE = COALESCE(target.GENESIS_DATE, source.GENESIS_DATE),
+                        WHITEPAPER_URL = COALESCE(target.WHITEPAPER_URL, source.WHITEPAPER_URL),
+                        
                         GITHUB_FORKS = source.GITHUB_FORKS,
                         GITHUB_STARS = source.GITHUB_STARS,
                         GITHUB_SUBSCRIBERS = source.GITHUB_SUBSCRIBERS,
@@ -224,6 +212,10 @@ export class AssetIngestion {
                         GITHUB_CLOSED_ISSUES = source.GITHUB_CLOSED_ISSUES,
                         GITHUB_PULL_REQUESTS_MERGED = source.GITHUB_PULL_REQUESTS_MERGED,
                         GITHUB_PULL_REQUEST_CONTRIBUTORS = source.GITHUB_PULL_REQUEST_CONTRIBUTORS,
+                        MARKET_CAP_RANK = source.MARKET_CAP_RANK,
+                        TOTAL_SUPPLY = source.TOTAL_SUPPLY,
+                        CIRCULATING_SUPPLY = source.CIRCULATING_SUPPLY,
+                        
                         UPDATED_AT = CURRENT_TIMESTAMP()
                 WHEN NOT MATCHED THEN
                     INSERT (
@@ -257,18 +249,10 @@ export class AssetIngestion {
                 sqlText,
                 complete: (err) => {
                     if (err) {
-                        console.error(`Error inserting ${asset.SYMBOL}:`, {
-                            message: err.message,
-                            stack: err.stack,
-                            assetData: {
-                                id: asset.ASSET_ID,
-                                symbol: asset.SYMBOL,
-                                name: asset.NAME
-                            }
-                        });
+                        console.error(`Error inserting ${asset.SYMBOL}:`, err);
                         reject(err);
                     } else {
-                        console.log(`Successfully inserted/updated ${asset.SYMBOL}`);
+                        console.log(`Successfully processed ${asset.SYMBOL}`);
                         resolve(true);
                     }
                 }
