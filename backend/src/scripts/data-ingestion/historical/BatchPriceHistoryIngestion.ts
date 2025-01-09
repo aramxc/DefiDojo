@@ -71,20 +71,22 @@ export class HistoricalDataIngestion {
                 return;
             }
 
-            // Initialize counters at the start
+            // Initialize counters
             let processedCount = 0;
             let skippedCount = 0;
             let errorCount = 0;
+            let currentCount = 0;  // Add this counter for progress tracking
 
             console.log(`Found ${assets.length} top assets to process`);
 
             for (const asset of assets) {
                 try {
-                    console.log(`\nProcessing ${processedCount + 1}/${assets.length}: ${asset.ASSET_ID}...`);
+                    currentCount++;  // Increment at the start of each iteration
+                    console.log(`\nProcessing ${currentCount}/${assets.length}: ${asset.ASSET_ID}...`);
 
                     const lastTimestamp = await this.getLastTimestamp(asset.ASSET_ID);
                     const toDate = new Date();
-                    toDate.setHours(0, 0, 0, 0);  // Set to start of current day
+                    toDate.setHours(0, 0, 0, 0);
                     let fromDate: Date;
 
                     if (lastTimestamp) {
@@ -128,11 +130,13 @@ export class HistoricalDataIngestion {
                 }
             }
 
+            // Log summary with all counters
             console.log('\nIngestion Summary:');
             console.log(`Total assets: ${assets.length}`);
             console.log(`Successfully processed: ${processedCount}`);
             console.log(`Skipped (up to date): ${skippedCount}`);
             console.log(`Errors: ${errorCount}`);
+            console.log(`Total processed + skipped + errors: ${processedCount + skippedCount + errorCount}`);
 
             console.log('\nVerifying data completeness...');
             await this.verifyDataIngestion();
@@ -271,8 +275,8 @@ export class HistoricalDataIngestion {
                     SELECT 
                         ASSET_ID,
                         COUNT(*) as total_records,
-                        MIN(TIMESTAMP) as earliest_date,
-                        MAX(TIMESTAMP) as latest_date,
+                        CONVERT_TIMEZONE('UTC', 'America/Denver', MIN(TIMESTAMP)) as earliest_date,
+                        CONVERT_TIMEZONE('UTC', 'America/Denver', MAX(TIMESTAMP)) as latest_date,
                         DATEDIFF('day', MIN(TIMESTAMP), MAX(TIMESTAMP)) as days_covered,
                         COUNT(*) / NULLIF(DATEDIFF('day', MIN(TIMESTAMP), MAX(TIMESTAMP)), 0) as avg_records_per_day
                     FROM PUBLIC.PRICE_HISTORY_COMPLETE
@@ -285,7 +289,18 @@ export class HistoricalDataIngestion {
                         reject(err);
                     } else {
                         console.log('\nData Verification Summary:');
-                        console.table(rows);
+                        
+                        // Format the data for console.table
+                        const formattedRows = rows?.map((row: any) => ({
+                            ASSET_ID: row.ASSET_ID,
+                            TOTAL_RECORDS: row.TOTAL_RECORDS,
+                            EARLIEST_DATE: row.EARLIEST_DATE ? new Date(row.EARLIEST_DATE).toLocaleString('en-US', { timeZone: 'America/Denver' }) : 'N/A',
+                            LATEST_DATE: row.LATEST_DATE ? new Date(row.LATEST_DATE).toLocaleString('en-US', { timeZone: 'America/Denver' }) : 'N/A',
+                            DAYS_COVERED: row.DAYS_COVERED,
+                            AVG_RECORDS_PER_DAY: row.AVG_RECORDS_PER_DAY ? row.AVG_RECORDS_PER_DAY.toFixed(2) : 'N/A'
+                        }));
+                        
+                        console.table(formattedRows);
                         
                         // Check for potential issues
                         rows?.forEach((row: any) => {

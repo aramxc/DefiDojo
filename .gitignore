@@ -61,3 +61,5 @@ coverage/
 snowflake_logs/
 
 TODO.md
+
+.env
