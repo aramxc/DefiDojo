@@ -1,4 +1,4 @@
-# Frontend Documentation
+# Data Collection Documentation
 
 ## Running Data Ingestion Scripts
 
@@ -12,17 +12,17 @@ To run the data ingestion scripts, follow these steps:
 ### Running the Historical Data Ingestion Script
 
 1. **Navigate to the Script Directory**:
-   Open your terminal and navigate to the `data-ingestion` directory:
+   Open your terminal and navigate to the `backend` directory:
 
    ```bash
-   cd backend/src/scripts/data-ingestion
+   cd backend/
    ```
 
 2. **Run the Script**:
    Use the following command to run the historical data ingestion script for the top 200 coins:
 
    ```bash
-   ts-node index.ts historical 200
+   ts-node src/scripts/data-ingestion/index.ts historical 200
    ```
 
    - Replace `200` with the desired number of top coins you want to process.

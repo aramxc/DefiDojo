@@ -5,8 +5,9 @@ export const config = {
   flipsideCryptoApiKey: process.env.FLIPSIDE_CRYPTO_API_KEY || null,
   flipsideBaseUrl: 'https://api-v2.flipsidecrypto.xyz',
   pythHermesBaseUrl: 'https://hermes.pyth.network',
-  coinGeckoApiKey: process.env.COINGECKO_API_KEY || null,
-  coinGeckoBaseUrl: 'https://api.coingecko.com/api/v3'
+  coinGeckoProApiKey: process.env.COINGECKO_PRO_API_KEY || null,
+  coinGeckoBaseUrl: 'https://api.coingecko.com/api/v3',
+  coinGeckoProBaseUrl: 'https://pro-api.coingecko.com/api/v3'
 };
 
 // Move validation to where it's actually needed
@@ -17,8 +18,8 @@ export const validateFlipsideKey = () => {
 };
 
 export const validateCoinGeckoKey = () => {
-  if (!config.coinGeckoApiKey) {
-    throw new Error('COINGECKO_API_KEY is not defined in .env file');
+  if (!config.coinGeckoProApiKey) {
+    throw new Error('COINGECKO_PRO_API_KEY is not defined in .env file');
   }
 };
 

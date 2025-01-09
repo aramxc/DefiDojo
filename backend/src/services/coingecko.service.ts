@@ -41,13 +41,19 @@ export class CoinGeckoService {
     }
 
     async getHistoricalRangeData(coinId: string, from: number, to: number): Promise<HistoricalRangeData> {
-        const url = `${this.baseUrl}/coins/${coinId}/market_chart/range`;
+        const baseUrl = config.coinGeckoProApiKey ? config.coinGeckoProBaseUrl : config.coinGeckoBaseUrl;
+        const url = `${baseUrl}/coins/${coinId}/market_chart/range`;
+        
+        const headers = config.coinGeckoProApiKey ? { 'x-cg-pro-api-key': config.coinGeckoProApiKey } : {};
+        
         const response = await axios.get(url, {
             params: {
                 vs_currency: 'usd',
                 from: Math.floor(from / 1000),
                 to: Math.floor(to / 1000),
+                // interval: 'hourly' // default is daily i.e. blank
             },
+            headers
         });
         
         if (!response.data.prices || !response.data.market_caps || !response.data.total_volumes) {
