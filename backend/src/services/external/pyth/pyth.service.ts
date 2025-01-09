@@ -1,5 +1,5 @@
-import { config } from '../config/constants';
-import { SYMBOL_TO_PYTH_ID } from '../config/constants';
+import { config } from '../../../config/constants';
+import { SYMBOL_TO_PYTH_ID } from '../../../config/constants';
 
 // Types for Pyth price feed response
 type PythPrice = {

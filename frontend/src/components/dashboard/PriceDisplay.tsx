@@ -2,7 +2,7 @@ import React, { useEffect, useState, memo, useMemo } from 'react';
 import { BarChart, Info } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { priceService, PriceData } from '../../services/api/price.service';
-import { coinInfoService, CoinInfo } from '../../services/api/coinInfo.service';
+import { infoService, CoinInfo } from '../../services/api/info.service';
 import { Switch, CircularProgress } from '@mui/material';
 
 interface PriceDisplayProps {
@@ -47,17 +47,72 @@ const PriceValue = memo(({ price }: { price: number | undefined }) => (
   </div>
 ));
 
+// Move BackContent outside and memoize it
+const BackContent = memo(({ 
+    assetInfo, 
+    isLoading, 
+    error, 
+    CardControls 
+}: { 
+    assetInfo: CoinInfo | null;
+    isLoading: boolean;
+    error: string | null;
+    CardControls: React.FC<{ isBackside?: boolean }>;
+}) => {
+    if (isLoading) {
+        return <div className="p-4">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-red-500">{error}</div>;
+    }
+
+    if (!assetInfo) {
+        return <div className="p-4">No information available</div>;
+    }
+
+    return (
+        <div className="flex flex-col h-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4">
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
+                    About {assetInfo.name}
+                </h3>
+                <CardControls isBackside />
+            </div>
+            
+            {/* Rest of your content */}
+        </div>
+    );
+});
+
 export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol }) => {
   const [priceData, setPriceData] = useState<PriceData | null>(null);
-  const [coinInfo, setCoinInfo] = useState<CoinInfo | null>(null);
+  const [assetInfo, setAssetInfo] = useState<CoinInfo | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch coin info once
+  // Fetch asset info once
   useEffect(() => {
-    coinInfoService.getCoinInfo(symbol).then(setCoinInfo).catch(console.error);
+    const fetchCoinInfo = async () => {
+      try {
+        setIsLoading(true);
+        console.log('Fetching info for symbol:', symbol); // Debug log
+        const info = await infoService.getAssetInfoBySymbol(symbol);
+        console.log('Received info:', info); // Debug log
+        setAssetInfo(info);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching asset info:', err);
+        setError('Failed to load asset information');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCoinInfo();
   }, [symbol]);
 
   // Handle price updates
@@ -112,119 +167,6 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
       return () => clearInterval(timer);
     }
   }, [isRealTime]);
-
-  const BackContent = () => (
-    <div className="flex flex-col h-full" onClick={(e) => e.stopPropagation()}>
-      {/* Top section with title and controls */}
-      <div className="flex items-center justify-between p-4">
-        <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
-          About {coinInfo?.name}
-        </h3>
-        <CardControls isBackside />
-      </div>
-
-      {/* Gradient HR matching front card */}
-      <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent" />
-
-      {/* Main content section */}
-      <div className="flex-1 p-6">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          {coinInfo?.genesis_date && (
-            <div>
-              <span className="text-gray-500">Launch Date</span>
-              <div className="text-gray-300 mt-1 font-medium">
-                {new Date(coinInfo.genesis_date).toLocaleDateString()}
-              </div>
-            </div>
-          )}
-          
-          {coinInfo?.sentiment_votes_up_percentage && (
-            <div>
-              <span className="text-gray-500">Community Sentiment</span>
-              <div className="flex items-center gap-1 mt-1">
-                <span className="text-green-500 font-medium">
-                  {coinInfo.sentiment_votes_up_percentage}%
-                </span>
-                <span className="text-gray-300">positive</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom gradient HR */}
-      <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent" />
-
-      {/* Bottom links section */}
-      <div className="flex-shrink-0 p-4">
-        <div className="flex flex-wrap gap-2 justify-center">
-          {coinInfo?.links?.whitepaper && (
-            <a
-              href={coinInfo.links.whitepaper}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="px-3 py-1.5 text-xs rounded-lg 
-                       relative overflow-hidden
-                       text-gray-400 hover:text-gray-200
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                       before:backdrop-blur-xl
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
-                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
-                       transition-all duration-200"
-            >
-              <span className="relative z-10">Whitepaper</span>
-            </a>
-          )}
-          {coinInfo?.links?.homepage?.[0] && (
-            <a
-              href={coinInfo.links.homepage[0]}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="px-3 py-1.5 text-xs rounded-lg 
-                       relative overflow-hidden
-                       text-gray-400 hover:text-gray-200
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                       before:backdrop-blur-xl
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
-                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
-                       transition-all duration-200"
-            >
-              <span className="relative z-10">Website</span>
-            </a>
-          )}
-          {coinInfo?.links?.subreddit_url && (
-            <a
-              href={coinInfo.links.subreddit_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="px-3 py-1.5 text-xs rounded-lg 
-                       relative overflow-hidden
-                       text-gray-400 hover:text-gray-200
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                       before:backdrop-blur-xl
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
-                       hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]
-                       transition-all duration-200"
-            >
-              <span className="relative z-10">Reddit</span>
-            </a>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 
   const CardControls = ({ isBackside = false }) => (
     <div className="absolute top-3 right-3 flex gap-2 z-50">
@@ -317,11 +259,11 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                 <CardControls />
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    {coinInfo?.image?.thumb && (
+                    {assetInfo?.image_url && (
                       <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
                         <img 
-                          src={coinInfo.image.thumb} 
+                          src={assetInfo.image_url} 
                           alt={symbol} 
                           className="relative w-8 h-8 rounded-full"
                         />
@@ -329,7 +271,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                     )}
                     <div className="space-y-1">
                       <h3 className="text-lg font-bold text-gray-100">{symbol.toUpperCase()}</h3>
-                      <span className="text-sm text-gray-400">{coinInfo?.name || ''}</span>
+                      <span className="text-sm text-gray-400">{assetInfo?.name || ''}</span>
                     </div>
                   </div>
 
@@ -388,7 +330,12 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
               
               {/* Content container */}
               <div className="relative h-full z-10">
-                <BackContent />
+                <BackContent 
+                  assetInfo={assetInfo}
+                  isLoading={isLoading}
+                  error={error}
+                  CardControls={CardControls}
+                />
               </div>
             </motion.div>
           )}

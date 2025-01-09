@@ -1,8 +1,9 @@
 import snowflake from 'snowflake-sdk';
 import { config } from 'dotenv';
+import path from 'path';
 
-// Load environment variables
-config();
+// Load environment variables from root directory
+config({ path: path.resolve(__dirname, '../../../.env') });
 
 // Validate Snowflake credentials
 const validateSnowflakeCredentials = () => {

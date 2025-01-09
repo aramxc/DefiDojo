@@ -18,9 +18,10 @@ export const validateFlipsideKey = () => {
 };
 
 export const validateCoinGeckoKey = () => {
-  if (!config.coinGeckoProApiKey) {
+  if (config.coinGeckoProBaseUrl && !config.coinGeckoProApiKey) {
     throw new Error('COINGECKO_PRO_API_KEY is not defined in .env file');
   }
+  return true;
 };
 
 export const SYMBOL_TO_PYTH_ID: Record<string, string> = {

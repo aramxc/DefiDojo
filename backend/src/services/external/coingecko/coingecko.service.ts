@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config, validateCoinGeckoKey } from '../config/constants';
+import { config, validateCoinGeckoKey } from '../../../config/constants';
 
 export interface HistoricalRangeData {
     prices: [number, number][];
@@ -63,9 +63,12 @@ export class CoinGeckoService {
         return response.data;
     }
 
-    async getCoinInfo(coinId: string): Promise<any> {
-        validateCoinGeckoKey();
-        const url = `${this.baseUrl}/coins/${coinId}`;
+    async getCoinInfo(coinId: string): Promise<CoinInfo> {
+        const baseUrl = config.coinGeckoProApiKey ? config.coinGeckoProBaseUrl : config.coinGeckoBaseUrl;
+        const url = `${baseUrl}/coins/${coinId}`;
+        
+        const headers = config.coinGeckoProApiKey ? { 'x-cg-pro-api-key': config.coinGeckoProApiKey } : {};
+        
         const response = await axios.get(url, {
             params: {
                 localization: false,
@@ -74,13 +77,14 @@ export class CoinGeckoService {
                 community_data: false,
                 developer_data: true,
                 sparkline: false
-            }
+            },
+            headers
         });
 
         if (!response.data) {
             throw new Error('Invalid data format from CoinGecko API');
         }
-            
+        
         return response.data;
     }
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PythService } from '../services/pyth.service';
+import { PythService } from '../services/external/pyth/pyth.service';
 
 export class PriceController {
   private pythService: PythService;

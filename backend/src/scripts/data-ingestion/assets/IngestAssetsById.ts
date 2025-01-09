@@ -47,6 +47,7 @@ class SpecificCoinIngestion extends AssetIngestion {
                         TOTAL_SUPPLY: coinInfo.market_data?.total_supply || null,
                         MAX_SUPPLY: coinInfo.market_data?.max_supply || null,
                         CIRCULATING_SUPPLY: coinInfo.market_data?.circulating_supply || null,
+                        GITHUB_REPOS: coinInfo.links?.repos_url?.github || null,
                         GITHUB_FORKS: coinInfo.developer_data?.forks || null,
                         GITHUB_STARS: coinInfo.developer_data?.stars || null,
                         GITHUB_SUBSCRIBERS: coinInfo.developer_data?.subscribers || null,

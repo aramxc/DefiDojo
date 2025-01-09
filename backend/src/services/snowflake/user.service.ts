@@ -1,5 +1,5 @@
-import { connectToSnowflake } from '../config/snowflake.config';
-import { UserRepository } from '../repositories/user.repository';
+import { connectToSnowflake } from '../../config/snowflake.config';
+import { UserRepository } from './repositories/user.repository';
 
 export class UserService {
   private userRepository: UserRepository;

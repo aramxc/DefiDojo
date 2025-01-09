@@ -1,5 +1,5 @@
 import { getConnection } from '../../../config/snowflake.config';
-import { CoinGeckoService } from '../../../services/coingecko.service';
+import { CoinGeckoService } from '../../../services/external/coingecko/coingecko.service';
 
 export class HistoricalDataIngestion {
     private connection;

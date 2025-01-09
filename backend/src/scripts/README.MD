@@ -40,7 +40,7 @@ To run the data ingestion scripts, follow these steps:
    Use the following command to run the asset ingestion script:
 
    ```bash
-   ts-node index.ts assets 200
+   ts-node src/scripts/data-ingestion/index.ts assets 200
    ```
 
    - Replace `200` with the desired number of top coins you want to process.

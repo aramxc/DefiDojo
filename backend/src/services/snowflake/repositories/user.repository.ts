@@ -1,7 +1,7 @@
-import { getConnection, useSchema } from '../config/snowflake.config';
+import { getConnection, useSchema } from '../../../config/snowflake.config';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
-import { ensureWarehouse } from '../config/snowflake.config';
+import { ensureWarehouse } from '../../../config/snowflake.config';
 
 interface UserRow {
   USER_ID: string;

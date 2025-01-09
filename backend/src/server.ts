@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import routes from './routes/routes';
-import { UserService } from './services/user.service';
+import { UserService } from './services/snowflake/user.service';
 
 const app = express();
 

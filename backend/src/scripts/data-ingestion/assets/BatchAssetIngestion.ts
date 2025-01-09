@@ -1,5 +1,5 @@
 import { getConnection } from '../../../config/snowflake.config';
-import { CoinGeckoService } from '../../../services/coingecko.service';
+import { CoinGeckoService } from '../../../services/external/coingecko/coingecko.service';
 
 export class AssetIngestion {
     protected connection;
@@ -107,6 +107,7 @@ export class AssetIngestion {
                         TOTAL_SUPPLY: coinInfo.market_data?.total_supply || null,
                         MAX_SUPPLY: coinInfo.market_data?.max_supply || null,
                         CIRCULATING_SUPPLY: coinInfo.market_data?.circulating_supply || null,
+                        GITHUB_REPOS: coinInfo.links?.repos_url?.github || null,
                         GITHUB_FORKS: coinInfo.developer_data?.forks || null,
                         GITHUB_STARS: coinInfo.developer_data?.stars || null,
                         GITHUB_SUBSCRIBERS: coinInfo.developer_data?.subscribers || null,
@@ -151,6 +152,10 @@ export class AssetIngestion {
                 if (value === null || value === undefined) return 'NULL';
                 if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
                 if (typeof value === 'number') return value.toString();
+                if (Array.isArray(value)) {
+                    // Handle arrays (like GitHub repos) by converting to JSON string
+                    return `PARSE_JSON('${JSON.stringify(value)}')`; 
+                }
                 if (typeof value === 'string') {
                     // Escape single quotes and wrap in quotes
                     return `'${value.replace(/'/g, "''")}'`;
@@ -180,6 +185,7 @@ export class AssetIngestion {
                     ${formatValue(asset.TOTAL_SUPPLY)} as TOTAL_SUPPLY,
                     ${formatValue(asset.MAX_SUPPLY)} as MAX_SUPPLY,
                     ${formatValue(asset.CIRCULATING_SUPPLY)} as CIRCULATING_SUPPLY,
+                    ${formatValue(asset.GITHUB_REPOS)} as GITHUB_REPOS,
                     ${formatValue(asset.GITHUB_FORKS)} as GITHUB_FORKS,
                     ${formatValue(asset.GITHUB_STARS)} as GITHUB_STARS,
                     ${formatValue(asset.GITHUB_SUBSCRIBERS)} as GITHUB_SUBSCRIBERS,
@@ -210,6 +216,7 @@ export class AssetIngestion {
                         TOTAL_SUPPLY = source.TOTAL_SUPPLY,
                         MAX_SUPPLY = source.MAX_SUPPLY,
                         CIRCULATING_SUPPLY = source.CIRCULATING_SUPPLY,
+                        GITHUB_REPOS = source.GITHUB_REPOS,
                         GITHUB_FORKS = source.GITHUB_FORKS,
                         GITHUB_STARS = source.GITHUB_STARS,
                         GITHUB_SUBSCRIBERS = source.GITHUB_SUBSCRIBERS,
@@ -225,7 +232,7 @@ export class AssetIngestion {
                         HASHING_ALGORITHM, DESCRIPTION, HOMEPAGE_URL, WHITEPAPER_URL,
                         SUBREDDIT_URL, IMAGE_URL, COUNTRY_ORIGIN, GENESIS_DATE,
                         TOTAL_SUPPLY, MAX_SUPPLY, CIRCULATING_SUPPLY,
-                        GITHUB_FORKS, GITHUB_STARS, GITHUB_SUBSCRIBERS,
+                        GITHUB_REPOS, GITHUB_FORKS, GITHUB_STARS, GITHUB_SUBSCRIBERS,
                         GITHUB_TOTAL_ISSUES, GITHUB_CLOSED_ISSUES,
                         GITHUB_PULL_REQUESTS_MERGED, GITHUB_PULL_REQUEST_CONTRIBUTORS,
                         CREATED_AT, UPDATED_AT
@@ -237,10 +244,12 @@ export class AssetIngestion {
                         source.DESCRIPTION, source.HOMEPAGE_URL, source.WHITEPAPER_URL,
                         source.SUBREDDIT_URL, source.IMAGE_URL, source.COUNTRY_ORIGIN,
                         source.GENESIS_DATE, source.TOTAL_SUPPLY, source.MAX_SUPPLY,
-                        source.CIRCULATING_SUPPLY, source.GITHUB_FORKS, source.GITHUB_STARS,
-                        source.GITHUB_SUBSCRIBERS, source.GITHUB_TOTAL_ISSUES,
-                        source.GITHUB_CLOSED_ISSUES, source.GITHUB_PULL_REQUESTS_MERGED,
-                        source.GITHUB_PULL_REQUEST_CONTRIBUTORS, source.CREATED_AT, source.UPDATED_AT
+                        source.CIRCULATING_SUPPLY, source.GITHUB_REPOS, source.GITHUB_FORKS,
+                        source.GITHUB_STARS, source.GITHUB_SUBSCRIBERS,
+                        source.GITHUB_TOTAL_ISSUES, source.GITHUB_CLOSED_ISSUES,
+                        source.GITHUB_PULL_REQUESTS_MERGED,
+                        source.GITHUB_PULL_REQUEST_CONTRIBUTORS, source.CREATED_AT,
+                        source.UPDATED_AT
                     )
             `;
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CoinGeckoService } from '../services/coingecko.service';
+import { CoinGeckoService } from '../services/external/coingecko/coingecko.service';
 import { SYMBOL_TO_COINGECKO_ID } from '../config/constants';
 import NodeCache from 'node-cache';
 
