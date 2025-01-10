@@ -63,3 +63,5 @@ snowflake_logs/
 TODO.md
 
 .env
+
+.eslintrc.js

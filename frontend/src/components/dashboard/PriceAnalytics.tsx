@@ -164,10 +164,15 @@ const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: Da
 
 interface PriceAnalyticsProps {
   symbol: string;
-  onClose: () => void;
+  onClose?: () => void;
+  closeable?: boolean;
 }
 
-export const PriceAnalytics = memo(({ symbol, onClose }: PriceAnalyticsProps) => {
+export const PriceAnalytics = memo(({ 
+  symbol, 
+  onClose, 
+  closeable = false 
+}: PriceAnalyticsProps) => {
     const { selectedTimezone, setTimezone } = useTimezone();
     const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
     const [dataType, setDataType] = useState<DataType>('price');
@@ -210,21 +215,23 @@ export const PriceAnalytics = memo(({ symbol, onClose }: PriceAnalyticsProps) =>
         if (!metrics) return <div>No metrics available</div>;
 
         return (
-            <div className="relative overflow-hidden rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.03)] group">
+            <div className="relative overflow-hidden h-full rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.03)] group">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90" />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-500/5" />
                 
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onClose}
-                    className="absolute top-4 right-4 z-20
-                             w-8 h-8 flex items-center justify-center
-                             rounded-full bg-red-500/5 text-red-300
-                             hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
-                >
-                    ×
-                </motion.button>
+                {closeable && onClose && (
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={onClose}
+                        className="absolute top-4 right-4 z-20
+                                 w-8 h-8 flex items-center justify-center
+                                 rounded-full bg-red-500/5 text-red-300
+                                 hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
+                    >
+                        ×
+                    </motion.button>
+                )}
                 
                 <div className="relative p-6 space-y-6">
                     {/* Title Section */}

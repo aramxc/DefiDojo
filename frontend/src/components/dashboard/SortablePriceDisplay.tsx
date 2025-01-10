@@ -32,7 +32,7 @@ export const SortablePriceDisplay = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
+    <div ref={setNodeRef} style={style} className="relative group mb-3 last:mb-0">
       <div
         {...attributes}
         {...listeners}

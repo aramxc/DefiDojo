@@ -11,8 +11,11 @@ import {
 import { 
   TrendingUp, TrendingDown, Schedule, Assessment,
   ShowChart, PieChart, Timeline as TimelineIcon,
-  Notifications, Speed
+  Notifications, Speed, Analytics, 
+  MonetizationOn, Insights, DataUsage
 } from '@mui/icons-material';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -28,6 +31,35 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = useState(selectedTickers);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        
+        const newItems = [...items];
+        newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, active.id);
+        
+        return newItems;
+      });
+    }
+  };
+
+  useEffect(() => {
+    setItems(selectedTickers);
+  }, [selectedTickers]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -51,7 +83,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <div className="h-[calc(100dvh-var(--navbar-height))] flex flex-col px-4 py-2 sm:p-6 lg:p-8">
-        {/* Main Container */}
+        
+        {/* First Section - Ticker Input and Main Charts */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,41 +105,51 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5">
+            <div className="flex-1 flex flex-col lg:flex-row divide-white/5">
               {/* Left Column - Tickers List */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="lg:w-72 p-6 overflow-y-auto
+                className="lg:w-72 p-6 max-h-[calc(100vh-16rem)] overflow-y-auto
+                          custom-scrollbar
                           scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
                           bg-gradient-to-b from-white/[0.03] to-transparent"
               >
-                {selectedTickers.map((ticker) => (
-                  <div key={ticker} 
-                       className="mb-4 last:mb-0 
-                                 transform hover:scale-[1.02] hover:-translate-y-0.5 
-                                 transition-all duration-300 ease-out">
-                    <SortablePriceDisplay
-                      id={ticker}
-                      symbol={ticker}
-                      onRemove={() => onRemoveTicker(ticker)}
-                      onSelectSymbol={setSelectedSymbol}
-                    />
-                  </div>
-                ))}
+                <DndContext 
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext 
+                    items={items}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="pr-2 pb-6 space-y-2">
+                      {items.map((ticker) => (
+                        <SortablePriceDisplay
+                          key={ticker}
+                          id={ticker}
+                          symbol={ticker}
+                          onRemove={() => onRemoveTicker(ticker)}
+                          onSelectSymbol={setSelectedSymbol}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </motion.div>
 
               {/* Center Column - Main Charts */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex-1 p-6 flex flex-col gap-6
+                className="flex-1 p-6 h-full
                           bg-gradient-to-b from-white/[0.02] to-transparent"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="h-[65%] rounded-xl
+                  className="h-full rounded-xl
                             shadow-[0_4px_24px_-8px_rgba(0,0,0,0.3)]
                             bg-white/5
                             backdrop-blur-xl"
@@ -179,7 +222,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
                      border border-white/[0.05]
-                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
+                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]
+                     after:absolute after:inset-0 
+                     after:bg-[radial-gradient(circle_at_50%_-20%,rgba(129,140,248,0.05),transparent_70%)]
+                     after:z-[-1]
+                     relative"
         >
           {/* Command Center Header */}
           <div className="p-6 border-b border-white/[0.05]">

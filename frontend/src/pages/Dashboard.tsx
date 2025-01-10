@@ -117,6 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <PriceAnalytics 
                   symbol={selectedSymbol} 
                   onClose={() => setSelectedSymbol(null)} 
+                  closeable={true}
                 />
               </motion.div>
             )}
