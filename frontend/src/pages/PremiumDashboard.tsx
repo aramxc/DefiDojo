@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import TickerInputForm from '../components/dashboard/TickerInputForm';
-import { PriceAnalytics } from '../components/dashboard/PriceAnalytics';
-import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { StatCard } from '../components/dashboard/StatCard';
+import { 
+  TrendingUp, TrendingDown, Assessment,
+  ShowChart, Notifications, Speed
+} from '@mui/icons-material';
+import {
+  Card, CardContent, LinearProgress, Chip,
+  Alert, AlertTitle
+} from '@mui/material';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -15,118 +21,116 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onAddTickers,
   onRemoveTicker,
 }) => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
-  const [stats, setStats] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!selectedSymbol) return;
-      setIsLoading(true);
-      try {
-        // Replace with your actual API call
-        const response = await fetch(`/api/stats/${selectedSymbol}`);
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [selectedSymbol]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="p-4 sm:p-6 lg:p-8 h-screen flex flex-col">
-        <div className="max-w-[1920px] mx-auto w-full">
-          <div className="relative z-10 h-16 bg-slate-800/50 rounded-xl backdrop-blur-sm border border-white/5 p-3 mb-4">
-            <TickerInputForm onAddTickers={onAddTickers} />
-          </div>
-        </div>
-
-        <div className="max-w-[1920px] mx-auto w-full flex-1">
-          <div className="h-[calc(100vh-15rem)] grid grid-cols-12 gap-4">
-            {/* Left Sidebar */}
-            <div className="col-span-2 bg-slate-800/50 rounded-xl backdrop-blur-sm border border-white/5 overflow-hidden">
-              <div className="h-full overflow-y-auto pr-2 p-3 space-y-3 
-                            scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                {selectedTickers.map((ticker) => (
-                  <SortablePriceDisplay
-                    key={ticker}
-                    id={ticker}
-                    symbol={ticker}
-                    onRemove={() => onRemoveTicker(ticker)}
-                    onSelectSymbol={setSelectedSymbol}
-                  />
-                ))}
-              </div>
-            </div>
-      
-            {/* Center Content */}
-            <div className="col-span-7 bg-slate-800/50 rounded-xl backdrop-blur-sm border border-white/5">
-              <PriceAnalytics
-                symbol={selectedSymbol}
-                onClose={() => {}}
-              />
-            </div>
-      
-            {/* Right Sidebar */}
-            <div className="col-span-3 h-full flex flex-col gap-4">
-              <StatCard
-                title="Market Overview"
-                stats={[
-                  { label: "24h Volume", value: "$16.55B" },
-                  { label: "Market Cap", value: "$1.82T" },
-                  { label: "24h Range", value: "$91,187 - $95,363" },
-                ]}
-                isLoading={isLoading}
-              />
-              <StatCard
-                title="Network Stats"
-                stats={[
-                  { label: "Hash Rate", value: "826.38 EH/s" },
-                  { label: "Difficulty", value: "109.78T" },
-                  { label: "Block Height", value: "878,551" },
-                ]}
-                isLoading={isLoading}
-              />
-              <StatCard
-                title="Fee Estimates"
-                stats={[
-                  { label: "Next Block", value: "6 sat/vB" },
-                  { label: "Hour", value: "2 sat/vB" },
-                  { label: "Mempool", value: "90,544 tx" },
-                ]}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Second Viewport - Additional Charts */}
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="max-w-[1920px] mx-auto">
-          <div className="grid grid-cols-3 gap-4 h-[80vh]">
-            {[1, 2, 3].map((i) => (
-              <div 
-                key={i} 
-                className="bg-slate-800/50 rounded-xl backdrop-blur-sm border border-white/5 p-4"
+    <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <div className="h-[calc(100dvh-var(--navbar-height))] flex flex-col px-4 py-2 sm:p-6 lg:p-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex-1 w-full max-w-[1920px] mx-auto rounded-2xl overflow-hidden
+                     backdrop-blur-xl 
+                     bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
+                     border border-white/[0.05]
+                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]
+                     after:absolute after:inset-0 
+                     after:bg-[radial-gradient(circle_at_50%_-20%,rgba(129,140,248,0.05),transparent_70%)]
+                     after:z-[-1]
+                     relative"
+        >
+          {/* Command Center Grid */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Market Metrics */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
               >
-                <h3 className="text-lg font-semibold text-gray-300 mb-4">
-                  Additional Chart {i}
-                </h3>
-                {/* Chart component will go here */}
-              </div>
-            ))}
+                <StatCard
+                  title="Market Overview"
+                  stats={[
+                    { label: "Total Market Cap", value: "$2.1T", change: 5.2 },
+                    { label: "24h Volume", value: "$86.2B", change: -2.8 },
+                    { label: "BTC Dominance", value: "42%", change: 0.5 }
+                  ]}
+                />
+              </motion.div>
+
+              {/* Trading Activity */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
+                  <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-gray-200 font-semibold">Trading Activity</h3>
+                      <Speed className="text-blue-400" />
+                    </div>
+                    <div className="space-y-4">
+                      {['BTC', 'ETH', 'SOL'].map((token) => (
+                        <div key={token} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-400">{token}/USD</span>
+                            <span className="text-gray-200">78% Buy</span>
+                          </div>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={78} 
+                            className="h-1.5 rounded-full bg-slate-700"
+                            sx={{
+                              '& .MuiLinearProgress-bar': {
+                                background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
+                              }
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Alert Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
+                  <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-gray-200 font-semibold">Active Alerts</h3>
+                      <Notifications className="text-blue-400" />
+                    </div>
+                    <div className="space-y-3">
+                      <Alert 
+                        severity="warning"
+                        className="bg-amber-400/10 border border-amber-400/20"
+                      >
+                        <AlertTitle>BTC Volatility Alert</AlertTitle>
+                        Unusual volume detected in the last hour
+                      </Alert>
+                      <Alert 
+                        severity="info"
+                        className="bg-blue-400/10 border border-blue-400/20"
+                      >
+                        <AlertTitle>ETH Price Target</AlertTitle>
+                        Approaching resistance at $2,800
+                      </Alert>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Add more grid items as needed */}
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
-};  
+};
 
 export default AdvancedDashboard;
