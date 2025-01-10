@@ -24,7 +24,7 @@ export interface HistoricalPriceData {
   };
 }
 
-export type TimeframeType = '1D' | '7D' | '1M' | '6M' | '1Y';
+export type TimeframeType = '1D' | '7D' | '1M' | '6M' | '1Y' | '5Y';
 
 export class HistoricalPriceService {
   private baseUrl = `${API_BASE_URL}/prices`;

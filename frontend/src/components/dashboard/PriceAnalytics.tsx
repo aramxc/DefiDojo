@@ -1,11 +1,13 @@
-import React, { useState, useEffect, memo, useMemo } from 'react';
+import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import { historicalPriceService, TimeframeType } from '../../services/api/historicalPrice.service';
 import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
 import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
+import { checkProAccess } from '../../services/web3/contract.service';
+import { PurchaseDataModal } from '../premium/PurchaseDataModal';
 
-const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y'];
+const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y', '5Y'];
 type DataType = 'price' | 'marketCap' | 'volume';
 
 // Helper functions
@@ -180,6 +182,35 @@ export const PriceAnalytics = memo(({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<any>(null);
+    const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+    const prevTimeframeRef = useRef<TimeframeType>('1D');
+
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { opacity: 0.4; }
+                50% { opacity: 1; }
+                100% { opacity: 0.4; }
+            }
+
+            @keyframes burn {
+                0% { transform: translateY(0) scale(1); opacity: 0.3; }
+                50% { transform: translateY(-2px) scale(1.02); opacity: 0.6; }
+                100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            }
+        `;
+        document.head.appendChild(style);
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (timeframe !== '5Y') {
+            prevTimeframeRef.current = timeframe;
+        }
+    }, [timeframe]);
 
     const fetchData = useMemo(() => async () => {
         if (!symbol) return;
@@ -200,6 +231,39 @@ export const PriceAnalytics = memo(({
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const handleTimeframeClick = async (tf: TimeframeType) => {
+        console.log('Timeframe clicked:', tf);
+
+        if (tf === '5Y') {
+            try {
+                console.log('Checking pro access...');
+                const hasAccess = await checkProAccess(symbol);
+                console.log('Pro access status:', hasAccess);
+                
+                if (!hasAccess) {
+                    console.log('Opening modal...');
+                    setShowPurchaseModal(true);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking pro access:', error);
+                setShowPurchaseModal(true);
+                return;
+            }
+        }
+        setTimeframe(tf);
+    };
+
+    const handleModalClose = () => {
+        setShowPurchaseModal(false);
+        setTimeframe(prevTimeframeRef.current);
+    };
+
+    const handleModalSuccess = () => {
+        setShowPurchaseModal(false);
+        setTimeframe('5Y');
+    };
 
     const content = useMemo(() => {
         if (!symbol) return null;
@@ -299,29 +363,62 @@ export const PriceAnalytics = memo(({
                             {TIMEFRAMES.map((tf) => (
                                 <button
                                     key={tf}
-                                    onClick={() => setTimeframe(tf)}
+                                    onClick={() => handleTimeframeClick(tf)}
                                     className={`
                                         px-4 py-2.5 
                                         rounded-lg 
                                         font-medium
                                         text-sm
                                         transition-all duration-200
-                                        ${timeframe === tf 
-                                            ? `relative overflow-hidden
-                                               text-white
-                                               before:absolute before:inset-0 
-                                               before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                                               before:backdrop-blur-xl
-                                               after:absolute after:inset-0 
-                                               after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                                               shadow-[0_0_10px_rgba(59,130,246,0.1)]` 
-                                            : `text-gray-400 
-                                               hover:text-white 
-                                               hover:bg-slate-700/50`
+                                        ${tf === '5Y' 
+                                            ? timeframe === '5Y'
+                                                ? `relative overflow-hidden
+                                                   text-white
+                                                   before:absolute before:inset-0 
+                                                   before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
+                                                   before:backdrop-blur-xl
+                                                   before:animate-[burn_3s_ease-in-out_infinite]
+                                                   after:absolute after:inset-0 
+                                                   after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
+                                                   shadow-[0_0_25px_rgba(236,72,153,0.5)]
+                                                   [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
+                                                : `relative overflow-hidden
+                                                   text-white
+                                                   before:absolute before:inset-0 
+                                                   before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
+                                                   before:backdrop-blur-xl
+                                                   before:animate-[burn_3s_ease-in-out_infinite]
+                                                   after:absolute after:inset-[-1px] after:rounded-lg
+                                                   after:bg-gradient-to-t after:from-pink-500/30 after:to-transparent
+                                                   after:animate-[pulse_2s_ease-in-out_infinite]
+                                                   hover:text-white
+                                                   hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
+                                                   hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80
+                                                   shadow-[0_0_20px_rgba(236,72,153,0.4)]
+                                                   group`
+                                            : timeframe === tf
+                                                ? `relative overflow-hidden
+                                                   text-white
+                                                   before:absolute before:inset-0 
+                                                   before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                                                   before:backdrop-blur-xl
+                                                   after:absolute after:inset-0 
+                                                   after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                                                   shadow-[0_0_10px_rgba(59,130,246,0.1)]`
+                                                : `text-gray-400 
+                                                   hover:text-white 
+                                                   hover:bg-slate-700/50`
                                         }
                                     `}
                                 >
-                                    <span className="relative z-10">{tf}</span>
+                                    <span className="relative z-10 inline-flex items-center">
+                                        {tf}
+                                        {tf === '5Y' && timeframe !== '5Y'}
+                                    </span>
+                                    {tf === '5Y' && (
+                                        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/20 to-transparent 
+                                               animate-[burn_4s_ease-in-out_infinite_0.5s]" />
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -381,7 +478,17 @@ export const PriceAnalytics = memo(({
         );
     }, [currentData, metrics, loading, error, dataType, timeframe, setTimezone, selectedTimezone, symbol, onClose]);
 
-    return content;
+    return (
+        <>
+            {content}
+            <PurchaseDataModal
+                isOpen={showPurchaseModal}
+                onClose={handleModalClose}
+                symbol={symbol}
+                onSuccess={handleModalSuccess}
+            />
+        </>
+    );
 });
 
 PriceAnalytics.displayName = 'PriceAnalytics';

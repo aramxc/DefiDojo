@@ -17,20 +17,31 @@ declare global {
 }
 
 const initializeContract = async () => {
-  if (isInitializing) return;
-  
-  try {
-    isInitializing = true;
-    if (typeof window.ethereum !== 'undefined') {
-      provider = new BrowserProvider(window.ethereum);
-      signer = await provider.getSigner();
-      contract = new Contract(CONTRACT_ADDRESS, LOCK_ABI, signer);
-    } else {
-      toast.error('Please install metamask!');
+    if (isInitializing) {
+        // Wait for initialization to complete
+        while (isInitializing) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        return;
     }
-  } finally {
-    isInitializing = false;
-  }
+    
+    if (contract) return; // Already initialized
+    
+    try {
+        isInitializing = true;
+        if (typeof window.ethereum !== 'undefined') {
+            provider = new BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            contract = new Contract(CONTRACT_ADDRESS, LOCK_ABI, signer);
+        } else {
+            throw new Error('Please install metamask!');
+        }
+    } catch (error) {
+        console.error('Error initializing contract:', error);
+        throw error;
+    } finally {
+        isInitializing = false;
+    }
 };
 
 // Function to request account
@@ -121,6 +132,31 @@ export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
     toast.success(`Withdrawal successful!`);
   } catch (error: any) {
     toast.error(`Error withdrawing funds: ${error.message}`);
+    throw error;
+  }
+};
+
+export const checkProAccess = async (symbol: string): Promise<boolean> => {
+  try {
+    await initializeContract();
+    const hasAccess = await contract.hasProAccess(symbol);
+    return hasAccess;
+  } catch (error) {
+    console.error('Error checking pro access:', error);
+    return false;
+  }
+};
+
+export const purchaseProAccess = async (symbol: string): Promise<void> => {
+  try {
+    await initializeContract();
+    const price = await contract.getProAccessPrice();
+    toast.info(`Purchasing pro access for ${symbol}...`);
+    const purchaseTx = await contract.purchaseProAccess(symbol, { value: price });
+    await purchaseTx.wait();
+    toast.success(`Successfully purchased pro access for ${symbol}!`);
+  } catch (error: any) {
+    toast.error(`Error purchasing pro access: ${error.message}`);
     throw error;
   }
 };
