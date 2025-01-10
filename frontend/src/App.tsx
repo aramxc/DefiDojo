@@ -10,6 +10,7 @@ import NavigationBar from './components/NavigationBar';
 import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
 import CreateUserForm from './components/auth/CreateUserForm';
+import AdvancedDashboard from './pages/PremiumDashboard';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
@@ -102,7 +103,17 @@ function App() {
                         onRemoveTicker={handleRemoveTicker}
                         isSidebarExpanded={isSidebarExpanded}
                       />
-                    } 
+                    }
+                  />
+                  <Route 
+                    path="/advanced-dashboard" 
+                    element={
+                      <AdvancedDashboard 
+                        selectedTickers={selectedTickers}
+                        onAddTickers={handleAddTickers}
+                        onRemoveTicker={handleRemoveTicker}
+                      />
+                    }
                   />
                   <Route 
                     path="/learning" 

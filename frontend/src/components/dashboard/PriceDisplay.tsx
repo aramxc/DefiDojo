@@ -1,5 +1,5 @@
 import React, { useEffect, useState, memo, useMemo } from 'react';
-import { BarChart, Info } from '@mui/icons-material';
+import { BarChart, Info, TrendingUp, Schedule, People } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { priceService, PriceData } from '../../services/api/price.service';
 import { infoService, CoinInfo } from '../../services/api/info.service';
@@ -54,56 +54,54 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
     error: string | null;
     CardControls: React.FC<{ isBackside?: boolean }>;
 }) => {
-    if (isLoading) {
-        return <div className="p-4">Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="p-4 text-red-500">{error}</div>;
-    }
-
-    if (!assetInfo) {
-        return <div className="p-4">No information available</div>;
-    }
+    if (isLoading || !assetInfo) return <div className="p-4">Loading...</div>;
 
     return (
         <div className="flex flex-col h-full" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
             <div className="flex items-center justify-between p-4">
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
-                    About {assetInfo?.NAME}
+                    About {assetInfo.NAME}
                 </h3>
                 <CardControls isBackside />
             </div>
 
-            <div className="flex-1 p-6">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                    {assetInfo?.GENESIS_DATE && (
-                        <div>
-                            <span className="text-gray-500">Launch Date</span>
-                            <div className="text-gray-300 mt-1 font-medium">
-                                {new Date(assetInfo.GENESIS_DATE).toLocaleDateString()}
-                            </div>
-                        </div>
-                    )}
-                    
-                    {assetInfo?.GITHUB_STARS && (
-                        <div>
-                            <span className="text-gray-500">GitHub Stars</span>
-                            <div className="text-gray-300 mt-1 font-medium">
-                                {assetInfo.GITHUB_STARS.toLocaleString()}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {assetInfo?.DESCRIPTION && (
-                    <div className="mt-4">
-                        <span className="text-gray-500">About</span>
-                        <div className="text-gray-300 mt-1 text-sm line-clamp-4">
-                            {assetInfo.DESCRIPTION}
-                        </div>
+            {/* Description */}
+            <div className="flex-1 px-6 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/10 scrollbar-track-transparent">
+                {assetInfo.DESCRIPTION && (
+                    <div className="text-gray-300/90 text-sm leading-relaxed">
+                        {assetInfo.DESCRIPTION}
                     </div>
                 )}
+            </div>
+
+            {/* Links Footer */}
+            <div className="p-4 border-t border-gray-700/20">
+                <div className="flex flex-wrap gap-2 justify-center">
+                    {[
+                        { url: assetInfo.WHITEPAPER_URL, label: 'Whitepaper' },
+                        { url: assetInfo.SUBREDDIT_URL, label: 'Reddit' },
+                        { url: assetInfo.GITHUB_REPOS?.[0], label: 'GitHub' }
+                    ].filter(link => link.url).map(link => (
+                        <a
+                            key={link.label}
+                            href={link.url || ''}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative overflow-hidden rounded-lg text-xs px-4 py-1.5
+                                   text-gray-300/90 transition-all duration-300 ease-in-out
+                                   before:absolute before:inset-0 
+                                   before:bg-gradient-to-r before:from-blue-400/10 before:via-cyan-400/10 before:to-teal-400/10
+                                   before:transition-all before:duration-300 before:ease-in-out
+                                   hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]
+                                   hover:before:from-blue-400/20 hover:before:via-cyan-400/20 hover:before:to-teal-400/20
+                                   active:scale-[0.98] transform"
+                        >
+                            <span className="relative z-10">{link.label}</span>
+                        </a>
+                    ))}
+                </div>
             </div>
         </div>
     );

@@ -50,6 +50,12 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
             <div className="flex items-center space-x-8 mr-8">
               <NavLink to="/">Dashboard</NavLink>
               <NavLink to="/learning">Learning</NavLink>
+              <NavLink to="/advanced-dashboard">
+                Dashboard
+                <span className="ml-1 text-[10px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 text-white px-1.5 py-0.5 rounded-full">
+                  BETA
+                </span>
+              </NavLink>
             </div>
 
             <div className="flex items-center space-x-4">
