@@ -15,7 +15,9 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ setAccount }) => {
+const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ 
+  setAccount 
+}): JSX.Element => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

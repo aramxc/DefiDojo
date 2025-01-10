@@ -19,7 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   selectedTickers, 
   onAddTickers, 
   onRemoveTicker,
-}) => {
+}): JSX.Element => {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   
   // Update items whenever selectedTickers changes

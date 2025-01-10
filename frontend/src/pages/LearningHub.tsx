@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ContentList } from '../components/learning/content/ContentList';
 import { ContentSubmission } from '../components/learning/content/ContentSubmission';
 import { LearningPaths } from '../components/learning/paths/LearningPaths';
-import { TabGroup, TabList, Tab } from '@headlessui/react';
+import { Tab } from '@headlessui/react';
 
-const LearningHub: React.FC = () => {
+
+const LearningHub: React.FC = (): JSX.Element => {
   const [activeTab, setActiveTab] = useState(0);
-  
+
   const tabs = [
     { name: 'Popular Content', icon: '🔥' },
     { name: 'Learning Paths', icon: '🎓' },
@@ -42,8 +43,8 @@ const LearningHub: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <TabGroup onChange={setActiveTab}>
-          <TabList className="flex space-x-2 rounded-xl bg-slate-800/50 p-1">
+        <Tab.Group onChange={setActiveTab}>
+          <Tab.List className="flex space-x-2 rounded-xl bg-slate-800/50 p-1">
             {tabs.map((tab) => (
               <Tab
                 key={tab.name}
@@ -61,7 +62,7 @@ const LearningHub: React.FC = () => {
                 </span>
               </Tab>
             ))}
-          </TabList>
+          </Tab.List>
 
           <div className="mt-8">
             <AnimatePresence mode="wait">
@@ -76,7 +77,7 @@ const LearningHub: React.FC = () => {
               </motion.div>
             </AnimatePresence>
           </div>
-        </TabGroup>
+        </Tab.Group>
       </div>
     </div>
   );

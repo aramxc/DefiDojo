@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import TickerInputForm from '../components/dashboard/TickerInputForm';
+import { PriceAnalytics } from '../components/dashboard/PriceAnalytics';
+import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
 import { StatCard } from '../components/dashboard/StatCard';
-import { 
-  TrendingUp, TrendingDown, Assessment,
-  ShowChart, Notifications, Speed
-} from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import {
   Card, CardContent, LinearProgress, Chip,
   Alert, AlertTitle
 } from '@mui/material';
+import { 
+  TrendingUp, TrendingDown, Schedule, Assessment,
+  ShowChart, PieChart, Timeline as TimelineIcon,
+  Notifications, Speed
+} from '@mui/icons-material';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -21,9 +25,33 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onAddTickers,
   onRemoveTicker,
 }) => {
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!selectedSymbol) return;
+      setIsLoading(true);
+      try {
+        // Replace with your actual API call
+        const response = await fetch(`/api/stats/${selectedSymbol}`);
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [selectedSymbol]);
+
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <div className="h-[calc(100dvh-var(--navbar-height))] flex flex-col px-4 py-2 sm:p-6 lg:p-8">
+        {/* Main Container */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -37,6 +65,129 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                      after:z-[-1]
                      relative"
         >
+          <div className="h-full flex flex-col divide-y divide-white/[0.03]">
+            {/* Header Section - Ticker Input */}
+            <div className="p-6">
+                <TickerInputForm onAddTickers={onAddTickers} />
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5">
+              {/* Left Column - Tickers List */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="lg:w-72 p-6 overflow-y-auto
+                          scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+                          bg-gradient-to-b from-white/[0.03] to-transparent"
+              >
+                {selectedTickers.map((ticker) => (
+                  <div key={ticker} 
+                       className="mb-4 last:mb-0 
+                                 transform hover:scale-[1.02] hover:-translate-y-0.5 
+                                 transition-all duration-300 ease-out">
+                    <SortablePriceDisplay
+                      id={ticker}
+                      symbol={ticker}
+                      onRemove={() => onRemoveTicker(ticker)}
+                      onSelectSymbol={setSelectedSymbol}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Center Column - Main Charts */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 p-6 flex flex-col gap-6
+                          bg-gradient-to-b from-white/[0.02] to-transparent"
+              >
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="h-[65%] rounded-xl
+                            shadow-[0_4px_24px_-8px_rgba(0,0,0,0.3)]
+                            bg-white/5
+                            backdrop-blur-xl"
+                >
+                  <PriceAnalytics 
+                    symbol={selectedSymbol} 
+                    onClose={() => {}} 
+                  />
+                </motion.div>
+              </motion.div>
+
+              {/* Right Column - Stats & Info */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="lg:w-80 p-6 overflow-y-auto
+                          scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+                          bg-gradient-to-b from-white/[0.02] to-transparent"
+              >
+                <div className="space-y-6 hover:space-y-7 transition-all duration-300">
+                  <StatCard
+                    title="Market Overview"
+                    stats={[
+                      {
+                        label: "Total Market Cap",
+                        value: "$2.1T",
+                        change: 5.2
+                      }
+                    ]}
+                  />
+                  <StatCard
+                    title="Volume Statistics"
+                    stats={[
+                      {
+                        label: "24h Volume",
+                        value: "$86.2B",
+                        change: -2.8
+                      }
+                    ]}
+                  />
+                  <StatCard
+                    title="Network Activity"
+                    stats={[
+                      {
+                        label: "Transactions",
+                        value: "1.2M",
+                        change: 12.5
+                      },
+                      {
+                        label: "Active Wallets",
+                        value: "892K",
+                        change: 3.7
+                      }
+                    ]}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Second Section - Command Center Grid */}
+      <div className="min-h-[calc(100dvh-var(--navbar-height))] px-4 py-2 sm:p-6 lg:p-8">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="w-full max-w-[1920px] mx-auto rounded-2xl overflow-hidden
+                     backdrop-blur-xl 
+                     bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
+                     border border-white/[0.05]
+                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
+        >
+          {/* Command Center Header */}
+          <div className="p-6 border-b border-white/[0.05]">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              Command Center
+            </h2>
+          </div>
+
           {/* Command Center Grid */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -92,6 +243,24 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 </Card>
               </motion.div>
 
+              {/* Recent Events Timeline */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="col-span-2"
+              >
+                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl h-full">
+                  <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-gray-200 font-semibold">Market Events</h3>
+                      <TimelineIcon className="text-blue-400" />
+                    </div>
+                    
+                  </CardContent>
+                </Card>
+              </motion.div>
+
               {/* Alert Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -131,6 +300,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       </div>
     </div>
   );
-};
+};  
 
 export default AdvancedDashboard;
