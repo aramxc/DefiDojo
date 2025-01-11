@@ -5,7 +5,7 @@ import TickerInputForm from '../components/dashboard/TickerInputForm';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DndContextProps } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DashboardProps {
   selectedTickers: string[];
@@ -53,12 +53,12 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <div className="h-[calc(100dvh-var(--navbar-height))] flex flex-col px-4 py-2 sm:p-6 lg:p-8">
+    <div className="min-h-screen pt-[var(--navbar-height)] bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <div className="container max-w-7xl mx-auto px-4 py-2 sm:p-6 lg:p-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-7xl mx-auto w-full backdrop-blur-xl bg-white/5 rounded-2xl overflow-hidden"
+          className="w-full backdrop-blur-xl bg-white/5 rounded-2xl overflow-hidden"
         >
           {/* Main Container */}
           <div className="divide-y divide-white/5">
@@ -105,22 +105,32 @@ const Dashboard: React.FC<DashboardProps> = ({
               </DndContextComponent>
             </div>
 
-            {/* Analytics Section */}
-            {selectedSymbol && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="p-6"
-              >
-                <PriceAnalytics 
-                  symbol={selectedSymbol} 
-                  onClose={() => setSelectedSymbol(null)} 
-                  closeable={true}
-                />
-              </motion.div>
-            )}
+            {/* Analytics Section with AnimatePresence */}
+            <AnimatePresence>
+              {selectedSymbol && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ 
+                    duration: 0.3,
+                    height: {
+                      duration: 0.4,
+                      ease: 'easeInOut'
+                    }
+                  }}
+                  className="relative"
+                >
+                  <div className="p-6">
+                    <PriceAnalytics 
+                      symbol={selectedSymbol} 
+                      onClose={() => setSelectedSymbol(null)} 
+                      closeable={true}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>

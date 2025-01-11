@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -29,9 +30,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onRemoveTicker,
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
-  const [stats, setStats] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState(selectedTickers);
+  const { stats, loading, error } = useFetchAssetInfo(selectedSymbol);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -60,25 +60,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   useEffect(() => {
     setItems(selectedTickers);
   }, [selectedTickers]);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!selectedSymbol) return;
-      setIsLoading(true);
-      try {
-        // Replace with your actual API call
-        const response = await fetch(`/api/stats/${selectedSymbol}`);
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [selectedSymbol]);
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -174,36 +155,52 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                     title="Market Overview"
                     stats={[
                       {
-                        label: "Total Market Cap",
-                        value: "$2.1T",
-                        change: 5.2
-                      }
-                    ]}
-                  />
-                  <StatCard
-                    title="Volume Statistics"
-                    stats={[
+                        label: "Market Cap Rank",
+                        value: stats?.marketOverview.marketCap || 'N/A',
+                        change: stats?.marketOverview.change
+                      },
                       {
-                        label: "24h Volume",
-                        value: "$86.2B",
-                        change: -2.8
+                        label: "Circulating Supply",
+                        value: stats?.marketOverview.volume || 'N/A'
+                      },
+                      {
+                        label: "Max Supply",
+                        value: stats?.marketOverview.supply || 'N/A'
                       }
                     ]}
+                    isLoading={loading}
                   />
+                  
                   <StatCard
                     title="Network Activity"
                     stats={[
                       {
-                        label: "Transactions",
-                        value: "1.2M",
-                        change: 12.5
+                        label: "Github Activity",
+                        value: stats?.networkActivity.githubActivity || 'N/A',
+                        change: stats?.networkActivity.change
                       },
                       {
-                        label: "Active Wallets",
-                        value: "892K",
-                        change: 3.7
+                        label: "Contributors",
+                        value: stats?.networkActivity.contributors || 'N/A'
                       }
                     ]}
+                    isLoading={loading}
+                  />
+                  
+                  <StatCard
+                    title="Development Metrics"
+                    stats={[
+                      {
+                        label: "Github Forks",
+                        value: stats?.developmentMetrics.forks || 'N/A',
+                        change: stats?.developmentMetrics.change
+                      },
+                      {
+                        label: "Github Stars",
+                        value: stats?.developmentMetrics.stars || 'N/A'
+                      }
+                    ]}
+                    isLoading={loading}
                   />
                 </div>
               </motion.div>
@@ -247,10 +244,21 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <StatCard
                   title="Market Overview"
                   stats={[
-                    { label: "Total Market Cap", value: "$2.1T", change: 5.2 },
-                    { label: "24h Volume", value: "$86.2B", change: -2.8 },
-                    { label: "BTC Dominance", value: "42%", change: 0.5 }
+                    { 
+                      label: "Market Cap Rank", 
+                      value: stats?.marketOverview.marketCap || 'N/A',
+                      change: stats?.marketOverview.change 
+                    },
+                    { 
+                      label: "Circulating Supply", 
+                      value: stats?.marketOverview.volume || 'N/A'
+                    },
+                    { 
+                      label: "Max Supply", 
+                      value: stats?.marketOverview.supply || 'N/A'
+                    }
                   ]}
+                  isLoading={loading}
                 />
               </motion.div>
 
@@ -263,28 +271,101 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
                   <CardContent>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Trading Activity</h3>
+                      <h3 className="text-gray-200 font-semibold">Development Activity</h3>
                       <Speed className="text-blue-400" />
                     </div>
                     <div className="space-y-4">
-                      {['BTC', 'ETH', 'SOL'].map((token) => (
-                        <div key={token} className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">{token}/USD</span>
-                            <span className="text-gray-200">78% Buy</span>
-                          </div>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={78} 
-                            className="h-1.5 rounded-full bg-slate-700"
-                            sx={{
-                              '& .MuiLinearProgress-bar': {
-                                background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
-                              }
-                            }}
-                          />
+                      {/* Github Activity Progress */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Github Activity</span>
+                          <span className="text-gray-200">
+                            {stats?.networkActivity.githubActivity || 'N/A'}
+                          </span>
                         </div>
-                      ))}
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={stats?.networkActivity.change || 0} 
+                          className="h-1.5 rounded-full bg-slate-700"
+                          sx={{
+                            '& .MuiLinearProgress-bar': {
+                              background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
+                            }
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Contributors Progress */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Contributors</span>
+                          <span className="text-gray-200">
+                            {stats?.developmentMetrics.change || 0}
+                          </span>
+                        </div>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={stats?.developmentMetrics.change || 0} 
+                          className="h-1.5 rounded-full bg-slate-700"
+                          sx={{
+                            '& .MuiLinearProgress-bar': {
+                              background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Alert Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
+                  <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-gray-200 font-semibold">Asset Info</h3>
+                      <Notifications className="text-blue-400" />
+                    </div>
+                    <div className="space-y-3">
+                      {error ? (
+                        <Alert 
+                          severity="error"
+                          className="bg-red-400/10 border border-red-400/20"
+                        >
+                          <AlertTitle>Error Loading Data</AlertTitle>
+                          {error}
+                        </Alert>
+                      ) : loading ? (
+                        <Alert 
+                          severity="info"
+                          className="bg-blue-400/10 border border-blue-400/20"
+                        >
+                          <AlertTitle>Loading</AlertTitle>
+                          Fetching asset information...
+                        </Alert>
+                      ) : (
+                        <>
+                          <Alert 
+                            severity="info"
+                            className="bg-blue-400/10 border border-blue-400/20"
+                          >
+                            <AlertTitle>Market Cap Rank</AlertTitle>
+                            {stats?.marketOverview.marketCap || 'N/A'}
+                          </Alert>
+                          <Alert 
+                            severity="warning"
+                            className="bg-amber-400/10 border border-amber-400/20"
+                          >
+                            <AlertTitle>Development Activity</AlertTitle>
+                            {`${stats?.networkActivity.githubActivity || 'N/A'} recent commits`}
+                          </Alert>
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -300,47 +381,44 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl h-full">
                   <CardContent>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Market Events</h3>
+                      <h3 className="text-gray-200 font-semibold">Asset Details</h3>
                       <TimelineIcon className="text-blue-400" />
                     </div>
-                    
+                    <div className="space-y-4">
+                      {loading ? (
+                        <LinearProgress />
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-400">Github Stars</p>
+                            <p className="text-lg text-gray-200">
+                              {stats?.developmentMetrics.stars || 'N/A'}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-400">Pull Requests</p>
+                            <p className="text-lg text-gray-200">
+                              {stats?.developmentMetrics.pullRequests || 'N/A'}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-400">Forks</p>
+                            <p className="text-lg text-gray-200">
+                              {stats?.developmentMetrics.forks || 'N/A'}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-400">Contributors</p>
+                            <p className="text-lg text-gray-200">
+                              {stats?.networkActivity.contributors || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
-
-              {/* Alert Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Active Alerts</h3>
-                      <Notifications className="text-blue-400" />
-                    </div>
-                    <div className="space-y-3">
-                      <Alert 
-                        severity="warning"
-                        className="bg-amber-400/10 border border-amber-400/20"
-                      >
-                        <AlertTitle>BTC Volatility Alert</AlertTitle>
-                        Unusual volume detected in the last hour
-                      </Alert>
-                      <Alert 
-                        severity="info"
-                        className="bg-blue-400/10 border border-blue-400/20"
-                      >
-                        <AlertTitle>ETH Price Target</AlertTitle>
-                        Approaching resistance at $2,800
-                      </Alert>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Add more grid items as needed */}
             </div>
           </div>
         </motion.div>
