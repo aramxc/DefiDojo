@@ -4,22 +4,84 @@ import { SYMBOL_TO_COINGECKO_ID } from '../config/constants';
 import NodeCache from 'node-cache';
 
 export class HistoricalPriceController {
-    private coinGeckoService: CoinGeckoService;
-    private cache: NodeCache;
+    private static instance: HistoricalPriceController;
+    private coinGeckoService: CoinGeckoService = new CoinGeckoService();
+    private cache: NodeCache = new NodeCache({ 
+        stdTTL: 24 * 60 * 60,
+        checkperiod: 60
+    });
 
     constructor() {
-        this.coinGeckoService = new CoinGeckoService();
-        this.cache = new NodeCache();
+        if (HistoricalPriceController.instance) {
+            return HistoricalPriceController.instance;
+        }
+        HistoricalPriceController.instance = this;
+        
+        // Log cache initialization
+        console.log('HistoricalPriceController initialized with new cache');
     }
+
+    getHistoricalPrices = async (req: Request, res: Response) => {
+        try {
+            const { coinId, timeframe } = req.params;
+            const symbol = coinId.toUpperCase();
+            const geckoId = SYMBOL_TO_COINGECKO_ID[symbol];
+            
+            if (!geckoId) {
+                return res.status(400).json({ error: `Unsupported symbol: ${symbol}` });
+            }
+
+            const cacheKey = `historical-${geckoId}-${timeframe}`;
+            console.log(`Checking cache for key: ${cacheKey}`);
+            
+            const cachedData = this.cache.get(cacheKey);
+            if (cachedData) {
+                console.log(`Cache hit for ${symbol} ${timeframe}`);
+                return res.json(cachedData);
+            }
+
+            console.log(`Cache miss for ${symbol} ${timeframe} - fetching from API`);
+            
+            const { from, to } = this.getTimeRange(timeframe);
+            const data = await this.coinGeckoService.getHistoricalRangeData(geckoId, from, to);
+            
+            const formattedData = {
+                id: geckoId,
+                symbol: symbol,
+                timeframe,
+                data: Array.from({ length: data.prices.length }, (_, i) => ({
+                    timestamp: data.prices[i]?.[0] ?? 0,
+                    price: data.prices[i]?.[1] ?? 0,
+                    marketCap: data.market_caps[i]?.[1] ?? 0,
+                    volume: data.total_volumes[i]?.[1] ?? 0
+                })),
+                metrics: {
+                    price: this.calculateMetrics(data.prices.map(p => p?.[1] ?? 0)),
+                    marketCap: this.calculateMetrics(data.market_caps.map(m => m?.[1] ?? 0)),
+                    volume: this.calculateMetrics(data.total_volumes.map(v => v?.[1] ?? 0))
+                }
+            };
+
+            const cacheDuration = this.getCacheTTL(timeframe);
+            const cacheSuccess = this.cache.set(cacheKey, formattedData, cacheDuration);
+            console.log(`Cache ${cacheSuccess ? 'set' : 'failed'} for ${symbol} ${timeframe} (TTL: ${cacheDuration}s)`);
+
+            res.json(formattedData);
+        } catch (error: unknown) {
+            console.error(`API Error: ${req.params.coinId} ${req.params.timeframe}`, error instanceof Error ? error.message : 'Unknown error');
+            res.status(500).json({ 
+                error: 'Failed to fetch historical data',
+                message: error instanceof Error ? error.message : 'Unknown error occurred'
+            });
+        }
+    };
 
     private getCacheTTL(timeframe: string): number {
         switch (timeframe) {
-            case '1D': return 30;
-            case '7D':
-            case '1M': return 1800;
-            case '6M':
-            case '1Y': return 43200;
-            default: return 1800;
+            case '1D':
+                return 2 * 60;  // 2 minutes
+            default:
+                return 24 * 60 * 60;  // 24 hours
         }
     }
 
@@ -44,70 +106,15 @@ export class HistoricalPriceController {
             case '1Y':
                 from = now - 365 * 24 * 60 * 60 * 1000;
                 break;
+            case '5Y':
+                from = now - 5 * 365 * 24 * 60 * 60 * 1000;
+                break;
             default:
                 from = now - 24 * 60 * 60 * 1000;
         }
 
         return { from, to };
     }
-
-    getHistoricalPrices = async (req: Request, res: Response) => {
-        try {
-            const { coinId, timeframe } = req.params;
-            const symbol = coinId.toUpperCase();
-            const geckoId = SYMBOL_TO_COINGECKO_ID[symbol];
-            
-            if (!geckoId) {
-                return res.status(400).json({ error: `Unsupported symbol: ${symbol}` });
-            }
-
-            const cacheKey = `${geckoId}-${timeframe}`;
-            const cachedData = this.cache.get(cacheKey);
-            
-            if (cachedData) {
-                return res.json(cachedData);
-            }
-
-            const { from, to } = this.getTimeRange(timeframe);
-            const data = await this.coinGeckoService.getHistoricalRangeData(geckoId, from, to);
-            
-            if (!data?.prices?.length || !data?.market_caps?.length || !data?.total_volumes?.length) {
-                throw new Error('Incomplete or invalid data received from CoinGecko');
-            }
-
-            const dataLength = Math.min(
-                data.prices.length,
-                data.market_caps.length,
-                data.total_volumes.length
-            );
-
-            const formattedData = {
-                id: geckoId,
-                symbol: symbol,
-                timeframe,
-                data: Array.from({ length: dataLength }, (_, i) => ({
-                    timestamp: data.prices[i]?.[0] ?? 0,
-                    price: data.prices[i]?.[1] ?? 0,
-                    marketCap: data.market_caps[i]?.[1] ?? 0,
-                    volume: data.total_volumes[i]?.[1] ?? 0
-                })),
-                metrics: {
-                    price: this.calculateMetrics(data.prices.map(p => p?.[1] ?? 0)),
-                    marketCap: this.calculateMetrics(data.market_caps.map(m => m?.[1] ?? 0)),
-                    volume: this.calculateMetrics(data.total_volumes.map(v => v?.[1] ?? 0))
-                }
-            };
-
-            this.cache.set(cacheKey, formattedData, this.getCacheTTL(timeframe));
-            res.json(formattedData);
-        } catch (error) {
-            console.error('Historical price error:', error);
-            res.status(500).json({ 
-                error: 'Failed to fetch historical data',
-                message: error instanceof Error ? error.message : 'Unknown error'
-            });
-        }
-    };
 
     private calculateMetrics(prices: number[]) {
         return {
@@ -116,5 +123,4 @@ export class HistoricalPriceController {
             change: ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100
         };
     }
-    
-} 
+}

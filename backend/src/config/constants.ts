@@ -1,11 +1,15 @@
-require('dotenv').config();
+import path from 'path';
+import dotenv from 'dotenv';
+
+// Load .env from project root
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
   // Make these optional with default values or null
   flipsideCryptoApiKey: process.env.FLIPSIDE_CRYPTO_API_KEY || null,
   flipsideBaseUrl: 'https://api-v2.flipsidecrypto.xyz',
   pythHermesBaseUrl: 'https://hermes.pyth.network',
-  coinGeckoProApiKey: process.env.COINGECKO_PRO_API_KEY || null,
+  coinGeckoProApiKey: process.env.COINGECKO_PRO_API_KEY,
   coinGeckoBaseUrl: 'https://api.coingecko.com/api/v3',
   coinGeckoProBaseUrl: 'https://pro-api.coingecko.com/api/v3'
 };

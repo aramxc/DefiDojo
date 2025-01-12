@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { HistoricalPriceController } from '../controllers/historicalPrice.controller';
 
-const router = Router();
+// Create a single instance of the controller
 const historicalPriceController = new HistoricalPriceController();
+const router = Router();
 
-
-router.get('/historical/:coinId/:timeframe', (req: Request, res: Response) => {
+router.get('/historical/:coinId/:timeframe', (req, res) => {
     try {
         historicalPriceController.getHistoricalPrices(req, res);
     } catch (error) {

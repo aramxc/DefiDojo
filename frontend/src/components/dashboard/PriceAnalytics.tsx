@@ -179,7 +179,7 @@ export const PriceAnalytics = memo(({
     const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
     const [dataType, setDataType] = useState<DataType>('price');
     const [currentData, setCurrentData] = useState<Array<any>>([]);
-    const [loading, setLoading] = useState(false);
+    const [isChartLoading, setIsChartLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<any>(null);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -213,18 +213,20 @@ export const PriceAnalytics = memo(({
     }, [timeframe]);
 
     const fetchData = useMemo(() => async () => {
-        if (!symbol) return;
-        setLoading(true);
+        setIsChartLoading(true);
         try {
             const response = await historicalPriceService.getHistoricalPrices(symbol, timeframe);
             const data = response[symbol];
+            
+            // Only update state after new data is ready
             setCurrentData(data.data);
             setMetrics(data.metrics);
+            setError(null);
         } catch (err) {
             setError('Failed to fetch price data');
-            console.error(err);
+            console.error('Price data fetch error:', err);
         } finally {
-            setLoading(false);
+            setIsChartLoading(false);
         }
     }, [symbol, timeframe]);
 
@@ -233,21 +235,15 @@ export const PriceAnalytics = memo(({
     }, [fetchData]);
 
     const handleTimeframeClick = async (tf: TimeframeType) => {
-        console.log('Timeframe clicked:', tf);
-
         if (tf === '5Y') {
             try {
-                console.log('Checking pro access...');
                 const hasAccess = await checkProAccess(symbol);
-                console.log('Pro access status:', hasAccess);
-                
                 if (!hasAccess) {
-                    console.log('Opening modal...');
                     setShowPurchaseModal(true);
                     return;
                 }
             } catch (error) {
-                console.error('Error checking pro access:', error);
+                console.error('Pro access check error:', error);
                 setShowPurchaseModal(true);
                 return;
             }
@@ -267,14 +263,6 @@ export const PriceAnalytics = memo(({
 
     const content = useMemo(() => {
         if (!symbol) return null;
-        if (loading) return (
-            <div className="bg-gray-800 rounded-lg p-4 min-h-[500px] flex items-center justify-center">
-                <div className="flex flex-col items-center space-y-2">
-                    <CircularProgress size={40} className="text-blue-500" />
-                    <span className="text-gray-400 text-sm">Loading price data...</span>
-                </div>
-            </div>
-        );
         if (error) return <div className="text-red-500">{error}</div>;
         if (!metrics) return <div>No metrics available</div>;
 
@@ -448,20 +436,15 @@ export const PriceAnalytics = memo(({
                         </div>
                     </div>
 
-                    {/* Chart with enhanced glow and consistent padding */}
+                    {/* Chart with loading overlay */}
                     {currentData.length > 0 && (
                         <div className="relative h-[400px] mt-6">
-                            {/* Enhanced glow effects */}
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-teal-500/5" />
                             <div className="absolute inset-[1px] rounded-xl bg-slate-800/95 backdrop-blur-xl" />
                             
-                            {/* Chart container with consistent padding */}
-                            <div className="relative h-full rounded-xl border border-white/5 
-                                          before:absolute before:inset-0 
-                                          before:bg-gradient-to-br before:from-blue-500/3 before:via-transparent before:to-cyan-500/3
-                                          before:rounded-xl">
-                                <div className="absolute inset-0 flex flex-col">
-                                    <div className="flex-1 px-6 pt-6 pb-8"> {/* Adjusted padding */}
+                            <div className="relative h-full rounded-xl border border-white/5">
+                                <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${isChartLoading ? 'opacity-50' : ''}`}>
+                                    <div className="flex-1 px-6 pt-6 pb-8">
                                         <PriceChart 
                                             data={currentData}
                                             dataType={dataType}
@@ -470,13 +453,30 @@ export const PriceAnalytics = memo(({
                                         />
                                     </div>
                                 </div>
+                                
+                                {/* Loading overlay */}
+                                {isChartLoading && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+                                        <CircularProgress size={30} className="text-blue-500" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Initial loading state */}
+                    {!currentData.length && !error && (
+                        <div className="bg-gray-800 rounded-lg p-4 min-h-[500px] flex items-center justify-center">
+                            <div className="flex flex-col items-center space-y-2">
+                                <CircularProgress size={40} className="text-blue-500" />
+                                <span className="text-gray-400 text-sm">Loading price data...</span>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
         );
-    }, [currentData, metrics, loading, error, dataType, timeframe, setTimezone, selectedTimezone, symbol, onClose]);
+    }, [currentData, metrics, isChartLoading, error, dataType, timeframe, selectedTimezone.value, symbol, onClose]);
 
     return (
         <>

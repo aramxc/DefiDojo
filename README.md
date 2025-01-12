@@ -7,9 +7,9 @@ Check back soon for updates! Currently in the process of building out frontend c
 
 ~ Aaron
 
-![Screenshot 2025-01-05 at 9 05 08 PM](https://github.com/user-attachments/assets/66091bf7-7f92-4e03-b19c-1119845e6425)
+[![Dojo Platform Demo](https://cdn.loom.com/sessions/thumbnails/8b38458278704f8396ae61abcd7b64ad-with-play.gif)](https://www.loom.com/share/8b38458278704f8396ae61abcd7b64ad)
 
-Current state as of 1/6/25 ^
+Current state as of 1/12/25 ^
 
 ## Getting Started
 

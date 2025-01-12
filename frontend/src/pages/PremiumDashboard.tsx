@@ -12,11 +12,12 @@ import {
   TrendingUp, TrendingDown, Schedule, Assessment,
   ShowChart, PieChart, Timeline as TimelineIcon,
   Notifications, Speed, Analytics, 
-  MonetizationOn, Insights, DataUsage
+  MonetizationOn, Insights, DataUsage, Code, GitHub
 } from '@mui/icons-material';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
+import { Gauge } from '@mui/x-charts';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -150,58 +151,124 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                           scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
                           bg-gradient-to-b from-white/[0.02] to-transparent"
               >
-                <div className="space-y-6 hover:space-y-7 transition-all duration-300">
-                  <StatCard
-                    title="Market Overview"
-                    stats={[
-                      {
-                        label: "Market Cap Rank",
-                        value: stats?.marketOverview.marketCap || 'N/A',
-                        change: stats?.marketOverview.change
-                      },
-                      {
-                        label: "Circulating Supply",
-                        value: stats?.marketOverview.volume || 'N/A'
-                      },
-                      {
-                        label: "Max Supply",
-                        value: stats?.marketOverview.supply || 'N/A'
-                      }
-                    ]}
-                    isLoading={loading}
-                  />
+                <div className="space-y-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="flex flex-col gap-6"
+                  >
                   
                   <StatCard
-                    title="Network Activity"
-                    stats={[
-                      {
-                        label: "Github Activity",
-                        value: stats?.networkActivity.githubActivity || 'N/A',
-                        change: stats?.networkActivity.change
-                      },
-                      {
-                        label: "Contributors",
-                        value: stats?.networkActivity.contributors || 'N/A'
+                  title="Market Overview"
+                  icon={<MonetizationOn className="text-blue-400" />}
+                  stats={[
+                    { 
+                      label: "Market Cap Rank", 
+                      value: stats?.marketOverview.marketCap || 'N/A',
+                    
+                    },
+                    
+                    { 
+                      label: "Max Supply", 
+                      value: stats?.marketOverview.maxSupply || 'N/A'
+                    },
+                    { 
+                      label: "Circulating Supply", 
+                      value: stats?.marketOverview.circulatingSupply|| 'N/A'
+                    },
+                    {
+                        label: "Genesis Date",
+                        value: stats?.networkMetrics.genesisDate || 'N/A'
                       }
-                    ]}
-                    isLoading={loading}
-                  />
+                  ]}
+                  isLoading={loading}
+                />
+
+                {/* Network Metrics */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <StatCard
+                  title="Network Metrics"
+                  icon={<Analytics className="text-blue-400" />}
+                  stats={[
+                    {
+                      label: "Transaction Volume",
+                      value: 'Coming soon..',
+                    },
+                   
+                    {
+                      label: "Hash Algorithm",
+                      value: stats?.networkMetrics?.hashAlgorithm || 'N/A'
+                    },
+                    {
+                        label: "Block Time",
+                        value: stats?.networkMetrics?.blockTime || 'N/A'
+                      }
+                  ]}
+                  isLoading={loading}
+                />
+              </motion.div>
                   
-                  <StatCard
-                    title="Development Metrics"
-                    stats={[
-                      {
-                        label: "Github Forks",
-                        value: stats?.developmentMetrics.forks || 'N/A',
-                        change: stats?.developmentMetrics.change
-                      },
-                      {
-                        label: "Github Stars",
-                        value: stats?.developmentMetrics.stars || 'N/A'
-                      }
-                    ]}
-                    isLoading={loading}
-                  />
+                  
+                    
+                    
+                    {/* Fear/Greed Gauge */}
+                    <div className="relative rounded-xl overflow-hidden
+                                  shadow-[0_0_10px_rgba(59,130,246,0.03)] 
+                                  group hover:transform hover:scale-[1.02] transition-all duration-200
+                                  before:absolute before:inset-0 
+                                  before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                                  before:backdrop-blur-xl before:transition-opacity
+                                  after:absolute after:inset-0 
+                                  after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
+                                  after:opacity-0 hover:after:opacity-100 
+                                  after:transition-opacity">
+                      <div className="relative z-10 p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-gray-300 opacity-75 group-hover:opacity-100 transition-opacity">
+                            <Insights className="text-blue-400" />
+                          </span>
+                          <h3 className="text-sm font-semibold text-gray-300
+                                      bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                            Fear / Greed Index
+                          </h3>
+                        </div>
+                        <Gauge
+                          value={65}
+                          aria-label="Fear and Greed Index"
+                          sx={{
+                            width: '100%',
+                            height: 150,
+                            '& .MuiChartsGauge-mark': {
+                              stroke: '#475569'
+                            },
+                            '& .MuiChartsGauge-markLabel': {
+                              fill: '#94a3b8'
+                            },
+                            '& .MuiChartsGauge-valueText': {
+                              fill: '#e2e8f0',
+                              fontSize: '1.5rem',
+                              fontWeight: 'bold'
+                            },
+                            '& .MuiChartsGauge-track': {
+                              stroke: '#334155'
+                            },
+                            '& .MuiChartsGauge-progress': {
+                              stroke: 65 >= 50 ? '#22c55e' : '#ef4444',
+                            }
+                          }}
+                        />
+                        <div className="flex justify-between w-full mt-4 text-sm">
+                          <span className="text-red-400">Extreme Fear</span>
+                          <span className="text-green-400">Extreme Greed</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </div>
@@ -220,9 +287,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
                      border border-white/[0.05]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]
-                     after:absolute after:inset-0 
-                     after:bg-[radial-gradient(circle_at_50%_-20%,rgba(129,140,248,0.05),transparent_70%)]
-                     after:z-[-1]
                      relative"
         >
           {/* Command Center Header */}
@@ -235,7 +299,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
           {/* Command Center Grid */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Market Metrics */}
+              {/* Market Overview */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -243,181 +307,73 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               >
                 <StatCard
                   title="Market Overview"
+                  icon={<MonetizationOn className="text-blue-400" />}
                   stats={[
                     { 
                       label: "Market Cap Rank", 
                       value: stats?.marketOverview.marketCap || 'N/A',
-                      change: stats?.marketOverview.change 
-                    },
-                    { 
-                      label: "Circulating Supply", 
-                      value: stats?.marketOverview.volume || 'N/A'
+                    
                     },
                     { 
                       label: "Max Supply", 
-                      value: stats?.marketOverview.supply || 'N/A'
+                      value: stats?.marketOverview.maxSupply || 'N/A'
+                    },
+                    { 
+                      label: "Circulating Supply", 
+                      value: stats?.marketOverview.circulatingSupply || 'N/A'
+                    },
+                    {
+                        label: "Genesis Date",
+                        value: stats?.networkMetrics.genesisDate || 'N/A'
                     }
                   ]}
                   isLoading={loading}
                 />
               </motion.div>
 
-              {/* Trading Activity */}
+              {/* Development Activity */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Development Activity</h3>
-                      <Speed className="text-blue-400" />
-                    </div>
-                    <div className="space-y-4">
-                      {/* Github Activity Progress */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Github Activity</span>
-                          <span className="text-gray-200">
-                            {stats?.networkActivity.githubActivity || 'N/A'}
-                          </span>
-                        </div>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={stats?.networkActivity.change || 0} 
-                          className="h-1.5 rounded-full bg-slate-700"
-                          sx={{
-                            '& .MuiLinearProgress-bar': {
-                              background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
-                            }
-                          }}
-                        />
-                      </div>
+                <StatCard
+                  title="Development Activity"
+                  icon={<Speed className="text-blue-400" />}
+                  stats={[
+                    {
+                      label: "Github Activity",
+                      value: stats?.developmentMetrics.githubActivity || 'N/A',
+                    
+                    },
+                    {
+                      label: "Contributors", 
+                      value: stats?.developmentMetrics.contributors || 'N/A'
+                    },
+                    {
+                      label: "Open Issues",
+                      value: stats?.developmentMetrics.issues || 'N/A',
                       
-                      {/* Contributors Progress */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Contributors</span>
-                          <span className="text-gray-200">
-                            {stats?.developmentMetrics.change || 0}
-                          </span>
-                        </div>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={stats?.developmentMetrics.change || 0} 
-                          className="h-1.5 rounded-full bg-slate-700"
-                          sx={{
-                            '& .MuiLinearProgress-bar': {
-                              background: 'linear-gradient(to right, #3b82f6, #06b6d4)'
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    },
+                    {
+                        label: "Closed Issues",
+                        value: stats?.developmentMetrics.closedIssues || 'N/A',
+                        
+                      }
+                  ]}
+                  isLoading={loading}
+                />
               </motion.div>
 
-              {/* Alert Section */}
+              
+
+              {/* Market Sentiment */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl">
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Asset Info</h3>
-                      <Notifications className="text-blue-400" />
-                    </div>
-                    <div className="space-y-3">
-                      {error ? (
-                        <Alert 
-                          severity="error"
-                          className="bg-red-400/10 border border-red-400/20"
-                        >
-                          <AlertTitle>Error Loading Data</AlertTitle>
-                          {error}
-                        </Alert>
-                      ) : loading ? (
-                        <Alert 
-                          severity="info"
-                          className="bg-blue-400/10 border border-blue-400/20"
-                        >
-                          <AlertTitle>Loading</AlertTitle>
-                          Fetching asset information...
-                        </Alert>
-                      ) : (
-                        <>
-                          <Alert 
-                            severity="info"
-                            className="bg-blue-400/10 border border-blue-400/20"
-                          >
-                            <AlertTitle>Market Cap Rank</AlertTitle>
-                            {stats?.marketOverview.marketCap || 'N/A'}
-                          </Alert>
-                          <Alert 
-                            severity="warning"
-                            className="bg-amber-400/10 border border-amber-400/20"
-                          >
-                            <AlertTitle>Development Activity</AlertTitle>
-                            {`${stats?.networkActivity.githubActivity || 'N/A'} recent commits`}
-                          </Alert>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Recent Events Timeline */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="col-span-2"
-              >
-                <Card className="bg-slate-900/50 border border-white/5 backdrop-blur-xl h-full">
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-gray-200 font-semibold">Asset Details</h3>
-                      <TimelineIcon className="text-blue-400" />
-                    </div>
-                    <div className="space-y-4">
-                      {loading ? (
-                        <LinearProgress />
-                      ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-400">Github Stars</p>
-                            <p className="text-lg text-gray-200">
-                              {stats?.developmentMetrics.stars || 'N/A'}
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-400">Pull Requests</p>
-                            <p className="text-lg text-gray-200">
-                              {stats?.developmentMetrics.pullRequests || 'N/A'}
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-400">Forks</p>
-                            <p className="text-lg text-gray-200">
-                              {stats?.developmentMetrics.forks || 'N/A'}
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-400">Contributors</p>
-                            <p className="text-lg text-gray-200">
-                              {stats?.networkActivity.contributors || 'N/A'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                
               </motion.div>
             </div>
           </div>
