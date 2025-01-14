@@ -1,5 +1,5 @@
 import { getConnection } from '../../../config/snowflake.config';
-import { AssetInfo } from '../../interfaces/asset.interface';
+import { AssetInfo } from '../../../interfaces/info/assetInfo';
 
 export class AssetRepository {
     async findBySymbol(symbol: string): Promise<AssetInfo> {
