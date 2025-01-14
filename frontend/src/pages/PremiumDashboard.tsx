@@ -6,13 +6,13 @@ import { StatCard } from '../components/dashboard/StatCard';
 import { motion } from 'framer-motion';
 import {
   Card, CardContent, LinearProgress, Chip,
-  Alert, AlertTitle
+  Alert, AlertTitle, Tooltip
 } from '@mui/material';
 import { 
   TrendingUp, TrendingDown, Schedule, Assessment,
   ShowChart, PieChart, Timeline as TimelineIcon,
   Notifications, Speed, Analytics, 
-  MonetizationOn, Insights, DataUsage, Code, GitHub
+  MonetizationOn, Insights, DataUsage, Code, GitHub, InfoOutlined
 } from '@mui/icons-material';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -33,8 +33,15 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('');
   const [items, setItems] = useState(selectedTickers);
-  const { assetInfo, loading, error: assetInfoError } = useFetchAssetInfo(selectedSymbol);
-  const { metrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(selectedSymbol);
+  
+  // Get asset info first
+  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol);
+  
+  // Use assetInfo to get coingeckoId for market metrics
+  const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
+    selectedSymbol,
+    assetInfo?.COINGECKO_ID || undefined // Explicitly handle null case by converting to undefined
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -65,9 +72,10 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   }, [selectedTickers]);
 
   // Add debug logs
+  console.log('Asset Info:', assetInfo);
   console.log('Selected Symbol:', selectedSymbol);
+  console.log('CoinGecko ID:', assetInfo?.COINGECKO_ID);
   console.log('Metrics Data:', metrics);
-  console.log('Metrics Error:', metricsError);
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -173,30 +181,18 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                     stats={[
                       { 
                         label: "24h Change", 
-                        value: metrics?.trends?.price?.change24h 
-                          ? `${metrics.trends.price.change24h.toFixed(2)}%`
-                          : 'N/A',
                         change: metrics?.trends?.price?.change24h
                       },
                       { 
                         label: "7d Change",
-                        value: metrics?.trends?.price?.change7d
-                          ? `${metrics.trends.price.change7d.toFixed(2)}%`
-                          : 'N/A',
                         change: metrics?.trends?.price?.change7d
                       },
                       { 
                         label: "30d Change",
-                        value: metrics?.trends?.price?.change30d
-                          ? `${metrics.trends.price.change30d.toFixed(2)}%`
-                          : 'N/A',
                         change: metrics?.trends?.price?.change30d
                       },
                       {
                         label: "Volume Change 24h",
-                        value: metrics?.trends?.volume?.change24h
-                          ? `${metrics.trends.volume.change24h.toFixed(2)}%`
-                          : 'N/A',
                         change: metrics?.trends?.volume?.change24h
                       }
                     ]}
@@ -227,7 +223,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                           value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
                         }
                     ]}
-                    isLoading={loading}
+                    isLoading={assetLoading || metricsLoading}
                   />
                 </motion.div>
                   
@@ -242,12 +238,32 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                                   before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
                                   before:backdrop-blur-xl before:transition-opacity">
                       <div className="relative z-10 p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Insights className="text-blue-400" />
-                          <h3 className="text-sm font-semibold text-gray-300
-                                      bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-                            Fear / Greed Index
-                          </h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Insights className="text-blue-400" />
+                            <h3 className="text-sm font-semibold text-gray-300
+                                        bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                              Fear / Greed Index
+                            </h3>
+                          </div>
+                          <Tooltip 
+                            title={
+                              <div className="p-2 max-w-xs text-sm">
+                                The Fear & Greed Index analyzes market sentiment using multiple factors:
+                                • Market Volatility (25%)
+                                • Market Momentum/Volume (25%)
+                                • Social Media Sentiment (15%)
+                                • Market Dominance (10%)
+                                • Trading Volume (25%)
+
+                                0 = Extreme Fear, 100 = Extreme Greed
+                              </div>
+                            }
+                            arrow
+                            placement="top"
+                          >
+                            <InfoOutlined className="text-gray-400 hover:text-gray-300 cursor-help w-4 h-4" />
+                          </Tooltip>
                         </div>
                         <Gauge
                           value={metrics?.fearGreed?.value ?? 50}
@@ -269,15 +285,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                             }
                           }}
                         />
-                        {/* Fear/Greed Components */}
-                        <div className="mt-4 space-y-2 text-sm">
-                          {metrics?.fearGreed?.components && Object.entries(metrics.fearGreed.components).map(([key, value]) => (
-                            <div key={key} className="flex justify-between">
-                              <span className="text-gray-400">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
-                              <span className="text-gray-200">{value.toFixed(0)}</span>
-                            </div>
-                          ))}
-                        </div>
                         <div className="flex justify-between w-full mt-4 text-sm">
                           <span className="text-red-400">Extreme Fear</span>
                           <span className="text-green-400">Extreme Greed</span>
@@ -352,7 +359,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                       change: metrics?.trends?.volume?.change24h
                     }
                   ]}
-                  isLoading={loading}
+                  isLoading={assetLoading || metricsLoading}
                 />
               </motion.div>
 
@@ -395,7 +402,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                       change: metrics?.trends?.volume?.change30d
                     }
                   ]}
-                  isLoading={loading}
+                  isLoading={assetLoading || metricsLoading}
                 />
               </motion.div>
 
@@ -408,33 +415,34 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <StatCard
                   title="Volatility Metrics"
                   icon={<ShowChart className="text-blue-400" />}
+                  infoTooltip="Volatility is calculated using the standard deviation of daily returns over different time periods. Daily volatility uses 24h data, weekly uses 7 days, and monthly uses 30 days of historical price data."
                   stats={[
                     {
                       label: "Daily Volatility",
-                      value: metrics?.volatility?.daily
-                        ? `${(metrics.volatility.daily * 100).toFixed(2)}%`
-                        : 'N/A'
+                      change: metrics?.volatility?.daily
+                        ? (metrics.volatility.daily * 100)
+                        : undefined
                     },
                     {
                       label: "Weekly Volatility",
-                      value: metrics?.volatility?.weekly
-                        ? `${(metrics.volatility.weekly * 100).toFixed(2)}%`
-                        : 'N/A'
+                      change: metrics?.volatility?.weekly
+                        ? (metrics.volatility.weekly * 100)
+                        : undefined
                     },
                     {
                       label: "Monthly Volatility",
-                      value: metrics?.volatility?.monthly
-                        ? `${(metrics.volatility.monthly * 100).toFixed(2)}%`
-                        : 'N/A'
+                      change: metrics?.volatility?.monthly
+                        ? (metrics.volatility.monthly * 100)
+                        : undefined
                     },
                     {
                       label: "Std Deviation",
-                      value: metrics?.volatility?.standardDeviation
-                        ? `${(metrics.volatility.standardDeviation * 100).toFixed(2)}%`
-                        : 'N/A'
+                      change: metrics?.volatility?.standardDeviation
+                        ? (metrics.volatility.standardDeviation * 100)
+                        : undefined
                     }
                   ]}
-                  isLoading={loading}
+                  isLoading={metricsLoading}
                 />
               </motion.div>
             </div>

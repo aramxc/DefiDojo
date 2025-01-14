@@ -1,18 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Tooltip } from '@mui/material';
+import { InfoOutlined } from '@mui/icons-material';
 
 export interface StatCardProps {
   title: string;
   icon?: React.ReactNode;
+  infoTooltip?: string;
   stats: { 
     label: string;
-    value: string | number;
+    value?: string | number;
     change?: number;
   }[];
   isLoading?: boolean;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ title, icon, stats, isLoading }) => {
+export const StatCard: React.FC<StatCardProps> = ({ title, icon, infoTooltip, stats, isLoading }) => {
   if (isLoading) {
     return (
       <div className="animate-pulse rounded-xl p-4 
@@ -39,7 +42,7 @@ export const StatCard: React.FC<StatCardProps> = ({ title, icon, stats, isLoadin
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-xl overflow-hidden
+      className="relative rounded-xl overflow-hidden h-full
                 shadow-[0_0_10px_rgba(59,130,246,0.03)] 
                 group hover:transform hover:scale-[1.02] transition-all duration-200
                 before:absolute before:inset-0 
@@ -50,33 +53,50 @@ export const StatCard: React.FC<StatCardProps> = ({ title, icon, stats, isLoadin
                 after:opacity-0 hover:after:opacity-100 
                 after:transition-opacity"
     >
-      <div className="relative z-10 p-4">
-        <div className="flex items-center gap-2 mb-3">
-          {icon && (
-            <span className="text-gray-300 opacity-75 group-hover:opacity-100 transition-opacity">
-              {icon}
-            </span>
-          )}
-          <h3 className="text-sm font-semibold text-gray-300
+      <div className="relative z-10 p-4 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {icon && (
+              <span className="text-gray-300 opacity-75 group-hover:opacity-100 transition-opacity">
+                {icon}
+              </span>
+            )}
+            <h3 className="text-sm font-semibold text-gray-300
                        bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-            {title}
-          </h3>
+              {title}
+            </h3>
+          </div>
+          {infoTooltip && (
+            <Tooltip 
+              title={
+                <div className="p-2 max-w-xs text-sm">
+                  {infoTooltip}
+                </div>
+              }
+              arrow
+              placement="top"
+            >
+              <InfoOutlined className="text-gray-400 hover:text-gray-300 cursor-help w-4 h-4" />
+            </Tooltip>
+          )}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           {stats.map(({ label, value, change }) => (
-            <div key={label} className="flex justify-between items-center">
-              <span className="text-gray-400 text-sm">{label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-200 font-medium">{value}</span>
+            <div key={label} className="flex justify-between items-center min-h-[24px]">
+              <span className="text-gray-400 text-sm truncate mr-2">{label}</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {value !== undefined && (
+                  <span className="text-gray-200 font-medium">{value}</span>
+                )}
                 {change !== undefined && (
-                  <span className={`text-xs font-medium ${
+                  <span className={`text-xs font-medium whitespace-nowrap ${
                     change > 0 
                       ? 'text-green-400' 
                       : change < 0 
                         ? 'text-red-400' 
                         : 'text-gray-400'
                   }`}>
-                    {change > 0 ? '+' : ''}{change}%
+                    {change > 0 ? '+' : ''}{change.toFixed(2)}%
                   </span>
                 )}
               </div>
