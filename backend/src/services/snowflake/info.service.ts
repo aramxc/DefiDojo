@@ -1,7 +1,7 @@
 import NodeCache from 'node-cache';
 import { connectToSnowflake } from '../../config/snowflake.config';
 import { AssetRepository } from './repositories/asset.repository';
-import { AssetInfo } from '../../interfaces/info/assetInfo';
+import { AssetInfo } from '@defidojo/shared-types';
 
 export class InfoService {
     private assetRepository: AssetRepository;

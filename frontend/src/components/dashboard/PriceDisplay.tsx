@@ -1,10 +1,10 @@
 import React, { useEffect, useState, memo, useMemo } from 'react';
 import { BarChart, Info, TrendingUp, Schedule, People } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { priceService, PriceData } from '../../services/api/price.service';
-import { infoService, CoinInfo } from '../../services/api/info.service';
+import { priceService } from '../../services/api/price.service';
+import { infoService } from '../../services/api/info.service';
 import { Switch, CircularProgress } from '@mui/material';
-
+import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
 interface PriceDisplayProps {
   symbol: string;
   onRemove: () => void;
@@ -49,7 +49,7 @@ const PriceValue = memo(({ price }: { price: number | undefined }) => (
 
 // Move BackContent outside and memoize it
 const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: { 
-    assetInfo: CoinInfo | null;
+    assetInfo: AssetInfo | null;
     isLoading: boolean;
     error: string | null;
     CardControls: React.FC<{ isBackside?: boolean }>;
@@ -108,8 +108,8 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
 });
 
 export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol }) => {
-  const [priceData, setPriceData] = useState<PriceData | null>(null);
-  const [assetInfo, setAssetInfo] = useState<CoinInfo | null>(null);
+  const [priceData, setPriceData] = useState<AssetPriceData | null>(null);
+  const [assetInfo, setAssetInfo] = useState<AssetInfo | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());

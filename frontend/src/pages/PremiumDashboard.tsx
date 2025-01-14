@@ -32,7 +32,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
   const [items, setItems] = useState(selectedTickers);
-  const { stats, loading, error } = useFetchAssetInfo(selectedSymbol);
+  const { assetInfo, loading, error } = useFetchAssetInfo(selectedSymbol);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -165,22 +165,28 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   stats={[
                     { 
                       label: "Market Cap Rank", 
-                      value: stats?.marketOverview.marketCap || 'N/A',
+                      value: assetInfo?.MARKET_CAP_RANK || 'N/A',
                     
                     },
                     
                     { 
                       label: "Max Supply", 
-                      value: stats?.marketOverview.maxSupply || 'N/A'
+                      value: assetInfo?.MAX_SUPPLY || 'N/A'
                     },
                     { 
                       label: "Circulating Supply", 
-                      value: stats?.marketOverview.circulatingSupply|| 'N/A'
+                      value: assetInfo?.CIRCULATING_SUPPLY || 'N/A'
                     },
                     {
                         label: "Genesis Date",
-                        value: stats?.networkMetrics.genesisDate || 'N/A'
-                      }
+                        value: assetInfo?.GENESIS_DATE 
+                          ? new Date(assetInfo.GENESIS_DATE).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          : 'N/A'
+                    }
                   ]}
                   isLoading={loading}
                 />
@@ -202,11 +208,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                    
                     {
                       label: "Hash Algorithm",
-                      value: stats?.networkMetrics?.hashAlgorithm || 'N/A'
+                      value: assetInfo?.HASHING_ALGORITHM || 'N/A'
                     },
                     {
                         label: "Block Time",
-                        value: stats?.networkMetrics?.blockTime || 'N/A'
+                        value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
                       }
                   ]}
                   isLoading={loading}
@@ -311,20 +317,26 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   stats={[
                     { 
                       label: "Market Cap Rank", 
-                      value: stats?.marketOverview.marketCap || 'N/A',
+                      value: assetInfo?.MARKET_CAP_RANK || 'N/A',
                     
                     },
                     { 
                       label: "Max Supply", 
-                      value: stats?.marketOverview.maxSupply || 'N/A'
+                      value: assetInfo?.MAX_SUPPLY || 'N/A'
                     },
                     { 
                       label: "Circulating Supply", 
-                      value: stats?.marketOverview.circulatingSupply || 'N/A'
+                      value: assetInfo?.CIRCULATING_SUPPLY || 'N/A'
                     },
                     {
                         label: "Genesis Date",
-                        value: stats?.networkMetrics.genesisDate || 'N/A'
+                        value: assetInfo?.GENESIS_DATE 
+                          ? new Date(assetInfo.GENESIS_DATE).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          : 'N/A'
                     }
                   ]}
                   isLoading={loading}
@@ -343,21 +355,21 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   stats={[
                     {
                       label: "Github Activity",
-                      value: stats?.developmentMetrics.githubActivity || 'N/A',
+                      value: assetInfo?.GITHUB_PULL_REQUEST_CONTRIBUTORS || 'N/A',
                     
                     },
                     {
                       label: "Contributors", 
-                      value: stats?.developmentMetrics.contributors || 'N/A'
+                      value: assetInfo?.GITHUB_PULL_REQUEST_CONTRIBUTORS || 'N/A'
                     },
                     {
                       label: "Open Issues",
-                      value: stats?.developmentMetrics.issues || 'N/A',
+                      value: assetInfo?.GITHUB_TOTAL_ISSUES || 'N/A',
                       
                     },
                     {
                         label: "Closed Issues",
-                        value: stats?.developmentMetrics.closedIssues || 'N/A',
+                        value: assetInfo?.GITHUB_CLOSED_ISSUES || 'N/A',
                         
                       }
                   ]}

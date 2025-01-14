@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@defidojo/shared-types": "file:../shared/types",
     "@flipsidecrypto/sdk": "^2.1.0",
     "@pythnetwork/pyth-evm-js": "^1.76.0",
     "bcrypt": "^5.1.1",

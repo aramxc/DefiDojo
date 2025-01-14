@@ -1,5 +1,5 @@
 import { getConnection } from '../../../config/snowflake.config';
-import { AssetInfo } from '../../../interfaces/info/assetInfo';
+import { AssetInfo } from '@defidojo/shared-types';
 
 export class AssetRepository {
     async findBySymbol(symbol: string): Promise<AssetInfo> {
@@ -56,10 +56,11 @@ export class AssetRepository {
                         const asset = rows[0] as AssetInfo;
                         
                         // Convert dates from string to Date objects
-                        asset.created_at = new Date(asset.created_at);
-                        asset.updated_at = new Date(asset.updated_at);
-                        if (asset.genesis_date) {
-                            asset.genesis_date = new Date(asset.genesis_date);
+                        asset.CREATED_AT = new Date(asset.CREATED_AT).toISOString();
+                        // Convert dates to strings in ISO format
+                        asset.UPDATED_AT = new Date(asset.UPDATED_AT).toISOString();
+                        if (asset.GENESIS_DATE) {
+                            asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
                         }
 
                         resolve(asset);
@@ -122,10 +123,10 @@ export class AssetRepository {
                             const asset = row as AssetInfo;
                             
                             // Convert dates from string to Date objects
-                            asset.created_at = new Date(asset.created_at);
-                            asset.updated_at = new Date(asset.updated_at);
-                            if (asset.genesis_date) {
-                                asset.genesis_date = new Date(asset.genesis_date);
+                            asset.CREATED_AT = new Date(asset.CREATED_AT).toISOString();
+                            asset.UPDATED_AT = new Date(asset.UPDATED_AT).toISOString();
+                            if (asset.GENESIS_DATE) {
+                                asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
                             }
 
                             return asset;
@@ -190,10 +191,10 @@ export class AssetRepository {
                         const asset = rows[0] as AssetInfo;
                         
                         // Convert dates from string to Date objects
-                        asset.created_at = new Date(asset.created_at);
-                        asset.updated_at = new Date(asset.updated_at);
-                        if (asset.genesis_date) {
-                            asset.genesis_date = new Date(asset.genesis_date);
+                        asset.CREATED_AT = new Date(asset.CREATED_AT).toISOString();
+                        asset.UPDATED_AT = new Date(asset.UPDATED_AT).toISOString();
+                        if (asset.GENESIS_DATE) {
+                            asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
                         }
 
                         resolve(asset);

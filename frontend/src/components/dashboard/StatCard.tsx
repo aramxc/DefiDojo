@@ -6,7 +6,7 @@ export interface StatCardProps {
   icon?: React.ReactNode;
   stats: { 
     label: string;
-    value: string;
+    value: string | number;
     change?: number;
   }[];
   isLoading?: boolean;

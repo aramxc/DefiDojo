@@ -7,7 +7,7 @@ import {
     VolatilityMetrics,
     MarketTrends,
     FearGreed,
-} from '../../../interfaces';
+} from '@defidojo/shared-types';
 
 export class CoinGeckoService {
     private baseUrl: string;
@@ -107,36 +107,36 @@ export class CoinGeckoService {
 
     private transformToAssetInfo(data: any): AssetInfo {
         return {
-            asset_id: data.id,
-            name: data.name,
-            symbol: data.symbol?.toUpperCase(),
-            coingecko_id: data.id,
-            pyth_price_feed_id: null, // Not available from CoinGecko
-            is_active: true,
-            market_cap_rank: data.market_cap_rank,
-            created_at: new Date(),
-            updated_at: new Date(),
-            block_time_in_minutes: data.block_time_in_minutes,
-            hashing_algorithm: data.hashing_algorithm,
-            description: data.description?.en,
-            homepage_url: data.links?.homepage?.[0],
-            whitepaper_url: data.links?.whitepaper,
-            subreddit_url: data.links?.subreddit_url,
-            image_url: data.image?.large,
-            country_origin: data.country_origin,
-            genesis_date: data.genesis_date ? new Date(data.genesis_date) : null,
-            total_supply: data.market_data?.total_supply,
-            max_supply: data.market_data?.max_supply,
-            circulating_supply: data.market_data?.circulating_supply,
-            github_repos: data.links?.repos_url?.github || [],
-            github_forks: data.developer_data?.forks,
-            github_stars: data.developer_data?.stars,
-            github_subscribers: data.developer_data?.subscribers,
-            github_total_issues: data.developer_data?.total_issues,
-            github_closed_issues: data.developer_data?.closed_issues,
-            github_pull_requests_merged: data.developer_data?.pull_requests_merged,
-            github_pull_request_contributors: data.developer_data?.pull_request_contributors,
-            bid_ask_spread_percentage: data.market_data?.bid_ask_spread_percentage
+            ASSET_ID: data.id,
+            NAME: data.name,
+            SYMBOL: data.symbol?.toUpperCase(),
+            COINGECKO_ID: data.id,
+            PYTH_PRICE_FEED_ID: null, // Not available from CoinGecko
+            IS_ACTIVE: true,
+            MARKET_CAP_RANK: data.market_cap_rank,
+            CREATED_AT: new Date().toISOString(),
+            UPDATED_AT: new Date().toISOString(),
+            BLOCK_TIME_IN_MINUTES: data.block_time_in_minutes,
+            HASHING_ALGORITHM: data.hashing_algorithm,
+            DESCRIPTION: data.description?.en,
+            HOMEPAGE_URL: data.links?.homepage?.[0],
+            WHITEPAPER_URL: data.links?.whitepaper,
+            SUBREDDIT_URL: data.links?.subreddit_url,
+            IMAGE_URL: data.image?.large,
+            COUNTRY_ORIGIN: data.country_origin,
+            GENESIS_DATE: data.genesis_date ? new Date(data.genesis_date).toISOString() : null,
+            TOTAL_SUPPLY: data.market_data?.total_supply,
+            MAX_SUPPLY: data.market_data?.max_supply,
+            CIRCULATING_SUPPLY: data.market_data?.circulating_supply,
+            GITHUB_REPOS: data.links?.repos_url?.github || [],
+            GITHUB_FORKS: data.developer_data?.forks,
+            GITHUB_STARS: data.developer_data?.stars,
+            GITHUB_SUBSCRIBERS: data.developer_data?.subscribers,
+            GITHUB_TOTAL_ISSUES: data.developer_data?.total_issues,
+            GITHUB_CLOSED_ISSUES: data.developer_data?.closed_issues,
+            GITHUB_PULL_REQUESTS_MERGED: data.developer_data?.pull_requests_merged,
+            GITHUB_PULL_REQUEST_CONTRIBUTORS: data.developer_data?.pull_request_contributors,
+            BID_ASK_SPREAD_PERCENTAGE: data.market_data?.bid_ask_spread_percentage
         };
     }
 

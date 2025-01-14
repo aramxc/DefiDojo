@@ -1,17 +1,10 @@
 import { API_BASE_URL } from '../../config/constants';
-
-export interface PriceData {
-  id?: string;
-  symbol: string;
-  price: number;
-  conf?: number;
-  timestamp?: number;
-}
+import { AssetPriceData } from '@defidojo/shared-types';
 
 export class PriceService {
   private baseUrl = `${API_BASE_URL}/prices`;
 
-  async getLatestPrices(symbols: string[]): Promise<PriceData[]> {
+  async getLatestPrices(symbols: string[]): Promise<AssetPriceData[]> {
     try {
       const url = `${this.baseUrl}/latest?symbols=${symbols.join(',')}`;
       
@@ -33,12 +26,13 @@ export class PriceService {
       console.error('Error fetching prices:', error);
       return symbols.map(symbol => ({
         symbol,
-        price: 0
+        price: 0,
+        timestamp: 0
       }));
     }
   }
 
-  async getPriceHistory(symbol: string, days: number = 7): Promise<PriceData[]> {
+  async getPriceHistory(symbol: string, days: number = 7): Promise<AssetPriceData[]> {
     try {
       const response = await fetch(
         `${this.baseUrl}/historical?symbol=${symbol}&days=${days}`

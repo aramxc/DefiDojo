@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@defidojo/shared-types": "file:../shared/types",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@headlessui/react": "^2.2.0",
