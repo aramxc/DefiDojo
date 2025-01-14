@@ -1,11 +1,33 @@
+import { API_BASE_URL } from '../../config/constants';
 import { MarketMetrics } from '@defidojo/shared-types';
 
-export const marketMetricsService = {
-    getMarketMetrics: async (symbol: string): Promise<MarketMetrics> => {
-        const response = await fetch(`/api/market-metrics/${symbol}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch market metrics');
+export class MarketMetricsService {
+    private baseUrl = `${API_BASE_URL}/market-metrics`;
+
+    async getMarketMetrics(symbol: string, coingeckoId: string): Promise<MarketMetrics> {
+        try {
+            console.log('Fetching market metrics for:', symbol, 'with CoinGecko ID:', coingeckoId);
+            const url = `${this.baseUrl}/${symbol}?coingeckoId=${coingeckoId}`;
+            console.log('Full URL:', url);
+
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`Failed to fetch market metrics: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Received market metrics:', data);
+            return data;
+
+        } catch (error) {
+            console.error('Error in getMarketMetrics:', error);
+            throw error;
         }
-        return response.json();
     }
-};
+}
+
+// Create a singleton instance
+export const marketMetricsService = new MarketMetricsService();

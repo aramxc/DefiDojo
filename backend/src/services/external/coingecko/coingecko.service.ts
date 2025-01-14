@@ -141,23 +141,29 @@ export class CoinGeckoService {
     }
 
     async getMarketMetrics(coinId: string): Promise<MarketMetrics> {
-        const [historicalData] = await Promise.all([
-            this.getHistoricalRangeData(
-                coinId,
-                Date.now() - 30 * 24 * 60 * 60 * 1000,
-                Date.now()
-            )
-        ]);
+        try {
+            console.log('CoinGecko service fetching metrics for:', coinId);
+            const [historicalData] = await Promise.all([
+                this.getHistoricalRangeData(
+                    coinId,
+                    Date.now() - 30 * 24 * 60 * 60 * 1000,
+                    Date.now()
+                )
+            ]);
 
-        const volatility = this.calculateVolatility(historicalData.prices);
-        const trends = this.calculateTrends(historicalData);
-        const fearGreed = this.calculateFearGreedIndex(volatility, trends);
+            const volatility = this.calculateVolatility(historicalData.prices);
+            const trends = this.calculateTrends(historicalData);
+            const fearGreed = this.calculateFearGreedIndex(volatility, trends);
 
-        return {
-            fearGreed,
-            volatility,
-            trends
-        };
+            return {
+                fearGreed,
+                volatility,
+                trends
+            };
+        } catch (error) {
+            console.error('CoinGecko service error:', error);
+            throw error;
+        }
     }
 
     async getTopCoins(limit: number = 200): Promise<any> {

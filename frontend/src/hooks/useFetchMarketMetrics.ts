@@ -1,30 +1,36 @@
 import { useState, useEffect } from 'react';
-import { MarketMetrics } from '@defidojo/shared-types';
 import { marketMetricsService } from '../services/api/marketMetrics.service';
+import { MarketMetrics } from '@defidojo/shared-types';
 
-export const useMarketMetrics = (symbol: string) => {
+export const useFetchMarketMetrics = (symbol: string, coingeckoId?: string) => {
     const [metrics, setMetrics] = useState<MarketMetrics | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchMetrics = async () => {
-            if (!symbol) return;
-
+            if (!symbol || !coingeckoId) return;
+            
             try {
                 setLoading(true);
-                const data = await marketMetricsService.getMarketMetrics(symbol);
+                const data = await marketMetricsService.getMarketMetrics(symbol, coingeckoId);
                 setMetrics(data);
                 setError(null);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
+                setError(err instanceof Error ? err.message : 'Failed to fetch market metrics');
+                setMetrics(null);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchMetrics();
-    }, [symbol]);
+    }, [symbol, coingeckoId]);
 
-    return { metrics, loading, error };
+    return { 
+        metrics, 
+        loading, 
+        error,
+        hasData: !!metrics
+    };
 };

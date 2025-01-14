@@ -5,11 +5,13 @@ import { priceService } from '../../services/api/price.service';
 import { infoService } from '../../services/api/info.service';
 import { Switch, CircularProgress } from '@mui/material';
 import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
+import { useFetchMarketMetrics } from '../../hooks/useFetchMarketMetrics';
+import { useFetchAssetInfo } from '../../hooks/useFetchAssetInfo';
+
 interface PriceDisplayProps {
   symbol: string;
   onRemove: () => void;
-  onSelectSymbol: (symbol: string) => void;
-  // controlsOffset?: string;
+  onSelectSymbol: (symbol: string, metrics: any) => void;
 }
 
 const formatPrice = (price: number): string => 
@@ -109,33 +111,16 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
 
 export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol }) => {
   const [priceData, setPriceData] = useState<AssetPriceData | null>(null);
-  const [assetInfo, setAssetInfo] = useState<AssetInfo | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch asset info once
-  useEffect(() => {
-    const fetchCoinInfo = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching info for symbol:', symbol); // Debug log
-        const info = await infoService.getAssetInfoBySymbol(symbol);
-        console.log('Received info:', info); // Debug log
-        setAssetInfo(info);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching asset info:', err);
-        setError('Failed to load asset information');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCoinInfo();
-  }, [symbol]);
+  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol);
+  
+  // Update to pass the CoinGecko ID from assetInfo
+  const { metrics: marketMetrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(
+    symbol,
+    assetInfo?.COINGECKO_ID || undefined
+  );
 
   // Handle price updates
   useEffect(() => {
@@ -190,64 +175,69 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
     }
   }, [isRealTime]);
 
-  const CardControls = ({ isBackside = false }) => (
-    <div className="absolute top-3 right-3 flex gap-2 z-50">
-      {!isBackside && (
-        <>
+  const CardControls = ({ isBackside = false }) => {
+    const handleAnalyticsButtonClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      // You can pass both symbol and metrics data to the parent
+      onSelectSymbol(symbol, marketMetrics);
+    };
+
+    return (
+      <div className="absolute top-3 right-3 flex gap-2 z-50">
+        {!isBackside && (
+          <>
+            <button 
+              onClick={handleAnalyticsButtonClick}
+              className="w-8 h-8 flex items-center justify-center
+                       rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
+                       hover:bg-white/10 hover:text-white transition-all duration-200"
+              title="View Analytics"
+            >
+              <BarChart fontSize="small" />
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFlipped(true);
+              }}
+              className="w-8 h-8 flex items-center justify-center
+                       rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
+                       hover:bg-white/10 hover:text-white transition-all duration-200"
+              title="View Info"
+            >
+              <Info fontSize="small" />
+            </button>
+          </>
+        )}
+        {isBackside && (
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onSelectSymbol(symbol);
+              setIsFlipped(false);
             }}
             className="w-8 h-8 flex items-center justify-center
                      rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
                      hover:bg-white/10 hover:text-white transition-all duration-200"
-            title="View Analytics"
+            title="Back"
           >
-            <BarChart fontSize="small" />
+            ←
           </button>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFlipped(true);
-            }}
-            className="w-8 h-8 flex items-center justify-center
-                     rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
-                     hover:bg-white/10 hover:text-white transition-all duration-200"
-            title="View Info"
-          >
-            <Info fontSize="small" />
-          </button>
-        </>
-      )}
-      {isBackside && (
+        )}
         <button 
           onClick={(e) => {
             e.stopPropagation();
-            setIsFlipped(false);
+            onRemove();
           }}
           className="w-8 h-8 flex items-center justify-center
-                   rounded-full bg-white/5 text-gray-300 opacity-0 group-hover:opacity-100
-                   hover:bg-white/10 hover:text-white transition-all duration-200"
-          title="Back"
+                   rounded-full bg-red-500/5 text-red-300 opacity-0 group-hover:opacity-100
+                   hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
+          title="Remove"
         >
-          ←
+          ×
         </button>
-      )}
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove();
-        }}
-        className="w-8 h-8 flex items-center justify-center
-                 rounded-full bg-red-500/5 text-red-300 opacity-0 group-hover:opacity-100
-                 hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
-        title="Remove"
-      >
-        ×
-      </button>
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -354,8 +344,8 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
               <div className="relative h-full z-10">
                 <BackContent 
                   assetInfo={assetInfo}
-                  isLoading={isLoading}
-                  error={error}
+                  isLoading={assetInfoLoading}
+                  error={assetInfoError}
                   CardControls={CardControls}
                 />
               </div>

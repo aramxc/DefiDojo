@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import TickerInputForm from '../components/dashboard/TickerInputForm';
 import { PriceAnalytics } from '../components/dashboard/PriceAnalytics';
 import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
@@ -18,6 +18,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
 import { Gauge } from '@mui/x-charts';
+import { useFetchMarketMetrics } from '../hooks/useFetchMarketMetrics';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -30,9 +31,10 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onAddTickers,
   onRemoveTicker,
 }) => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>(selectedTickers[0] || '');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>('');
   const [items, setItems] = useState(selectedTickers);
-  const { assetInfo, loading, error } = useFetchAssetInfo(selectedSymbol);
+  const { assetInfo, loading, error: assetInfoError } = useFetchAssetInfo(selectedSymbol);
+  const { metrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(selectedSymbol);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -61,6 +63,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   useEffect(() => {
     setItems(selectedTickers);
   }, [selectedTickers]);
+
+  // Add debug logs
+  console.log('Selected Symbol:', selectedSymbol);
+  console.log('Metrics Data:', metrics);
+  console.log('Metrics Error:', metricsError);
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -138,6 +145,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 >
                   <PriceAnalytics 
                     symbol={selectedSymbol} 
+                    onSymbolChange={setSelectedSymbol} 
                     onClose={() => {}} 
                   />
                 </motion.div>
@@ -160,64 +168,68 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   >
                   
                   <StatCard
-                  title="Market Overview"
-                  icon={<MonetizationOn className="text-blue-400" />}
-                  stats={[
-                    { 
-                      label: "Market Cap Rank", 
-                      value: assetInfo?.MARKET_CAP_RANK || 'N/A',
-                    
-                    },
-                    
-                    { 
-                      label: "Max Supply", 
-                      value: assetInfo?.MAX_SUPPLY || 'N/A'
-                    },
-                    { 
-                      label: "Circulating Supply", 
-                      value: assetInfo?.CIRCULATING_SUPPLY || 'N/A'
-                    },
-                    {
-                        label: "Genesis Date",
-                        value: assetInfo?.GENESIS_DATE 
-                          ? new Date(assetInfo.GENESIS_DATE).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })
-                          : 'N/A'
-                    }
-                  ]}
-                  isLoading={loading}
-                />
-
-                {/* Network Metrics */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <StatCard
-                  title="Network Metrics"
-                  icon={<Analytics className="text-blue-400" />}
-                  stats={[
-                    {
-                      label: "Transaction Volume",
-                      value: 'Coming soon..',
-                    },
-                   
-                    {
-                      label: "Hash Algorithm",
-                      value: assetInfo?.HASHING_ALGORITHM || 'N/A'
-                    },
-                    {
-                        label: "Block Time",
-                        value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
+                    title="Market Overview"
+                    icon={<MonetizationOn className="text-blue-400" />}
+                    stats={[
+                      { 
+                        label: "24h Change", 
+                        value: metrics?.trends?.price?.change24h 
+                          ? `${metrics.trends.price.change24h.toFixed(2)}%`
+                          : 'N/A',
+                        change: metrics?.trends?.price?.change24h
+                      },
+                      { 
+                        label: "7d Change",
+                        value: metrics?.trends?.price?.change7d
+                          ? `${metrics.trends.price.change7d.toFixed(2)}%`
+                          : 'N/A',
+                        change: metrics?.trends?.price?.change7d
+                      },
+                      { 
+                        label: "30d Change",
+                        value: metrics?.trends?.price?.change30d
+                          ? `${metrics.trends.price.change30d.toFixed(2)}%`
+                          : 'N/A',
+                        change: metrics?.trends?.price?.change30d
+                      },
+                      {
+                        label: "Volume Change 24h",
+                        value: metrics?.trends?.volume?.change24h
+                          ? `${metrics.trends.volume.change24h.toFixed(2)}%`
+                          : 'N/A',
+                        change: metrics?.trends?.volume?.change24h
                       }
-                  ]}
-                  isLoading={loading}
-                />
-              </motion.div>
+                    ]}
+                    isLoading={metricsLoading}
+                  />
+
+                  {/* Network Metrics */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                >
+                  <StatCard
+                    title="Network Metrics"
+                    icon={<Analytics className="text-blue-400" />}
+                    stats={[
+                      {
+                        label: "Transaction Volume",
+                        value: 'Coming soon..',
+                      },
+                     
+                      {
+                        label: "Hash Algorithm",
+                        value: assetInfo?.HASHING_ALGORITHM || 'N/A'
+                      },
+                      {
+                          label: "Block Time",
+                          value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
+                        }
+                    ]}
+                    isLoading={loading}
+                  />
+                </motion.div>
                   
                   
                     
@@ -228,46 +240,44 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                                   group hover:transform hover:scale-[1.02] transition-all duration-200
                                   before:absolute before:inset-0 
                                   before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
-                                  before:backdrop-blur-xl before:transition-opacity
-                                  after:absolute after:inset-0 
-                                  after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
-                                  after:opacity-0 hover:after:opacity-100 
-                                  after:transition-opacity">
+                                  before:backdrop-blur-xl before:transition-opacity">
                       <div className="relative z-10 p-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-gray-300 opacity-75 group-hover:opacity-100 transition-opacity">
-                            <Insights className="text-blue-400" />
-                          </span>
+                          <Insights className="text-blue-400" />
                           <h3 className="text-sm font-semibold text-gray-300
                                       bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
                             Fear / Greed Index
                           </h3>
                         </div>
                         <Gauge
-                          value={65}
+                          value={metrics?.fearGreed?.value ?? 50}
+                         
                           aria-label="Fear and Greed Index"
                           sx={{
                             width: '100%',
                             height: 150,
-                            '& .MuiChartsGauge-mark': {
-                              stroke: '#475569'
-                            },
-                            '& .MuiChartsGauge-markLabel': {
-                              fill: '#94a3b8'
-                            },
+                            '& .MuiChartsGauge-mark': { stroke: '#475569' },
+                            '& .MuiChartsGauge-markLabel': { fill: '#94a3b8' },
                             '& .MuiChartsGauge-valueText': {
                               fill: '#e2e8f0',
                               fontSize: '1.5rem',
                               fontWeight: 'bold'
                             },
-                            '& .MuiChartsGauge-track': {
-                              stroke: '#334155'
-                            },
+                            '& .MuiChartsGauge-track': { stroke: '#334155' },
                             '& .MuiChartsGauge-progress': {
-                              stroke: 65 >= 50 ? '#22c55e' : '#ef4444',
+                              stroke: (metrics?.fearGreed?.value ?? 50) >= 50 ? '#22c55e' : '#ef4444',
                             }
                           }}
                         />
+                        {/* Fear/Greed Components */}
+                        <div className="mt-4 space-y-2 text-sm">
+                          {metrics?.fearGreed?.components && Object.entries(metrics.fearGreed.components).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span className="text-gray-400">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                              <span className="text-gray-200">{value.toFixed(0)}</span>
+                            </div>
+                          ))}
+                        </div>
                         <div className="flex justify-between w-full mt-4 text-sm">
                           <span className="text-red-400">Extreme Fear</span>
                           <span className="text-green-400">Extreme Greed</span>
@@ -304,88 +314,128 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
           {/* Command Center Grid */}
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Market Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Price Overview */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
                 <StatCard
-                  title="Market Overview"
+                  title="Price Overview"
                   icon={<MonetizationOn className="text-blue-400" />}
                   stats={[
-                    { 
-                      label: "Market Cap Rank", 
-                      value: assetInfo?.MARKET_CAP_RANK || 'N/A',
-                    
-                    },
-                    { 
-                      label: "Max Supply", 
-                      value: assetInfo?.MAX_SUPPLY || 'N/A'
-                    },
-                    { 
-                      label: "Circulating Supply", 
-                      value: assetInfo?.CIRCULATING_SUPPLY || 'N/A'
+                    {
+                      label: "Current Price",
+                      value: metrics?.trends?.price?.currentPrice?.price
+                        ? `$${metrics.trends.price.currentPrice.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                        : 'N/A'
                     },
                     {
-                        label: "Genesis Date",
-                        value: assetInfo?.GENESIS_DATE 
-                          ? new Date(assetInfo.GENESIS_DATE).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })
-                          : 'N/A'
+                      label: "24h Volume",
+                      value: metrics?.trends?.volume?.currentVolume
+                        ? `$${metrics.trends.volume.currentVolume.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                        : 'N/A'
+                    },
+                    {
+                      label: "24h Change",
+                      value: metrics?.trends?.price?.change24h
+                        ? `${metrics.trends.price.change24h.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.price?.change24h
+                    },
+                    {
+                      label: "Volume Change",
+                      value: metrics?.trends?.volume?.change24h
+                        ? `${metrics.trends.volume.change24h.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.volume?.change24h
                     }
                   ]}
                   isLoading={loading}
                 />
               </motion.div>
 
-              {/* Development Activity */}
+              {/* Market Trends */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
                 <StatCard
-                  title="Development Activity"
-                  icon={<Speed className="text-blue-400" />}
+                  title="Market Trends"
+                  icon={<TrendingUp className="text-blue-400" />}
                   stats={[
                     {
-                      label: "Github Activity",
-                      value: assetInfo?.GITHUB_PULL_REQUEST_CONTRIBUTORS || 'N/A',
-                    
+                      label: "7d Price Change",
+                      value: metrics?.trends?.price?.change7d
+                        ? `${metrics.trends.price.change7d.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.price?.change7d
                     },
                     {
-                      label: "Contributors", 
-                      value: assetInfo?.GITHUB_PULL_REQUEST_CONTRIBUTORS || 'N/A'
+                      label: "30d Price Change",
+                      value: metrics?.trends?.price?.change30d
+                        ? `${metrics.trends.price.change30d.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.price?.change30d
                     },
                     {
-                      label: "Open Issues",
-                      value: assetInfo?.GITHUB_TOTAL_ISSUES || 'N/A',
-                      
+                      label: "7d Volume Change",
+                      value: metrics?.trends?.volume?.change7d
+                        ? `${metrics.trends.volume.change7d.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.volume?.change7d
                     },
                     {
-                        label: "Closed Issues",
-                        value: assetInfo?.GITHUB_CLOSED_ISSUES || 'N/A',
-                        
-                      }
+                      label: "30d Volume Change",
+                      value: metrics?.trends?.volume?.change30d
+                        ? `${metrics.trends.volume.change30d.toFixed(2)}%`
+                        : 'N/A',
+                      change: metrics?.trends?.volume?.change30d
+                    }
                   ]}
                   isLoading={loading}
                 />
               </motion.div>
 
-              
-
-              {/* Market Sentiment */}
+              {/* Volatility Metrics */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                
+                <StatCard
+                  title="Volatility Metrics"
+                  icon={<ShowChart className="text-blue-400" />}
+                  stats={[
+                    {
+                      label: "Daily Volatility",
+                      value: metrics?.volatility?.daily
+                        ? `${(metrics.volatility.daily * 100).toFixed(2)}%`
+                        : 'N/A'
+                    },
+                    {
+                      label: "Weekly Volatility",
+                      value: metrics?.volatility?.weekly
+                        ? `${(metrics.volatility.weekly * 100).toFixed(2)}%`
+                        : 'N/A'
+                    },
+                    {
+                      label: "Monthly Volatility",
+                      value: metrics?.volatility?.monthly
+                        ? `${(metrics.volatility.monthly * 100).toFixed(2)}%`
+                        : 'N/A'
+                    },
+                    {
+                      label: "Std Deviation",
+                      value: metrics?.volatility?.standardDeviation
+                        ? `${(metrics.volatility.standardDeviation * 100).toFixed(2)}%`
+                        : 'N/A'
+                    }
+                  ]}
+                  isLoading={loading}
+                />
               </motion.div>
             </div>
           </div>

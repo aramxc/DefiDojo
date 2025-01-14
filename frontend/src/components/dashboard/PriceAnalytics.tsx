@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { checkProAccess } from '../../services/web3/contract.service';
 import { PurchaseDataModal } from '../premium/PurchaseDataModal';
 
+
 const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y', '5Y'];
 type DataType = 'price' | 'marketCap' | 'volume';
 
@@ -145,8 +146,13 @@ const PriceChart = memo(({
   </ResponsiveContainer>
 ));
 
-const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: DataType }) => (
+const MetricsDisplay = memo(({ metrics, dataType }: { 
+  metrics: any, 
+  dataType: DataType,
+  marketMetrics?: any 
+}) => (
   <div className="flex items-center gap-4">
+    {/* Price metrics */}
     {['high', 'low', 'change'].map((metric) => (
       <div key={metric} className="text-xs text-gray-400">
         {metric.charAt(0).toUpperCase() + metric.slice(1)}:
@@ -166,12 +172,14 @@ const MetricsDisplay = memo(({ metrics, dataType }: { metrics: any, dataType: Da
 
 interface PriceAnalyticsProps {
   symbol: string;
+  onSymbolChange?: (symbol: string) => void;
   onClose?: () => void;
   closeable?: boolean;
 }
 
 export const PriceAnalytics = memo(({ 
   symbol, 
+  onSymbolChange,
   onClose, 
   closeable = false 
 }: PriceAnalyticsProps) => {
@@ -184,6 +192,7 @@ export const PriceAnalytics = memo(({
     const [metrics, setMetrics] = useState<any>(null);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const prevTimeframeRef = useRef<TimeframeType>('1D');
+   
 
     useEffect(() => {
         const style = document.createElement('style');
@@ -341,7 +350,11 @@ export const PriceAnalytics = memo(({
                         </div>
                         
                         {/* Memoized Metrics Display */}
-                        <MetricsDisplay metrics={metrics} dataType={dataType} />
+                        <MetricsDisplay 
+                          metrics={metrics} 
+                          dataType={dataType} 
+                          
+                        />
                     </div>
 
                     {/* Time Controls */}
@@ -473,10 +486,17 @@ export const PriceAnalytics = memo(({
                             </div>
                         </div>
                     )}
+
+                    
                 </div>
             </div>
         );
     }, [currentData, metrics, isChartLoading, error, dataType, timeframe, selectedTimezone.value, symbol, onClose]);
+
+    // Call onSymbolChange when symbol changes
+    useEffect(() => {
+        onSymbolChange?.(symbol);
+    }, [symbol, onSymbolChange]);
 
     return (
         <>
