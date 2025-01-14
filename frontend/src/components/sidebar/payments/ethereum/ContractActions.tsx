@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { depositFunds, withdrawFunds } from '../../../../services/web3/contract.service';
 
-const ContractActions = () => {
+interface ContractActionsProps {
+  onSuccess?: () => void;
+}
+
+const ContractActions: React.FC<ContractActionsProps> = ({ onSuccess }) => {
   const [depositValue, setDepositValue] = useState('');
   const [withdrawValue, setWithdrawValue] = useState('');
   
@@ -19,6 +23,7 @@ const ContractActions = () => {
       }
 
       await depositFunds(depositValue);
+      onSuccess?.();
       
       console.log('Deposit value:', depositValue);
     } catch (error: any) {
@@ -41,6 +46,7 @@ const ContractActions = () => {
 
       console.log('Withdraw value:', withdrawValue);
       await withdrawFunds(withdrawValue);
+      onSuccess?.();
     } catch (error: any) {
       toast.error(error?.reason || error.message);
     }

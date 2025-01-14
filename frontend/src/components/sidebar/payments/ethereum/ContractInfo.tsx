@@ -3,26 +3,31 @@ import { fetchBalances } from '../../../../services/web3/contract.service';
 import { CONTRACT_ADDRESS } from '../../../../config/constants';
 import { truncateAddress } from '../../../../utils';
 
-const ContractInfo = ({ account }: { account: string }) => {
+interface ContractInfoProps {
+  account: string;
+  refreshTrigger?: number;
+}
+
+const ContractInfo: React.FC<ContractInfoProps> = ({ account, refreshTrigger }) => {
   const [contractBalance, setContractBalance] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
   const [walletCopied, setWalletCopied] = useState(false);
   const [contractCopied, setContractCopied] = useState(false);
 
-  useEffect(() => {
-    const updateBalances = async () => {
-      const { contractBalance, walletBalance } = await fetchBalances(account);
-      setContractBalance(contractBalance);
-      setWalletBalance(walletBalance);
-    };
+  const updateBalances = async () => {
+    const { contractBalance, walletBalance } = await fetchBalances(account);
+    setContractBalance(contractBalance);
+    setWalletBalance(walletBalance);
+  };
 
+  useEffect(() => {
     updateBalances();
-  }, [account]); 
+  }, [account, refreshTrigger]);
 
   const handleCopy = async (text: string, setCopied: (value: boolean) => void) => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
