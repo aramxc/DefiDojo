@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Tooltip } from '@mui/material';
 import { InfoOutlined } from '@mui/icons-material';
@@ -15,7 +15,13 @@ export interface StatCardProps {
   isLoading?: boolean;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ title, icon, infoTooltip, stats, isLoading }) => {
+export const StatCard = memo(({ 
+  title, 
+  icon, 
+  infoTooltip, 
+  stats, 
+  isLoading 
+}: StatCardProps) => {
   if (isLoading) {
     return (
       <div className="animate-pulse rounded-xl p-4 
@@ -40,7 +46,7 @@ export const StatCard: React.FC<StatCardProps> = ({ title, icon, infoTooltip, st
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative rounded-xl overflow-hidden h-full
                 shadow-[0_0_10px_rgba(59,130,246,0.03)] 
@@ -106,4 +112,4 @@ export const StatCard: React.FC<StatCardProps> = ({ title, icon, infoTooltip, st
       </div>
     </motion.div>
   );
-};
+});

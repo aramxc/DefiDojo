@@ -161,16 +161,16 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
               {/* Right Column - Stats & Info */}
               <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="lg:w-80 p-6 overflow-y-auto
                           scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
                           bg-gradient-to-b from-white/[0.02] to-transparent"
               >
                 <div className="space-y-6">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity:0 }}
+                    whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     className="flex flex-col gap-6"
                   >
@@ -201,8 +201,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
                   {/* Network Metrics */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                 >
                   <StatCard
