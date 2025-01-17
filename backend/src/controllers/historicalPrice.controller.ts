@@ -24,6 +24,7 @@ export class HistoricalPriceController {
     getHistoricalPrices = async (req: Request, res: Response) => {
         try {
             const { coinId, timeframe } = req.params;
+            const { from: fromQuery, to: toQuery } = req.query;
             const symbol = coinId.toUpperCase();
             const geckoId = SYMBOL_TO_COINGECKO_ID[symbol];
             
@@ -31,8 +32,26 @@ export class HistoricalPriceController {
                 return res.status(400).json({ error: `Unsupported symbol: ${symbol}` });
             }
 
-            const cacheKey = `historical-${geckoId}-${timeframe}`;
-            console.log(`Checking cache for key: ${cacheKey}`);
+            let timeRange: { from: number; to: number };
+
+            if (timeframe === 'Custom' && fromQuery && toQuery) {
+                // Validate custom time range
+                const from = Number(fromQuery);
+                const to = Number(toQuery);
+                
+                if (isNaN(from) || isNaN(to) || from >= to) {
+                    return res.status(400).json({ 
+                        error: 'Invalid custom time range',
+                        message: 'From date must be before to date'
+                    });
+                }
+
+                timeRange = { from, to };
+            } else {
+                timeRange = this.getTimeRange(timeframe);
+            }
+
+            const cacheKey = `historical-${geckoId}-${timeframe}-${timeRange.from}-${timeRange.to}`;
             
             const cachedData = this.cache.get(cacheKey);
             if (cachedData) {
@@ -42,8 +61,11 @@ export class HistoricalPriceController {
 
             console.log(`Cache miss for ${symbol} ${timeframe} - fetching from API`);
             
-            const { from, to } = this.getTimeRange(timeframe);
-            const data = await this.coinGeckoService.getHistoricalRangeData(geckoId, from, to);
+            const data = await this.coinGeckoService.getHistoricalRangeData(
+                geckoId, 
+                timeRange.from, 
+                timeRange.to
+            );
             
             const formattedData = {
                 id: geckoId,
@@ -68,7 +90,8 @@ export class HistoricalPriceController {
 
             res.json(formattedData);
         } catch (error: unknown) {
-            console.error(`API Error: ${req.params.coinId} ${req.params.timeframe}`, error instanceof Error ? error.message : 'Unknown error');
+            console.error(`API Error: ${req.params.coinId} ${req.params.timeframe}`, 
+                error instanceof Error ? error.message : 'Unknown error');
             res.status(500).json({ 
                 error: 'Failed to fetch historical data',
                 message: error instanceof Error ? error.message : 'Unknown error occurred'

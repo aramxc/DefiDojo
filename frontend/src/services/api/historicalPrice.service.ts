@@ -24,34 +24,32 @@ export interface HistoricalPriceData {
   };
 }
 
-export type TimeframeType = '1D' | '7D' | '1M' | '6M' | '1Y' | '5Y';
+export type TimeframeType = '1D' | '7D' | '1M' | '6M' | '1Y' | '5Y' | 'Custom';
 
 export class HistoricalPriceService {
   private baseUrl = `${API_BASE_URL}/prices`;
 
   async getHistoricalPrices(
     symbol: string,
-    timeframe: TimeframeType
+    timeframe: TimeframeType,
+    customRange?: { from: number; to: number }
   ): Promise<HistoricalPriceData> {
     try {
-      console.log('Frontend: Requesting historical data:', { symbol, timeframe });
+      let url = `${this.baseUrl}/historical/${symbol.toLowerCase()}/${timeframe}`;
       
-      const url = `${this.baseUrl}/historical/${symbol.toLowerCase()}/${timeframe}`;
-      console.log('Frontend: Request URL:', url);
+      // Add custom range parameters if provided
+      if (customRange) {
+        url += `?from=${customRange.from}&to=${customRange.to}`;
+      }
       
       const response = await fetch(url);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Frontend: API Error:', {
-          status: response.status,
-          data: errorData
-        });
         throw new Error(errorData.message || `Failed to fetch historical price data: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Frontend: Received data successfully');
       
       return {
         [symbol]: {
@@ -65,16 +63,7 @@ export class HistoricalPriceService {
       };
     } catch (error) {
       console.error('Frontend: HistoricalPriceService Error:', error);
-      return {
-        [symbol]: {
-          data: [],
-          metrics: {
-            price: { high: 0, low: 0, change: 0 },
-            marketCap: { high: 0, low: 0, change: 0 },
-            volume: { high: 0, low: 0, change: 0 }
-          }
-        }
-      };
+      throw error;
     }
   }
 }

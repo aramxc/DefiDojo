@@ -19,7 +19,9 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
 import { Gauge } from '@mui/x-charts';
 import { useFetchMarketMetrics } from '../hooks/useFetchMarketMetrics';
-
+import { DetailedPriceCard } from '../components/dashboard/DetailedPriceCard';
+import { formatPercentage, formatCurrency } from '../utils/formatters';
+import { CustomTimeframeChart } from '../components/premium/CustomTimeframeChart';
 interface AdvancedDashboardProps {
   selectedTickers: string[];
   onAddTickers: (tickers: string[]) => void;
@@ -79,61 +81,45 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      <div className="h-[calc(100dvh-var(--navbar-height))] flex flex-col px-4 py-2 sm:p-6 lg:p-8">
-        
-        {/* First Section - Ticker Input and Main Charts */}
+      {/* First Section - Main Analysis */}
+      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-2 sm:p-6 lg:p-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex-1 w-full max-w-[1920px] mx-auto rounded-2xl overflow-hidden
+          className="h-full w-full rounded-2xl overflow-hidden
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
                      border border-white/[0.05]
-                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]
-                     after:absolute after:inset-0 
-                     after:bg-[radial-gradient(circle_at_50%_-20%,rgba(129,140,248,0.05),transparent_70%)]
-                     after:z-[-1]
-                     relative"
+                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
         >
           <div className="h-full flex flex-col divide-y divide-white/[0.03]">
             {/* Header Section - Ticker Input */}
             <div className="p-6">
-                <TickerInputForm onAddTickers={onAddTickers} />
+                <TickerInputForm  onSelectTicker={setSelectedSymbol}
+                    selectedTicker={selectedSymbol}
+                    allowMultipleSelections={false}
+                />
             </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row divide-white/5">
-              {/* Left Column - Tickers List */}
+              {/* Left Column - Detailed Price Card */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="lg:w-72 p-6 max-h-[calc(100vh-16rem)] overflow-y-auto
-                          custom-scrollbar
-                          scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+                className="lg:w-96 p-6 h-full
                           bg-gradient-to-b from-white/[0.03] to-transparent"
-              >
-                <DndContext 
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext 
-                    items={items}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="pr-2 pb-6 space-y-2">
-                      {items.map((ticker) => (
-                        <SortablePriceDisplay
-                          key={ticker}
-                          id={ticker}
-                          symbol={ticker}
-                          onRemove={() => onRemoveTicker(ticker)}
-                          onSelectSymbol={setSelectedSymbol}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+              > 
+                {selectedSymbol && (
+                  <DetailedPriceCard
+                    symbol={selectedSymbol}
+                    assetInfo={assetInfo}
+                    price={metrics?.trends?.price?.currentPrice?.price}
+                    priceChange24h={metrics?.trends?.price?.change24h}
+                    volume24h={metrics?.trends?.volume?.currentVolume}
+                    isLoading={metricsLoading}
+                  />
+                )}
               </motion.div>
 
               {/* Center Column - Main Charts */}
@@ -181,19 +167,23 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                     stats={[
                       { 
                         label: "24h Change", 
-                        change: metrics?.trends?.price?.change24h
+                        value: metrics?.trends?.price?.change24h ? 
+                          formatPercentage(metrics.trends.price.change24h) : 'N/A'
                       },
                       { 
                         label: "7d Change",
-                        change: metrics?.trends?.price?.change7d
+                        value: metrics?.trends?.price?.change7d ? 
+                          formatPercentage(metrics.trends.price.change7d) : 'N/A'
                       },
                       { 
                         label: "30d Change",
-                        change: metrics?.trends?.price?.change30d
+                        value: metrics?.trends?.price?.change30d ? 
+                          formatPercentage(metrics.trends.price.change30d) : 'N/A'
                       },
                       {
                         label: "Volume Change 24h",
-                        change: metrics?.trends?.volume?.change24h
+                        value: metrics?.trends?.volume?.change24h ? 
+                          formatPercentage(metrics.trends.volume.change24h) : 'N/A'
                       }
                     ]}
                     isLoading={metricsLoading}
@@ -241,10 +231,16 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <Insights className="text-blue-400" />
-                            <h3 className="text-sm font-semibold text-gray-300
-                                        bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-                              Fear / Greed Index
-                            </h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-semibold text-gray-300
+                                          bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                                Fear / Greed Index
+                              </h3>
+                              <span className="text-[10px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 
+                                            text-white px-1.5 py-0.5 rounded-full">
+                                BETA
+                              </span>
+                            </div>
                           </div>
                           <Tooltip 
                             title={
@@ -299,18 +295,17 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
         </motion.div>
       </div>
 
-      {/* Second Section - Command Center Grid */}
-      <div className="min-h-[calc(100dvh-var(--navbar-height))] px-4 py-2 sm:p-6 lg:p-8">
+      {/* Second Section - Command Center */}
+      <div className="min-h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-2 sm:p-6 lg:p-8">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="w-full max-w-[1920px] mx-auto rounded-2xl overflow-hidden
+          className="w-full rounded-2xl overflow-hidden
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
                      border border-white/[0.05]
-                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]
-                     relative"
+                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
         >
           {/* Command Center Header */}
           <div className="p-6 border-b border-white/[0.05]">
@@ -320,6 +315,24 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
           </div>
 
           {/* Command Center Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* <CustomTimeframeChart
+            symbol={selectedSymbol}
+            customTimeframe={{
+              from: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
+              to: Date.now() - (20 * 24 * 60 * 60 * 1000) // 20 days ago
+            }}
+          />
+          <CustomTimeframeChart
+            symbol={selectedSymbol}
+            customTimeframe={{
+              from: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
+              to: Date.now() - (20 * 24 * 60 * 60 * 1000) // 20 days ago
+            }}
+          /> */}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Price Overview */}
@@ -447,6 +460,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               </motion.div>
             </div>
           </div>
+          
         </motion.div>
       </div>
     </div>

@@ -1,84 +1,37 @@
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
-import { historicalPriceService, TimeframeType } from '../../services/api/historicalPrice.service';
+import { TimeframeType } from '../../services/api/historicalPrice.service';
 import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
 import { CircularProgress } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { checkProAccess } from '../../services/web3/contract.service';
 import { PurchaseDataModal } from '../premium/PurchaseDataModal';
+import { useFetchHistoricalPrices } from '../../hooks/useFetchHistoricalPrices';
+import { formatTimestamp, formatValue, formatYAxisValue, formatChange } from '../../utils/formatters';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-
-const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y', '5Y'];
+// Constants
+const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y', '5Y', 'Custom'];
 type DataType = 'price' | 'marketCap' | 'volume';
-
-// Helper functions
-const formatTimestamp = (timestamp: number, timeframe: string, timezone: string): string => {
-    const date = new Date(timestamp);
-    const options: Intl.DateTimeFormatOptions = {
-        timeZone: timezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        month: 'short',
-        day: 'numeric',
-        weekday: 'short'
-    };
-
-    switch (timeframe) {
-        case '1D': return date.toLocaleTimeString([], { ...options, month: undefined, day: undefined, weekday: undefined });
-        case '7D': return date.toLocaleDateString([], { ...options, hour: undefined, minute: undefined });
-        default: return date.toLocaleDateString([], { ...options, hour: undefined, minute: undefined, weekday: undefined });
-    }
-};
-
-const formatValue = (value: number | null | undefined, type: DataType): string => {
-    if (value == null) return 'N/A';
-    if (type === 'marketCap') return `$${(value / 1e9).toFixed(2)}B`;
-    if (type === 'volume') return `$${(value / 1e6).toFixed(2)}M`;
-    return `$${value.toLocaleString()}`;
-};
-
-const formatChange = (change: number | undefined): string => {
-    return `${(change ?? 0).toFixed(2)}%`;
-};
-
-// Helper function for Y-axis formatting
-const formatYAxisValue = (value: number, type: DataType): string => {
-    if (value === 0) return '0';
-    
-    if (type === 'marketCap') {
-        if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-    } else if (type === 'volume') {
-        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-        if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
-    } else {
-        // Price formatting
-        if (value >= 1e3) return `$${value.toLocaleString()}`;
-        return `$${value.toFixed(2)}`;
-    }
-    
-    return `$${value.toLocaleString()}`;
-};
 
 const PriceChart = memo(({ 
   data, 
-  dataType, 
+  dataType,
   timeframe, 
   selectedTimezone 
 }: { 
-  data: Array<any>,
-  dataType: DataType,
-  timeframe: TimeframeType,
-  selectedTimezone: string
+  data: Array<any>;
+  dataType: DataType;
+  timeframe: TimeframeType;
+  selectedTimezone: string;
 }) => (
   <ResponsiveContainer width="100%" height="100%">
-    <LineChart 
-      data={data}
-      margin={{ top: 5, right: 5, left: 5, bottom: 15 }}
-    >
-      <defs>
+    <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 15 }}>
+      {/* Chart Gradients */}
+      <defs> 
         <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#38bdf8" />
           <stop offset="50%" stopColor="#22d3ee" />
@@ -177,6 +130,155 @@ interface PriceAnalyticsProps {
   closeable?: boolean;
 }
 
+// Separate the TimeframeSelector into its own component
+const TimeframeSelector = memo(({ 
+  timeframe, 
+  isCustomMode,
+  customDates,
+  onTimeframeClick,
+  onCustomModeToggle,
+  onBackClick,
+  onDateChange,
+  isValidDateRange
+}: {
+  timeframe: TimeframeType;
+  isCustomMode: boolean;
+  customDates: { from: Date | null; to: Date | null };
+  onTimeframeClick: (tf: TimeframeType) => void;
+  onCustomModeToggle: () => void;
+  onBackClick: () => void;
+  onDateChange: (type: 'from' | 'to', date: Date | null) => void;
+  isValidDateRange: boolean;
+}) => (
+  <AnimatePresence mode="wait">
+    {!isCustomMode ? (
+      <motion.div 
+        className="flex gap-2"
+        initial={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        key="timeframes"
+      >
+        {TIMEFRAMES.map((tf) => (
+          <motion.button
+            key={tf}
+            onClick={() => tf === 'Custom' ? onCustomModeToggle() : onTimeframeClick(tf)}
+            className={`
+              px-4 py-2.5 
+              rounded-lg 
+              font-medium
+              text-sm
+              transition-all duration-200
+              ${(tf === '5Y' || tf === 'Custom') 
+                ? timeframe === tf || (tf === 'Custom' && isCustomMode)
+                    ? `relative overflow-hidden
+                       text-white
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
+                       before:backdrop-blur-xl
+                       before:animate-[burn_3s_ease-in-out_infinite]
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
+                       shadow-[0_0_25px_rgba(236,72,153,0.5)]
+                       [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
+                    : `relative overflow-hidden
+                       text-white
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
+                       before:backdrop-blur-xl
+                       before:animate-[burn_3s_ease-in-out_infinite]
+                       after:absolute after:inset-[-1px] after:rounded-lg
+                       after:bg-gradient-to-t after:from-pink-500/30 after:to-transparent
+                       after:animate-[pulse_2s_ease-in-out_infinite]
+                       hover:text-white
+                       hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
+                       hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80
+                       shadow-[0_0_20px_rgba(236,72,153,0.4)]
+                       group`
+                : timeframe === tf
+                    ? `relative overflow-hidden
+                       text-white
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                       before:backdrop-blur-xl
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                       shadow-[0_0_10px_rgba(59,130,246,0.1)]`
+                    : `text-gray-400 
+                       hover:text-white 
+                       hover:bg-slate-700/50`
+              }
+            `}
+          >
+            <span className="relative z-10">{tf}</span>
+          </motion.button>
+        ))}
+      </motion.div>
+    ) : (
+      <motion.div 
+        className="flex items-center gap-4"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        key="custom-mode"
+      >
+        <motion.button
+          onClick={onBackClick}
+          className="px-4 py-2.5 rounded-lg font-medium text-sm
+                   relative overflow-hidden text-white
+                   before:absolute before:inset-0 
+                   before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
+                   before:backdrop-blur-xl
+                   before:animate-[burn_3s_ease-in-out_infinite]
+                   shadow-[0_0_25px_rgba(236,72,153,0.5)]
+                   hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]
+                   transition-all duration-300
+                   cursor-pointer"
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <ArrowBackIcon className="w-4 h-4" />
+          </span>
+        </motion.button>
+        <div className="flex gap-4">
+          <DatePicker
+            label="From Date"
+            value={customDates.from}
+            onChange={(date) => onDateChange('from', date)}
+            maxDate={customDates.to || undefined}
+            className="bg-slate-800/50"
+            slotProps={{
+              textField: {
+                size: "small",
+                className: "w-40 bg-slate-800/50 text-white border-white/5",
+                required: true,
+                error: !isValidDateRange && !!customDates.from && !!customDates.to,
+                helperText: !isValidDateRange && !!customDates.from && !!customDates.to ? 
+                  "Invalid date range" : undefined
+              }
+            }}
+          />
+          <DatePicker
+            label="To Date"
+            value={customDates.to}
+            onChange={(date) => onDateChange('to', date)}
+            minDate={customDates.from || undefined}
+            className="bg-slate-800/50"
+            slotProps={{
+              textField: {
+                size: "small",
+                className: "w-40 bg-slate-800/50 text-white border-white/5",
+                required: true,
+                error: !isValidDateRange && !!customDates.from && !!customDates.to,
+                helperText: !isValidDateRange && !!customDates.from && !!customDates.to ? 
+                  "Invalid date range" : undefined
+              }
+            }}
+          />
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+));
+
 export const PriceAnalytics = memo(({ 
   symbol, 
   onSymbolChange,
@@ -192,7 +294,40 @@ export const PriceAnalytics = memo(({
     const [metrics, setMetrics] = useState<any>(null);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const prevTimeframeRef = useRef<TimeframeType>('1D');
-   
+    const [isCustomMode, setIsCustomMode] = useState(false);
+    // const [dateRange, setDateRange] = useState({
+    //     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+    //     to: new Date()
+    // });
+    const [customDates, setCustomDates] = useState<{
+        from: Date | null;
+        to: Date | null;
+    }>({
+        from: null,
+        to: null
+    });
+    const [customRange, setCustomRange] = useState<{from: number; to: number} | undefined>();
+
+     // Add validation for custom dates
+     const isValidDateRange = useMemo(() => {
+        if (!customDates.from || !customDates.to) return false;
+        return customDates.to > customDates.from;
+    }, [customDates.from, customDates.to]);
+
+    // Add a flag to control when to make the API request
+    const effectiveTimeframe = useMemo(() => {
+        // Only use 'Custom' timeframe when we have a valid date range
+        if (timeframe === 'Custom' && (!customRange || !isValidDateRange)) {
+            return null; // Return null to prevent API call
+        }
+        return timeframe;
+    }, [timeframe, customRange, isValidDateRange]);
+
+    const { data, loading } = useFetchHistoricalPrices({
+        symbol,
+        timeframe: effectiveTimeframe, // Pass null to prevent API call
+        customRange
+    });
 
     useEffect(() => {
         const style = document.createElement('style');
@@ -221,43 +356,25 @@ export const PriceAnalytics = memo(({
         }
     }, [timeframe]);
 
-    const fetchData = useMemo(() => async () => {
-        setIsChartLoading(true);
-        try {
-            const response = await historicalPriceService.getHistoricalPrices(symbol, timeframe);
-            const data = response[symbol];
-            
-            // Only update state after new data is ready
-            setCurrentData(data.data);
-            setMetrics(data.metrics);
+    useEffect(() => {
+        if (data?.[symbol]) {
+            setCurrentData(data[symbol].data);
+            setMetrics(data[symbol].metrics);
             setError(null);
-        } catch (err) {
-            setError('Failed to fetch price data');
-            console.error('Price data fetch error:', err);
-        } finally {
-            setIsChartLoading(false);
         }
-    }, [symbol, timeframe]);
+    }, [data, symbol]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        setIsChartLoading(loading);
+    }, [loading]);
 
-    const handleTimeframeClick = async (tf: TimeframeType) => {
-        if (tf === '5Y') {
-            try {
-                const hasAccess = await checkProAccess(symbol);
-                if (!hasAccess) {
-                    setShowPurchaseModal(true);
-                    return;
-                }
-            } catch (error) {
-                console.error('Pro access check error:', error);
-                setShowPurchaseModal(true);
-                return;
-            }
-        }
+    const handleTimeframeClick = (tf: TimeframeType) => {
         setTimeframe(tf);
+        if (tf !== 'Custom') {
+            setIsCustomMode(false);
+            setCustomDates({ from: null, to: null });
+            setCustomRange(undefined);
+        }
     };
 
     const handleModalClose = () => {
@@ -268,6 +385,42 @@ export const PriceAnalytics = memo(({
     const handleModalSuccess = () => {
         setShowPurchaseModal(false);
         setTimeframe('5Y');
+    };
+
+    const handleDateChange = (type: 'from' | 'to', date: Date | null) => {
+        const newDates = {
+            ...customDates,
+            [type]: date
+        };
+        setCustomDates(newDates);
+
+        // Only update custom range and trigger data fetch if both dates are valid
+        if (newDates.from && newDates.to && newDates.to > newDates.from) {
+            setCustomRange({
+                from: newDates.from.getTime(),
+                to: newDates.to.getTime()
+            });
+            setTimeframe('Custom'); // Ensure timeframe is set to Custom
+        } else {
+            // Clear custom range if dates are invalid
+            setCustomRange(undefined);
+        }
+    };
+
+   
+
+    const handleBackClick = () => {
+        setIsCustomMode(false);
+        setTimeframe('1D'); // Reset to default timeframe
+        setCustomDates({ from: null, to: null });
+        setCustomRange(undefined);
+    };
+
+    const handleCustomModeToggle = () => {
+        setIsCustomMode(true);
+        setTimeframe('Custom');
+        setCustomDates({ from: null, to: null });
+        setCustomRange(undefined);
     };
 
     const content = useMemo(() => {
@@ -360,69 +513,16 @@ export const PriceAnalytics = memo(({
                     {/* Time Controls */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         {/* Timeframe Selector */}
-                        <div className="flex gap-2">
-                            {TIMEFRAMES.map((tf) => (
-                                <button
-                                    key={tf}
-                                    onClick={() => handleTimeframeClick(tf)}
-                                    className={`
-                                        px-4 py-2.5 
-                                        rounded-lg 
-                                        font-medium
-                                        text-sm
-                                        transition-all duration-200
-                                        ${tf === '5Y' 
-                                            ? timeframe === '5Y'
-                                                ? `relative overflow-hidden
-                                                   text-white
-                                                   before:absolute before:inset-0 
-                                                   before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
-                                                   before:backdrop-blur-xl
-                                                   before:animate-[burn_3s_ease-in-out_infinite]
-                                                   after:absolute after:inset-0 
-                                                   after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
-                                                   shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                                                   [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
-                                                : `relative overflow-hidden
-                                                   text-white
-                                                   before:absolute before:inset-0 
-                                                   before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
-                                                   before:backdrop-blur-xl
-                                                   before:animate-[burn_3s_ease-in-out_infinite]
-                                                   after:absolute after:inset-[-1px] after:rounded-lg
-                                                   after:bg-gradient-to-t after:from-pink-500/30 after:to-transparent
-                                                   after:animate-[pulse_2s_ease-in-out_infinite]
-                                                   hover:text-white
-                                                   hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                                                   hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80
-                                                   shadow-[0_0_20px_rgba(236,72,153,0.4)]
-                                                   group`
-                                            : timeframe === tf
-                                                ? `relative overflow-hidden
-                                                   text-white
-                                                   before:absolute before:inset-0 
-                                                   before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                                                   before:backdrop-blur-xl
-                                                   after:absolute after:inset-0 
-                                                   after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                                                   shadow-[0_0_10px_rgba(59,130,246,0.1)]`
-                                                : `text-gray-400 
-                                                   hover:text-white 
-                                                   hover:bg-slate-700/50`
-                                        }
-                                    `}
-                                >
-                                    <span className="relative z-10 inline-flex items-center">
-                                        {tf}
-                                        {tf === '5Y' && timeframe !== '5Y'}
-                                    </span>
-                                    {tf === '5Y' && (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/20 to-transparent 
-                                               animate-[burn_4s_ease-in-out_infinite_0.5s]" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
+                        <TimeframeSelector
+                            timeframe={timeframe}
+                            isCustomMode={isCustomMode}
+                            customDates={customDates}
+                            onTimeframeClick={handleTimeframeClick}
+                            onCustomModeToggle={handleCustomModeToggle}
+                            onBackClick={handleBackClick}
+                            onDateChange={handleDateChange}
+                            isValidDateRange={isValidDateRange}
+                        />
 
                         {/* Timezone Selector */}
                         <div className="sm:ml-auto flex items-center gap-2">
@@ -499,7 +599,7 @@ export const PriceAnalytics = memo(({
     }, [symbol, onSymbolChange]);
 
     return (
-        <>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
             {content}
             <PurchaseDataModal
                 isOpen={showPurchaseModal}
@@ -507,7 +607,7 @@ export const PriceAnalytics = memo(({
                 symbol={symbol}
                 onSuccess={handleModalSuccess}
             />
-        </>
+        </LocalizationProvider>
     );
 });
 
