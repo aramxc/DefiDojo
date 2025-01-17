@@ -368,7 +368,15 @@ export const PriceAnalytics = memo(({
         setIsChartLoading(loading);
     }, [loading]);
 
-    const handleTimeframeClick = (tf: TimeframeType) => {
+    const handleTimeframeClick = async (tf: TimeframeType) => {
+        if (tf === '5Y' || tf === 'Custom') {
+            const hasAccess = await checkProAccess(symbol);
+            if (!hasAccess) {
+                setShowPurchaseModal(true);
+                return;
+            }
+        }
+        
         setTimeframe(tf);
         if (tf !== 'Custom') {
             setIsCustomMode(false);
