@@ -52,3 +52,12 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(59, 130, 246, 0.3);
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  height: 100%;
+  overscroll-behavior: none; /* Prevent bounce effect */
+}
+

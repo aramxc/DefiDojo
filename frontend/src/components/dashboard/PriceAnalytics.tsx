@@ -437,52 +437,42 @@ export const PriceAnalytics = memo(({
         if (!metrics) return <div>No metrics available</div>;
 
         return (
-            <div className="relative overflow-hidden h-full rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.03)] group">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-800/90 via-slate-800/95 to-slate-900/90" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-blue-500/5" />
-                
-                {closeable && onClose && (
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={onClose}
-                        className="absolute top-4 right-4 z-20
-                                 w-8 h-8 flex items-center justify-center
-                                 rounded-full bg-red-500/5 text-red-300
-                                 hover:bg-red-500/10 hover:text-red-200 transition-all duration-200"
-                    >
-                        ×
-                    </motion.button>
-                )}
-                
-                <div className="relative p-6 space-y-6">
+            <div className="relative h-full rounded-xl overflow-hidden">
+                {/* Background gradients and effects */}
+                <div className="absolute inset-0 
+                                before:absolute before:inset-0 
+                                before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                                before:backdrop-blur-xl before:transition-opacity
+                                after:absolute after:inset-0 
+                                after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
+                                after:opacity-0 group-hover:after:opacity-100 
+                                after:transition-opacity" 
+                />
+
+                {/* Content Container */}
+                <div className="relative z-10 p-4 sm:p-5 lg:p-6 h-full flex flex-col">
                     {/* Title Section */}
                     <motion.h2 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-3 text-2xl font-semibold"
+                        className="flex items-center gap-3 text-xl sm:text-2xl font-semibold mb-4 sm:mb-6"
                     >
-
-                        {/* Title Text */}
                         <span className="bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
-                           {symbol} Analytics
+                            {symbol} Analytics
                         </span>
-
-                        {/* Decorative Line */}
-                        <div className="flex-1 h-px bg-gradient-to-r from-blue-400/20 via-cyan-300/20 to-transparent 
-                                        max-w-[180px] self-center ml-2" />
+                        <div className="flex-1 h-px bg-gradient-to-r from-blue-400/20 via-cyan-300/20 to-transparent max-w-[180px] self-center ml-2" />
                     </motion.h2>
 
-                    {/* Data Type Toggle and Metrics */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    {/* Controls Section */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
                         {/* Data Type Toggle */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             {['price', 'marketCap', 'volume'].map((type) => (
                                 <button 
                                     key={type}
                                     onClick={() => setDataType(type as DataType)}
                                     className={`
-                                        px-4 py-2.5 
+                                        px-3 sm:px-4 py-2 
                                         rounded-lg 
                                         font-medium
                                         text-sm
@@ -493,8 +483,6 @@ export const PriceAnalytics = memo(({
                                                before:absolute before:inset-0 
                                                before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
                                                before:backdrop-blur-xl
-                                               after:absolute after:inset-0 
-                                               after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
                                                shadow-[0_0_10px_rgba(59,130,246,0.1)]` 
                                             : `text-gray-400 
                                                hover:text-white 
@@ -510,17 +498,12 @@ export const PriceAnalytics = memo(({
                             ))}
                         </div>
                         
-                        {/* Memoized Metrics Display */}
-                        <MetricsDisplay 
-                          metrics={metrics} 
-                          dataType={dataType} 
-                          
-                        />
+                        {/* Metrics Display */}
+                        <MetricsDisplay metrics={metrics} dataType={dataType} />
                     </div>
 
                     {/* Time Controls */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        {/* Timeframe Selector */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4 sm:mb-6">
                         <TimeframeSelector
                             timeframe={timeframe}
                             isCustomMode={isCustomMode}
@@ -535,37 +518,37 @@ export const PriceAnalytics = memo(({
                         {/* Timezone Selector */}
                         <div className="sm:ml-auto flex items-center gap-2">
                             <span className="text-xs text-gray-400">Timezone:</span>
-                            <div className="relative inline-block">
-                                <select
-                                    value={selectedTimezone.value}
-                                    onChange={(e) => {
-                                        const newTimezone = TIMEZONE_OPTIONS.find(tz => tz.value === e.target.value);
-                                        if (newTimezone) setTimezone(newTimezone);
-                                    }}
-                                    className="bg-slate-800/50 text-white text-xs px-3 py-2 pr-8 rounded-lg 
-                                             border border-white/5 backdrop-blur-sm 
-                                             hover:bg-slate-700/50 transition-colors duration-200
-                                             focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                                >
-                                    {TIMEZONE_OPTIONS.map((tz) => (
-                                        <option key={tz.value} value={tz.value}>
-                                            {tz.label} ({tz.abbrev})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <select
+                                value={selectedTimezone.value}
+                                onChange={(e) => {
+                                    const newTimezone = TIMEZONE_OPTIONS.find(tz => tz.value === e.target.value);
+                                    if (newTimezone) setTimezone(newTimezone);
+                                }}
+                                className="bg-slate-800/50 text-white text-xs px-3 py-2 pr-8 rounded-lg 
+                                         border border-white/5 backdrop-blur-sm 
+                                         hover:bg-slate-700/50 transition-colors duration-200
+                                         focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            >
+                                {TIMEZONE_OPTIONS.map((tz) => (
+                                    <option key={tz.value} value={tz.value}>
+                                        {tz.label} ({tz.abbrev})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
-                    {/* Chart with loading overlay */}
+                    {/* Chart Container */}
                     {currentData.length > 0 && (
-                        <div className="relative h-[400px] mt-6">
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-teal-500/5" />
+                        <div className="relative flex-1 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] 
+                                      rounded-xl border border-white/5 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-teal-500/5" />
                             <div className="absolute inset-[1px] rounded-xl bg-slate-800/95 backdrop-blur-xl" />
                             
-                            <div className="relative h-full rounded-xl border border-white/5">
-                                <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 ${isChartLoading ? 'opacity-50' : ''}`}>
-                                    <div className="flex-1 px-6 pt-6 pb-8">
+                            <div className="relative h-full">
+                                <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 
+                                              ${isChartLoading ? 'opacity-50' : ''}`}>
+                                    <div className="flex-1 p-4 sm:p-6">
                                         <PriceChart 
                                             data={currentData}
                                             dataType={dataType}
@@ -577,7 +560,8 @@ export const PriceAnalytics = memo(({
                                 
                                 {/* Loading overlay */}
                                 {isChartLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+                                    <div className="absolute inset-0 flex items-center justify-center 
+                                                 bg-slate-900/20 backdrop-blur-sm">
                                         <CircularProgress size={30} className="text-blue-500" />
                                     </div>
                                 )}
@@ -587,15 +571,15 @@ export const PriceAnalytics = memo(({
 
                     {/* Initial loading state */}
                     {!currentData.length && !error && (
-                        <div className="bg-gray-800 rounded-lg p-4 min-h-[500px] flex items-center justify-center">
+                        <div className="flex-1 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]
+                                     bg-slate-800/50 rounded-lg 
+                                     flex items-center justify-center">
                             <div className="flex flex-col items-center space-y-2">
                                 <CircularProgress size={40} className="text-blue-500" />
                                 <span className="text-gray-400 text-sm">Loading price data...</span>
                             </div>
                         </div>
                     )}
-
-                    
                 </div>
             </div>
         );

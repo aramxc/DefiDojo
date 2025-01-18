@@ -90,7 +90,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* First Section - Main Analysis */}
-      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-2 sm:p-6 lg:p-8">
+      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-2 py-2 sm:px-4 lg:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -100,9 +100,9 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                      border border-white/[0.05]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
         >
-          <div className="h-full flex flex-col divide-y divide-white/[0.03]">
+          <div className="h-full flex flex-col">
             {/* Header Section - Ticker Input */}
-            <div className="p-6">
+            <div className="p-3 lg:p-4 flex-none">
               <TickerInputForm 
                 onSelectTicker={setSelectedSymbol}
                 selectedTicker={selectedSymbol}
@@ -113,192 +113,195 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:flex-row divide-white/5">
+            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)]">
               {/* Left Column - Detailed Price Card */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="lg:w-96 p-6 h-full
-                          bg-gradient-to-b from-white/[0.03] to-transparent"
-              > 
-                {selectedSymbol && (
-                  <DetailedPriceCard
-                    symbol={selectedSymbol}
-                    assetInfo={assetInfo}
-                    price={metrics?.trends?.price?.currentPrice?.price}
-                    priceChange24h={metrics?.trends?.price?.change24h}
-                    volume24h={metrics?.trends?.volume?.currentVolume}
-                    isLoading={metricsLoading}
-                  />
-                )}
+                className="w-full lg:w-[22%] h-auto lg:h-full flex-none
+                          bg-gradient-to-b from-white/[0.03] to-transparent
+                          rounded-xl"
+              >
+                <div className="h-full p-3 sm:p-4 lg:p-6 flex flex-col">
+                  {selectedSymbol && (
+                    <DetailedPriceCard
+                      symbol={selectedSymbol}
+                      assetInfo={assetInfo}
+                      price={metrics?.trends?.price?.currentPrice?.price}
+                      priceChange24h={metrics?.trends?.price?.change24h}
+                      volume24h={metrics?.trends?.volume?.currentVolume}
+                      isLoading={metricsLoading}
+                    />
+                  )}
+                </div>
               </motion.div>
 
               {/* Center Column - Main Charts */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex-1 p-6 h-full
-                          bg-gradient-to-b from-white/[0.02] to-transparent"
+                className="w-full lg:flex-1 h-auto lg:h-full 
+                          mx-0 my-3 lg:mx-4 lg:my-0
+                          bg-gradient-to-b from-white/[0.02] to-transparent
+                          rounded-xl"
               >
-                <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="h-full rounded-xl
-                            shadow-[0_4px_24px_-8px_rgba(0,0,0,0.3)]
-                            bg-white/5
-                            backdrop-blur-xl"
-                >
-                  <PriceAnalytics 
-                    symbol={selectedSymbol} 
-                    onSymbolChange={setSelectedSymbol} 
-                    onClose={() => {}} 
-                  />
-                </motion.div>
+                <div className="h-full p-3 sm:p-4 lg:p-6 flex flex-col">
+                  <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex-1 rounded-xl overflow-hidden"
+                  >
+                    <PriceAnalytics 
+                      symbol={selectedSymbol} 
+                      onSymbolChange={setSelectedSymbol} 
+                      onClose={() => {}} 
+                    />
+                  </motion.div>
+                </div>
               </motion.div>
 
               {/* Right Column - Stats & Info */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="lg:w-80 p-6 overflow-y-auto
-                          scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
-                          bg-gradient-to-b from-white/[0.02] to-transparent"
+                className="w-full lg:w-[22%] h-auto lg:h-full flex-none
+                          bg-gradient-to-b from-white/[0.02] to-transparent
+                          rounded-xl"
               >
-                <div className="space-y-6">
-                <motion.div
-                    initial={{ opacity:0 }}
+                <div className="h-full p-3 sm:p-4 lg:p-6 flex flex-col">
+                  <div className="flex-1 overflow-y-none space-y-4 pb-6">
+                    <motion.div
+                      initial={{ opacity:0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      className="flex flex-col gap-4"
+                    >
+                    
+                    <StatCard
+                      title="Market Overview"
+                      icon={<MonetizationOn className="text-blue-400" />}
+                      stats={[
+                        { 
+                          label: "24h Change", 
+                          value: metrics?.trends?.price?.change24h ? 
+                            formatPercentage(metrics.trends.price.change24h) : 'N/A'
+                        },
+                        { 
+                          label: "7d Change",
+                          value: metrics?.trends?.price?.change7d ? 
+                            formatPercentage(metrics.trends.price.change7d) : 'N/A'
+                        },
+                        { 
+                          label: "30d Change",
+                          value: metrics?.trends?.price?.change30d ? 
+                            formatPercentage(metrics.trends.price.change30d) : 'N/A'
+                        },
+                        {
+                          label: "Volume Change 24h",
+                          value: metrics?.trends?.volume?.change24h ? 
+                            formatPercentage(metrics.trends.volume.change24h) : 'N/A'
+                        }
+                      ]}
+                      isLoading={metricsLoading}
+                    />
+
+                    {/* Network Metrics */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="flex flex-col gap-6"
                   >
-                  
-                  <StatCard
-                    title="Market Overview"
-                    icon={<MonetizationOn className="text-blue-400" />}
-                    stats={[
-                      { 
-                        label: "24h Change", 
-                        value: metrics?.trends?.price?.change24h ? 
-                          formatPercentage(metrics.trends.price.change24h) : 'N/A'
-                      },
-                      { 
-                        label: "7d Change",
-                        value: metrics?.trends?.price?.change7d ? 
-                          formatPercentage(metrics.trends.price.change7d) : 'N/A'
-                      },
-                      { 
-                        label: "30d Change",
-                        value: metrics?.trends?.price?.change30d ? 
-                          formatPercentage(metrics.trends.price.change30d) : 'N/A'
-                      },
-                      {
-                        label: "Volume Change 24h",
-                        value: metrics?.trends?.volume?.change24h ? 
-                          formatPercentage(metrics.trends.volume.change24h) : 'N/A'
-                      }
-                    ]}
-                    isLoading={metricsLoading}
-                  />
-
-                  {/* Network Metrics */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                >
-                  <StatCard
-                    title="Network Metrics"
-                    icon={<Analytics className="text-blue-400" />}
-                    stats={[
-                      {
-                        label: "Transaction Volume",
-                        value: 'Coming soon..',
-                      },
-                     
-                      {
-                        label: "Hash Algorithm",
-                        value: assetInfo?.HASHING_ALGORITHM || 'N/A'
-                      },
-                      {
-                          label: "Block Time",
-                          value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
-                        }
-                    ]}
-                    isLoading={assetLoading || metricsLoading}
-                  />
-                </motion.div>
-                  
-                  
+                    <StatCard
+                      title="Network Metrics"
+                      icon={<Analytics className="text-blue-400" />}
+                      stats={[
+                        {
+                          label: "Transaction Volume",
+                          value: 'Coming soon..',
+                        },
+                       
+                        {
+                          label: "Hash Algorithm",
+                          value: assetInfo?.HASHING_ALGORITHM || 'N/A'
+                        },
+                        {
+                            label: "Block Time",
+                            value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
+                          }
+                      ]}
+                      isLoading={assetLoading || metricsLoading}
+                    />
+                  </motion.div>
                     
                     
-                    {/* Fear/Greed Gauge */}
-                    <div className="relative rounded-xl overflow-hidden
-                                  shadow-[0_0_10px_rgba(59,130,246,0.03)] 
-                                  group hover:transform hover:scale-[1.02] transition-all duration-200
-                                  before:absolute before:inset-0 
-                                  before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
-                                  before:backdrop-blur-xl before:transition-opacity">
-                      <div className="relative z-10 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Insights className="text-blue-400" />
+                      
+                      
+                      {/* Fear/Greed Gauge */}
+                      <div className="relative rounded-xl overflow-hidden
+                                    shadow-[0_0_10px_rgba(59,130,246,0.03)] 
+                                    group hover:transform hover:scale-[1.02] transition-all duration-200
+                                    before:absolute before:inset-0 
+                                    before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                                    before:backdrop-blur-xl before:transition-opacity">
+                        <div className="relative z-10 p-4">
+                          <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              <h3 className="text-sm font-semibold text-gray-300
-                                          bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-                                Fear / Greed Index
-                              </h3>
-                              <span className="text-[10px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 
-                                            text-white px-1.5 py-0.5 rounded-full">
-                                BETA
-                              </span>
-                            </div>
-                          </div>
-                          <Tooltip 
-                            title={
-                              <div className="p-2 max-w-xs text-sm">
-                                The Fear & Greed Index analyzes market sentiment using multiple factors:
-                                • Market Volatility (25%)
-                                • Market Momentum/Volume (25%)
-                                • Social Media Sentiment (15%)
-                                • Market Dominance (10%)
-                                • Trading Volume (25%)
-
-                                0 = Extreme Fear, 100 = Extreme Greed
+                              <Insights className="text-blue-400" />
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-semibold text-gray-300
+                                            bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                                  Fear / Greed Index
+                                </h3>
+                                <span className="text-[10px] font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 
+                                              text-white px-1.5 py-0.5 rounded-full">
+                                  BETA
+                                </span>
                               </div>
-                            }
-                            arrow
-                            placement="top"
-                          >
-                            <InfoOutlined className="text-gray-400 hover:text-gray-300 cursor-help w-4 h-4" />
-                          </Tooltip>
-                        </div>
-                        <Gauge
-                          value={metrics?.fearGreed?.value ?? 50}
-                         
-                          aria-label="Fear and Greed Index"
-                          sx={{
-                            width: '100%',
-                            height: 150,
-                            '& .MuiChartsGauge-mark': { stroke: '#475569' },
-                            '& .MuiChartsGauge-markLabel': { fill: '#94a3b8' },
-                            '& .MuiChartsGauge-valueText': {
-                              fill: '#e2e8f0',
-                              fontSize: '1.5rem',
-                              fontWeight: 'bold'
-                            },
-                            '& .MuiChartsGauge-track': { stroke: '#334155' },
-                            '& .MuiChartsGauge-progress': {
-                              stroke: (metrics?.fearGreed?.value ?? 50) >= 50 ? '#22c55e' : '#ef4444',
-                            }
-                          }}
-                        />
-                        <div className="flex justify-between w-full mt-4 text-sm">
-                          <span className="text-red-400">Extreme Fear</span>
-                          <span className="text-green-400">Extreme Greed</span>
+                            </div>
+                            <Tooltip 
+                              title={
+                                <div className="p-2 max-w-xs text-sm">
+                                  The Fear & Greed Index analyzes market sentiment using multiple factors:
+                                  • Market Volatility (25%)
+                                  • Market Momentum/Volume (25%)
+                                  • Social Media Sentiment (15%)
+                                  • Market Dominance (10%)
+                                  • Trading Volume (25%)
+
+                                  0 = Extreme Fear, 100 = Extreme Greed
+                                </div>
+                              }
+                              arrow
+                              placement="top"
+                            >
+                              <InfoOutlined className="text-gray-400 hover:text-gray-300 cursor-help w-4 h-4" />
+                            </Tooltip>
+                          </div>
+                          <Gauge
+                            value={metrics?.fearGreed?.value ?? 50}
+                           
+                            aria-label="Fear and Greed Index"
+                            sx={{
+                              width: '100%',
+                              height: 150,
+                              '& .MuiChartsGauge-mark': { stroke: '#475569' },
+                              '& .MuiChartsGauge-markLabel': { fill: '#94a3b8' },
+                              '& .MuiChartsGauge-valueText': {
+                                fill: '#e2e8f0',
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold'
+                              },
+                              '& .MuiChartsGauge-track': { stroke: '#334155' },
+                              '& .MuiChartsGauge-progress': {
+                                stroke: (metrics?.fearGreed?.value ?? 50) >= 50 ? '#22c55e' : '#ef4444',
+                              }
+                            }}
+                          />
+                          
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </div>
                 </div>
               </motion.div>
             </div>
