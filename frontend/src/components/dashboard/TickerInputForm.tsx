@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { TICKER_SYMBOLS } from '../../config/constants';
 
@@ -7,15 +7,25 @@ interface TickerInputFormProps {
   onSelectTicker?: (ticker: string) => void;
   selectedTicker?: string;
   allowMultipleSelections?: boolean;
+  defaultTicker?: string;
 }
 
 const TickerInputForm: React.FC<TickerInputFormProps> = ({ 
   onAddTickers,
   onSelectTicker,
   selectedTicker,
-  allowMultipleSelections = true 
+  allowMultipleSelections = true,
+  defaultTicker = ''
 }) => {
-  const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+  const [selectedTickers, setSelectedTickers] = useState<string[]>(
+    defaultTicker ? [defaultTicker] : []
+  );
+
+  useEffect(() => {
+    if (defaultTicker && onSelectTicker && !selectedTicker) {
+      onSelectTicker(defaultTicker);
+    }
+  }, [defaultTicker, onSelectTicker, selectedTicker]);
 
   const handleSubmit = () => {
     onAddTickers?.(selectedTickers);
@@ -32,6 +42,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({
               options={TICKER_SYMBOLS}
               value={selectedTickers}
               onChange={(_, newValue) => setSelectedTickers(newValue)}
+              defaultValue={defaultTicker ? [defaultTicker] : []}
               disableCloseOnSelect
               renderInput={(params) => (
                 <TextField
@@ -128,6 +139,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({
               options={TICKER_SYMBOLS}
               value={selectedTicker || null}
               onChange={(_, newValue) => onSelectTicker?.(newValue || '')}
+              defaultValue={defaultTicker || null}
               renderInput={(params) => (
                 <TextField
                   {...params}

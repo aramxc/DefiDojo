@@ -26,23 +26,31 @@ interface AdvancedDashboardProps {
   selectedTickers: string[];
   onAddTickers: (tickers: string[]) => void;
   onRemoveTicker: (symbol: string) => void;
+  defaultTicker?: string;
 }
 
 const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   selectedTickers,
   onAddTickers,
   onRemoveTicker,
+  defaultTicker = 'BTC'
 }) => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
+  useEffect(() => {
+    if (!selectedSymbol) {
+      setSelectedSymbol(defaultTicker);
+    }
+  }, [defaultTicker]);
+
   // Get asset info first
   const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol);
   
   // Use assetInfo to get coingeckoId for market metrics
   const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
     selectedSymbol,
-    assetInfo?.COINGECKO_ID || undefined // Explicitly handle null case by converting to undefined
+    assetInfo?.COINGECKO_ID || undefined
   );
 
   const sensors = useSensors(
@@ -95,10 +103,13 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
           <div className="h-full flex flex-col divide-y divide-white/[0.03]">
             {/* Header Section - Ticker Input */}
             <div className="p-6">
-                <TickerInputForm  onSelectTicker={setSelectedSymbol}
-                    selectedTicker={selectedSymbol}
-                    allowMultipleSelections={false}
-                />
+              <TickerInputForm 
+                onSelectTicker={setSelectedSymbol}
+                selectedTicker={selectedSymbol}
+                allowMultipleSelections={false}
+                defaultTicker={defaultTicker}
+                key={defaultTicker}
+              />
             </div>
 
             {/* Main Content Area */}
@@ -316,20 +327,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
           {/* Command Center Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* <CustomTimeframeChart
-            symbol={selectedSymbol}
-            customTimeframe={{
-              from: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
-              to: Date.now() - (20 * 24 * 60 * 60 * 1000) // 20 days ago
-            }}
-          />
-          <CustomTimeframeChart
-            symbol={selectedSymbol}
-            customTimeframe={{
-              from: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago
-              to: Date.now() - (20 * 24 * 60 * 60 * 1000) // 20 days ago
-            }}
-          /> */}
+
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           </div>
