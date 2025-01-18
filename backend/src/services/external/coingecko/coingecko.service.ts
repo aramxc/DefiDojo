@@ -6,7 +6,6 @@ import {
     MarketMetrics,
     VolatilityMetrics,
     MarketTrends,
-    FearGreed,
 } from '@defidojo/shared-types';
 
 export class CoinGeckoService {
@@ -153,12 +152,12 @@ export class CoinGeckoService {
 
             const volatility = this.calculateVolatility(historicalData.prices);
             const trends = this.calculateTrends(historicalData);
-            const fearGreed = this.calculateFearGreedIndex(volatility, trends);
+
 
             return {
-                fearGreed,
                 volatility,
-                trends
+                trends,
+                fearGreed: null
             };
         } catch (error) {
             console.error('CoinGecko service error:', error);
@@ -237,41 +236,6 @@ export class CoinGeckoService {
                 change30d: this.calculatePercentageChange(volume30dAgo, currentVolume),
                 currentVolume
             }
-        };
-    }
-
-    private calculateFearGreedIndex(
-        volatility: VolatilityMetrics,
-        trends: MarketTrends
-    ): FearGreed {
-        // Normalize values to 0-100 scale
-        const volatilityScore = Math.max(0, Math.min(100, 
-            50 - (volatility.daily * 100)
-        ));
-
-        const momentumScore = Math.max(0, Math.min(100,
-            50 + trends.price.change24h
-        ));
-
-        const volumeScore = Math.max(0, Math.min(100,
-            50 + trends.volume.change24h
-        ));
-
-        // Calculate final fear and greed value
-        const value = Math.round(
-            volatilityScore * 0.25 +
-            momentumScore * 0.25 +
-            volumeScore * 0.25
-        );
-
-        return {
-            value,
-            components: {
-                volatility: volatilityScore,
-                momentum: momentumScore,
-                socialMetrics: 50 // Default neutral value
-            },
-            timestamp: new Date()
         };
     }
 

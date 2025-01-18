@@ -11,7 +11,9 @@ export const config = {
   pythHermesBaseUrl: 'https://hermes.pyth.network',
   coinGeckoProApiKey: process.env.COINGECKO_PRO_API_KEY,
   coinGeckoBaseUrl: 'https://api.coingecko.com/api/v3',
-  coinGeckoProBaseUrl: 'https://pro-api.coingecko.com/api/v3'
+  coinGeckoProBaseUrl: 'https://pro-api.coingecko.com/api/v3',
+  coinmarketcapApiKey: process.env.COINMARKETCAP_API_KEY,
+  coinmarketcapBaseUrl: 'https://pro-api.coinmarketcap.com/v3'
 };
 
 // Move validation to where it's actually needed
