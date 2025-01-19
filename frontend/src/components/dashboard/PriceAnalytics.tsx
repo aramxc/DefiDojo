@@ -540,11 +540,9 @@ export const PriceAnalytics = memo(({
 
                     {/* Chart Container */}
                     {currentData.length > 0 && (
-                        <div className="relative flex-1 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] 
-                                      rounded-xl border border-white/5 overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-teal-500/5" />
+                        <div className="relative flex-1 rounded-xl border border-white/10 overflow-hidden">
                             <div className="absolute inset-[1px] rounded-xl bg-slate-800/95 backdrop-blur-xl" />
-                            
+
                             <div className="relative h-full">
                                 <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 
                                               ${isChartLoading ? 'opacity-50' : ''}`}>

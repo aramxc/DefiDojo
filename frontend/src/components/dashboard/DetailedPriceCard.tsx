@@ -82,7 +82,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="h-full w-full rounded-xl overflow-hidden relative group
+      className="h-full w-full rounded-xl overflow-hidden relative group 
                  before:absolute before:inset-0 
                  before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
                  before:backdrop-blur-xl before:transition-opacity
@@ -94,7 +94,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                  shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
     >
       {/* Content Container */}
-      <div className="relative z-10 p-6 h-full flex flex-col">
+      <div className=" relative z-10 p-6 h-full flex flex-col ">
         {/* Header with Asset Info */}
         <div className="flex items-center gap-3 mb-6">
           {assetInfo?.IMAGE_URL && (
@@ -106,6 +106,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                 className="relative w-10 h-10 rounded-full"
               />
             </div>
+            
           )}
           <div className="space-y-1">
             <h3 className="text-xl font-bold text-gray-100">{symbol.toUpperCase()}</h3>
@@ -115,7 +116,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
 
         {/* Price Section with Real-time Toggle */}
         <div className="space-y-4 mb-6">
-          <div className="font-bold relative w-fit">
+          <div className="font-bold flex items-baseline gap-3">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -127,18 +128,26 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                 {formatCurrency(price)}
               </span>
             </motion.div>
+            
+            {/* Price Change Indicator */}
+            {priceChange24h && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                           transition-colors duration-300
+                           ${priceChange24h > 0 
+                             ? 'text-green-400 ' 
+                             : 'text-red-400 '}`}
+              >
+                {priceChange24h > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                <span className="font-medium">{formatPercentage(priceChange24h)}</span>
+              </motion.div>
+            )}
           </div>
           
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={`flex items-center gap-1 px-2 py-1 rounded-lg
-                            ${priceChange24h && priceChange24h > 0 
-                              ? 'text-green-400 bg-green-400/10' 
-                              : 'text-red-400 bg-red-400/10'}`}>
-                {priceChange24h && priceChange24h > 0 ? <TrendingUp /> : <TrendingDown />}
-                {formatPercentage(priceChange24h)}
-              </span>
-            </div>
+            
             
             <div className="flex items-center gap-3">
               <div className={`w-1.5 h-1.5 rounded-full ${

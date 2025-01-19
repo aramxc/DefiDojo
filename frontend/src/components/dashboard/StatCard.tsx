@@ -49,15 +49,17 @@ export const StatCard = memo(({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative rounded-xl overflow-hidden h-full
-                shadow-[0_0_10px_rgba(59,130,246,0.03)] 
+                
                 group hover:transform hover:scale-[1.02] transition-all duration-200
                 before:absolute before:inset-0 
-                before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
-                before:backdrop-blur-xl before:transition-opacity
-                after:absolute after:inset-0 
-                after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
-                after:opacity-0 hover:after:opacity-100 
-                after:transition-opacity"
+                 before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                 before:backdrop-blur-xl before:transition-opacity
+                 after:absolute after:inset-0 
+                 after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
+                 after:opacity-0 hover:after:opacity-100 
+                 after:transition-opacity
+                 border border-white/[0.05]
+                 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
     >
       <div className="relative z-10 p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-3">

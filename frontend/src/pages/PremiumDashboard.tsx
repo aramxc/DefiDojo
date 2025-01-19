@@ -29,6 +29,8 @@ interface AdvancedDashboardProps {
   defaultTicker?: string;
 }
 
+
+
 const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   selectedTickers,
   onAddTickers,
@@ -81,16 +83,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
     setItems(selectedTickers);
   }, [selectedTickers]);
 
-  // Add debug logs
-  console.log('Asset Info:', assetInfo);
-  console.log('Selected Symbol:', selectedSymbol);
-  console.log('CoinGecko ID:', assetInfo?.COINGECKO_ID);
-  console.log('Metrics Data:', metrics);
+
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* First Section - Main Analysis */}
-      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-2 py-2 sm:px-4 lg:px-6">
+      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-6 sm:px-4 lg:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -142,7 +140,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 animate={{ opacity: 1 }}
                 className="w-full lg:flex-1 h-auto lg:h-full 
                           mx-0 my-3 lg:mx-4 lg:my-0
-                          bg-gradient-to-b from-white/[0.02] to-transparent
+                          bg-gradient-to-b from-white/[0.03] to-transparent
                           rounded-xl"
               >
                 <div className="h-full p-3 sm:p-4 lg:p-6 flex flex-col">
@@ -165,7 +163,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="w-full lg:w-[22%] h-auto lg:h-full flex-none
-                          bg-gradient-to-b from-white/[0.02] to-transparent
+                          bg-gradient-to-b from-white/[0.03] to-transparent
                           rounded-xl"
               >
                 <div className="h-full p-3 sm:p-4 lg:p-6 flex flex-col">
@@ -177,33 +175,33 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                       className="flex flex-col gap-4"
                     >
                     
-                    <StatCard
-                      title="Market Overview"
-                      icon={<MonetizationOn className="text-blue-400" />}
-                      stats={[
-                        { 
-                          label: "24h Change", 
-                          value: metrics?.trends?.price?.change24h ? 
-                            formatPercentage(metrics.trends.price.change24h) : 'N/A'
-                        },
-                        { 
-                          label: "7d Change",
-                          value: metrics?.trends?.price?.change7d ? 
-                            formatPercentage(metrics.trends.price.change7d) : 'N/A'
-                        },
-                        { 
-                          label: "30d Change",
-                          value: metrics?.trends?.price?.change30d ? 
-                            formatPercentage(metrics.trends.price.change30d) : 'N/A'
-                        },
-                        {
-                          label: "Volume Change 24h",
-                          value: metrics?.trends?.volume?.change24h ? 
-                            formatPercentage(metrics.trends.volume.change24h) : 'N/A'
-                        }
-                      ]}
-                      isLoading={metricsLoading}
-                    />
+                      <StatCard
+                        title="Market Overview"
+                        icon={<MonetizationOn className="text-blue-400" />}
+                        stats={[
+                          { 
+                            label: "24h Change", 
+                            value: metrics?.trends?.price?.change24h ? 
+                              formatPercentage(metrics.trends.price.change24h) : 'N/A'
+                          },
+                          { 
+                            label: "7d Change",
+                            value: metrics?.trends?.price?.change7d ? 
+                              formatPercentage(metrics.trends.price.change7d) : 'N/A'
+                          },
+                          { 
+                            label: "30d Change",
+                            value: metrics?.trends?.price?.change30d ? 
+                              formatPercentage(metrics.trends.price.change30d) : 'N/A'
+                          },
+                          {
+                            label: "Volume Change 24h",
+                            value: metrics?.trends?.volume?.change24h ? 
+                              formatPercentage(metrics.trends.volume.change24h) : 'N/A'
+                          }
+                        ]}
+                        isLoading={metricsLoading}
+                      />
 
                     {/* Network Metrics */}
                   <motion.div
@@ -232,22 +230,19 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                       isLoading={assetLoading || metricsLoading}
                     />
                   </motion.div>
-                    
-                    
-                      
-                      
+ 
                       {/* Fear/Greed Gauge */}
-                      <div className="relative rounded-xl overflow-hidden
+                      <div className="relative rounded-xl overflow-hidden 
                                     shadow-[0_0_10px_rgba(59,130,246,0.03)] 
                                     group hover:transform hover:scale-[1.02] transition-all duration-200
                                     before:absolute before:inset-0 
                                     before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
                                     before:backdrop-blur-xl before:transition-opacity">
-                        <div className="relative z-10 p-4">
+                        <div className="relative p-4">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <Insights className="text-blue-400" />
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 h-full">
                                 <h3 className="text-sm font-semibold text-gray-300
                                             bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
                                   Fear / Greed Index
