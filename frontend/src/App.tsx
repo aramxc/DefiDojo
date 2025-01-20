@@ -11,7 +11,7 @@ import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
 import CreateUserForm from './components/auth/CreateUserForm';
 import AdvancedDashboard from './pages/PremiumDashboard';
-
+import { News } from './pages/News';
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
 import { TimezoneProvider } from './contexts/TimezoneContext';
@@ -126,6 +126,10 @@ function App() {
                         </div>
                       )
                     }
+                  />
+                  <Route 
+                    path="/news" 
+                    element={<News />}
                   />
                 </Routes>
               </div>

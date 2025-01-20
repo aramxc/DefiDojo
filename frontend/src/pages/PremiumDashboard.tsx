@@ -1,22 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import TickerInputForm from '../components/dashboard/TickerInputForm';
 import { PriceAnalytics } from '../components/dashboard/PriceAnalytics';
-import { SortablePriceDisplay } from '../components/dashboard/SortablePriceDisplay';
-import { StatCard } from '../components/dashboard/cards/StatCard';
+import { DetailedPriceCard } from '../components/dashboard/cards/DetailedPriceCard';
+import { NewsFeed } from '../components/news/NewsFeed';
 import { motion } from 'framer-motion';
 import { 
-  TrendingUp, TrendingDown, Schedule, Assessment,
-  ShowChart, PieChart, Timeline as TimelineIcon,
-  Notifications, Speed, Analytics, 
-  MonetizationOn, Insights, DataUsage, Code, GitHub, InfoOutlined
+  MonetizationOn, 
+  TrendingUp, 
+  ShowChart 
 } from '@mui/icons-material';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { StatCard } from '../components/dashboard/cards/StatCard';
 import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
-
 import { useFetchMarketMetrics } from '../hooks/useFetchMarketMetrics';
-import { DetailedPriceCard } from '../components/dashboard/cards/DetailedPriceCard';
-import { formatPercentage, formatCurrency } from '../utils/formatters';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -47,13 +42,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
     selectedSymbol,
     assetInfo?.COINGECKO_ID || undefined
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
   );
 
   const handleDragEnd = (event: any) => {
@@ -103,12 +91,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full gap-4 p-4">
+            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full gap-2 p-4">
               {/* Left Column - Detailed Price Card */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[22%] h-auto lg:h-full flex-none
+                className="w-full lg:w-[23%] h-auto lg:h-full flex-none
                           from-white/[0.03] to-transparent
                           rounded-xl"
               >
@@ -152,106 +140,14 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[22%] h-auto flex-none
+                className="w-full lg:w-[23%] h-auto flex-none
                           from-white/[0.03] to-transparent 
                           rounded-xl"
               >
                 <div className="h-full w-full p-1 sm:p-2 flex flex-col">
 
-                  {/* Market Overview */}
-                  <div className="flex-1 overflow-y-auto space-y-4 pb-6">
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      className="flex flex-col gap-4"
-                    >
-                      {/* StatCards */}
-                      <StatCard
-                        title="Market Overview"
-                        icon={<MonetizationOn className="text-blue-400" />}
-                        stats={[
-                          { 
-                            label: "24h Change", 
-                            value: metrics?.trends?.price?.change24h ? 
-                              formatPercentage(metrics.trends.price.change24h) : 'N/A'
-                          },
-                          { 
-                            label: "7d Change",
-                            value: metrics?.trends?.price?.change7d ? 
-                              formatPercentage(metrics.trends.price.change7d) : 'N/A'
-                          },
-                          { 
-                            label: "30d Change",
-                            value: metrics?.trends?.price?.change30d ? 
-                              formatPercentage(metrics.trends.price.change30d) : 'N/A'
-                          },
-                          {
-                            label: "Volume Change 24h",
-                            value: metrics?.trends?.volume?.change24h ? 
-                              formatPercentage(metrics.trends.volume.change24h) : 'N/A'
-                          }
-                        ]}
-                        isLoading={metricsLoading}
-                      />
-
-                      {/* Network Metrics */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                      >
-                        <StatCard
-                          title="Network Metrics"
-                          icon={<Analytics className="text-blue-400" />}
-                          stats={[
-                            {
-                              label: "Transaction Volume",
-                              value: 'Coming soon..',
-                            },
-                          
-                            {
-                              label: "Hash Algorithm",
-                              value: assetInfo?.HASHING_ALGORITHM || 'N/A'
-                            },
-                            {
-                                label: "Block Time",
-                                value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
-                              }
-                          ]}
-                          isLoading={assetLoading || metricsLoading}
-                        />
-                      </motion.div>
-                      {/* Network Metrics */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                      >
-                        <StatCard
-                          title="Network Metrics"
-                          icon={<Analytics className="text-blue-400" />}
-                          stats={[
-                            {
-                              label: "Transaction Volume",
-                              value: 'Coming soon..',
-                            },
-                          
-                            {
-                              label: "Hash Algorithm",
-                              value: assetInfo?.HASHING_ALGORITHM || 'N/A'
-                            },
-                            {
-                                label: "Block Time",
-                                value: assetInfo?.BLOCK_TIME_IN_MINUTES || 'N/A'
-                              }
-                          ]}
-                          isLoading={assetLoading || metricsLoading}
-                        />
-                      </motion.div>
-                    </motion.div>
-                    
-                  </div>
+                  {/* News Feed */}
+                  <NewsFeed symbol={selectedSymbol} />
                 </div>
               </motion.div>
             </div>

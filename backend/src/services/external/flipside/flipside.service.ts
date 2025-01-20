@@ -1,13 +1,13 @@
 import { Flipside, Query, QueryResultSet } from "@flipsidecrypto/sdk";
-import { config } from '../config/constants';
+import { config } from '../../../config/constants';
 
 export class FlipsideService {
   private flipside: Flipside;
 
   constructor() {
     this.flipside = new Flipside(
-      config.flipsideCryptoApiKey,
-      config.flipsideBaseUrl
+      config.flipside.apiKey || '',
+      config.flipside.baseUrl 
     );
   }
 

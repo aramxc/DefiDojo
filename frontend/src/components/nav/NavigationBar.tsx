@@ -52,6 +52,7 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
             <div className="flex-1 flex justify-end items-center">
               <div className="flex items-center space-x-8 mr-8">
                 <NavLink to="/">Dashboard</NavLink>
+                <NavLink to="/news">News</NavLink>
                 <NavLink to="/learning">Learning</NavLink>
                 <NavLink to="/advanced-dashboard">
                   Dashboard

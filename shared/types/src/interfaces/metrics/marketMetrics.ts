@@ -1,4 +1,3 @@
-import { FearGreed } from './fearGreed';
 import { AssetPriceData, AssetHistoricalRangeData } from '../market/assetPrice';
 
 export interface VolatilityMetrics {
@@ -26,7 +25,6 @@ export interface MarketTrends {
 }
 
 export interface MarketMetrics {
-  fearGreed: FearGreed;
   volatility: VolatilityMetrics;
   trends: MarketTrends;
   marketCap?: number;

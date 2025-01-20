@@ -12,7 +12,7 @@ export class CoinGeckoService {
     private baseUrl: string;
   
     constructor() {
-        this.baseUrl = config.coinGeckoBaseUrl;
+        this.baseUrl = config.coinGecko.baseUrl;
     }
 
     async getCoinList(): Promise<any> {
@@ -29,11 +29,11 @@ export class CoinGeckoService {
         const timeRangeInDays = (to - from) / (24 * 60 * 60 * 1000);
         
         if (timeRangeInDays > 90) {
-            if (!config.coinGeckoProApiKey) {
+            if (!config.coinGecko.apiKey) {
                 throw new Error('Pro API key required for historical data over 90 days');
             }
             
-            const url = `${config.coinGeckoProBaseUrl}/coins/${coinId}/market_chart/range`;
+            const url = `${config.coinGecko.proBaseUrl}/coins/${coinId}/market_chart/range`;
             
             try {
                 const response = await axios.get<AssetHistoricalRangeData>(url, {
@@ -43,7 +43,7 @@ export class CoinGeckoService {
                         to: Math.floor(to / 1000),
                     },
                     headers: {
-                        'x-cg-pro-api-key': config.coinGeckoProApiKey
+                        'x-cg-pro-api-key': config.coinGecko.apiKey
                     }
                 });
                 
@@ -56,13 +56,13 @@ export class CoinGeckoService {
                 console.error('Pro API Error:', {
                     status: (error as any).response?.status,
                     message: (error as any).response?.data?.error || (error as Error).message,
-                    hasApiKey: !!config.coinGeckoProApiKey
+                    hasApiKey: !!config.coinGecko.apiKey
                 });
                 throw error;
             }
         }
         
-        const url = `${config.coinGeckoBaseUrl}/coins/${coinId}/market_chart/range`;
+        const url = `${config.coinGecko.baseUrl}/coins/${coinId}/market_chart/range`;
         const response = await axios.get<AssetHistoricalRangeData>(url, {
             params: {
                 vs_currency: 'usd',
@@ -79,10 +79,10 @@ export class CoinGeckoService {
     }
 
     async getCoinInfo(coinId: string): Promise<AssetInfo> {
-        const baseUrl = config.coinGeckoProApiKey ? config.coinGeckoProBaseUrl : config.coinGeckoBaseUrl;
+        const baseUrl = config.coinGecko.apiKey ? config.coinGecko.proBaseUrl : config.coinGecko.baseUrl;
         const url = `${baseUrl}/coins/${coinId}`;
         
-        const headers = config.coinGeckoProApiKey ? { 'x-cg-pro-api-key': config.coinGeckoProApiKey } : {};
+        const headers = config.coinGecko.apiKey ? { 'x-cg-pro-api-key': config.coinGecko.apiKey } : {};
         
         const response = await axios.get(url, {
             params: {
@@ -157,7 +157,7 @@ export class CoinGeckoService {
             return {
                 volatility,
                 trends,
-                fearGreed: null
+                fearGreed: undefined 
             };
         } catch (error) {
             console.error('CoinGecko service error:', error);

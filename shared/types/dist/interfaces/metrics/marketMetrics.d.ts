@@ -23,7 +23,9 @@ export interface MarketTrends {
     };
 }
 export interface MarketMetrics {
-    fearGreed:? FearGreed;
+    fearGreed: FearGreed;
     volatility: VolatilityMetrics;
     trends: MarketTrends;
+    marketCap?: number;
+    marketCapRank?: number;
 }

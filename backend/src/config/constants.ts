@@ -6,25 +6,36 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
   // Make these optional with default values or null
-  flipsideCryptoApiKey: process.env.FLIPSIDE_CRYPTO_API_KEY || null,
-  flipsideBaseUrl: 'https://api-v2.flipsidecrypto.xyz',
+  flipside: {
+    apiKey: process.env.FLIPSIDE_CRYPTO_API_KEY || null,
+    baseUrl: 'https://api-v2.flipsidecrypto.xyz'
+  },
   pythHermesBaseUrl: 'https://hermes.pyth.network',
-  coinGeckoProApiKey: process.env.COINGECKO_PRO_API_KEY,
-  coinGeckoBaseUrl: 'https://api.coingecko.com/api/v3',
-  coinGeckoProBaseUrl: 'https://pro-api.coingecko.com/api/v3',
-  coinmarketcapApiKey: process.env.COINMARKETCAP_API_KEY,
-  coinmarketcapBaseUrl: 'https://pro-api.coinmarketcap.com/v3'
+  coinGecko: {
+    apiKey: process.env.COINGECKO_PRO_API_KEY,
+    baseUrl: 'https://api.coingecko.com/api/v3',
+    proBaseUrl: 'https://pro-api.coingecko.com/api/v3'
+  },
+  coinmarketcap: {
+    apiKey: process.env.COINMARKETCAP_API_KEY,
+    baseUrl: 'https://pro-api.coinmarketcap.com/v3'
+  },
+  google: {
+    apiKey: process.env.GOOGLE_CSE_API_KEY,
+    baseUrl: 'https://www.googleapis.com/customsearch/v1',
+    searchEngineId: process.env.GOOGLE_SEARCH_ENGINE_ID
+  }
 };
 
 // Move validation to where it's actually needed
 export const validateFlipsideKey = () => {
-  if (!config.flipsideCryptoApiKey) {
+  if (!config.flipside.apiKey) {
     throw new Error('FLIPSIDE_CRYPTO_API_KEY is not defined in .env file');
   }
 };
 
 export const validateCoinGeckoKey = () => {
-  if (config.coinGeckoProBaseUrl && !config.coinGeckoProApiKey) {
+  if (config.coinGecko.proBaseUrl && !config.coinGecko.apiKey) {
     throw new Error('COINGECKO_PRO_API_KEY is not defined in .env file');
   }
   return true;

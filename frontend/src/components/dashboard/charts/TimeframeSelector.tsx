@@ -30,7 +30,7 @@ const TimeframeSelector = memo(({
     <AnimatePresence mode="wait">
         {!isCustomMode ? (
             <motion.div 
-                className="flex gap-2"
+                className="flex gap-2 h-10"
                 initial={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 key="timeframes"
@@ -40,7 +40,7 @@ const TimeframeSelector = memo(({
                         key={tf}
                         onClick={() => tf === 'Custom' ? onCustomModeToggle() : onTimeframeClick(tf)}
                         className={`
-                            px-4 py-2.5 
+                            h-10 px-4
                             rounded-lg 
                             font-medium
                             text-sm
@@ -50,34 +50,33 @@ const TimeframeSelector = memo(({
                                     ? `relative overflow-hidden
                                        text-white
                                        before:absolute before:inset-0 
+                                       before:rounded-lg
                                        before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
                                        before:backdrop-blur-xl
                                        before:animate-[burn_3s_ease-in-out_infinite]
                                        after:absolute after:inset-0 
+                                       after:rounded-lg
                                        after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
                                        shadow-[0_0_25px_rgba(236,72,153,0.5)]
                                        [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
                                     : `relative overflow-hidden
                                        text-white
                                        before:absolute before:inset-0 
+                                       before:rounded-lg
                                        before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
                                        before:backdrop-blur-xl
                                        before:animate-[burn_3s_ease-in-out_infinite]
-                                       after:absolute after:inset-[-1px] after:rounded-lg
-                                       after:bg-gradient-to-t after:from-pink-500/30 after:to-transparent
-                                       after:animate-[pulse_2s_ease-in-out_infinite]
-                                       hover:text-white
                                        hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                                       hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80
-                                       shadow-[0_0_20px_rgba(236,72,153,0.4)]
-                                       group`
+                                       hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80`
                                 : timeframe === tf
                                     ? `relative overflow-hidden
                                        text-white
                                        before:absolute before:inset-0 
+                                       before:rounded-lg
                                        before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
                                        before:backdrop-blur-xl
                                        after:absolute after:inset-0 
+                                       after:rounded-lg
                                        after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
                                        shadow-[0_0_10px_rgba(59,130,246,0.1)]`
                                     : `text-gray-400 
@@ -100,18 +99,18 @@ const TimeframeSelector = memo(({
             >
                 <motion.button
                     onClick={onBackClick}
-                    className="px-4 py-2.5 rounded-lg font-medium text-sm
+                    className="h-10 px-4 rounded-lg font-medium text-sm
                              relative overflow-hidden text-white
                              before:absolute before:inset-0 
+                             before:rounded-lg
                              before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
                              before:backdrop-blur-xl
                              before:animate-[burn_3s_ease-in-out_infinite]
                              shadow-[0_0_25px_rgba(236,72,153,0.5)]
                              hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]
-                             transition-all duration-300
-                             cursor-pointer"
+                             transition-all duration-300"
                 >
-                    <span className="relative z-10 flex items-center gap-2">
+                    <span className="relative z-10 flex items-center">
                         <ArrowBackIcon className="w-4 h-4" />
                     </span>
                 </motion.button>
