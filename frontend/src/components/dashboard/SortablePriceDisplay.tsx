@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { PriceDisplay } from './PriceDisplay';
+import { PriceDisplay } from './cards/PriceDisplay';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 interface SortablePriceDisplayProps {

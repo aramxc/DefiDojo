@@ -259,4 +259,19 @@ export class CoinGeckoService {
     ): number {
         return ((newValue - oldValue) / oldValue) * 100;
     }
+
+    async getCoinMarketData(geckoId: string) {
+        try {
+            const response = await axios.get(`${this.baseUrl}/coins/${geckoId}`);
+            
+            return {
+                marketCap: response.data?.market_data?.market_cap?.usd || null,
+                marketCapRank: response.data?.market_cap_rank || null,
+                // Add other market data as needed
+            };
+        } catch (error) {
+            console.error('Error fetching coin market data:', error);
+            throw error;
+        }
+    }
 }

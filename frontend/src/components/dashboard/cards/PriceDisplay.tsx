@@ -1,12 +1,12 @@
 import React, { useEffect, useState, memo, useMemo } from 'react';
 import { BarChart, Info, TrendingUp, Schedule, People } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { priceService } from '../../services/api/price.service';
-import { infoService } from '../../services/api/info.service';
+import { priceService } from '../../../services/api/price.service';
+import { infoService } from '../../../services/api/info.service';
 import { Switch, CircularProgress } from '@mui/material';
 import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
-import { useFetchMarketMetrics } from '../../hooks/useFetchMarketMetrics';
-import { useFetchAssetInfo } from '../../hooks/useFetchAssetInfo';
+import { useFetchMarketMetrics } from '../../../hooks/useFetchMarketMetrics';
+import { useFetchAssetInfo } from '../../../hooks/useFetchAssetInfo';
 
 interface PriceDisplayProps {
   symbol: string;

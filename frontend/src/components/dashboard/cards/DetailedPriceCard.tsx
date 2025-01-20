@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Schedule, Info } from '@mui/icons-material';
-import { formatCurrency, formatPercentage } from '../../utils';
+import { formatCurrency, formatPercentage } from '../../../utils';
 import { AssetInfo } from '@defidojo/shared-types';
 import { Switch } from '@mui/material';
-import { priceService } from '../../services/api/price.service';
+import { priceService } from '../../../services/api/price.service';
 
 interface DetailedPriceCardProps {
   symbol: string;
@@ -13,6 +13,7 @@ interface DetailedPriceCardProps {
   priceChange24h?: number;
   volume24h?: number;
   marketCap?: number;
+  marketCapRank?: number;
   high24h?: number;
   low24h?: number;
   lastUpdated?: string;
@@ -26,6 +27,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
   priceChange24h,
   volume24h,
   marketCap,
+  marketCapRank,
   high24h,
   low24h,
   lastUpdated: initialLastUpdated,
@@ -77,6 +79,18 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
 
     return () => clearInterval(interval);
   }, [isRealTime]);
+
+  const formatMarketCap = (value?: number) => {
+    if (!value) return 'N/A';
+    
+    if (value >= 1e9) {
+      return `$${(value / 1e9).toFixed(2)}B`;
+    } else if (value >= 1e6) {
+      return `$${(value / 1e6).toFixed(2)}M`;
+    } else {
+      return `$${value.toLocaleString()}`;
+    }
+  };
 
   return (
     <motion.div
@@ -172,6 +186,20 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                   },
                 }}
               />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">Market Cap</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-200 font-medium">
+                {formatMarketCap(marketCap)}
+              </span>
+              {marketCapRank && (
+                <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-400">
+                  #{marketCapRank}
+                </span>
+              )}
             </div>
           </div>
         </div>

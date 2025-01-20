@@ -1,283 +1,24 @@
-import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
-import { TimeframeType } from '../../services/api/historicalPrice.service';
-import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
-import { CircularProgress } from '@mui/material';
+import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { checkProAccess } from '../../services/web3/contract.service';
-import { PurchaseDataModal } from '../premium/PurchaseDataModal';
-import { useFetchHistoricalPrices } from '../../hooks/useFetchHistoricalPrices';
-import { formatTimestamp, formatValue, formatYAxisValue, formatChange } from '../../utils/formatters';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import { CircularProgress } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { TimeframeType } from '../../services/api/historicalPrice.service';
+import { checkProAccess } from '../../services/web3/contract.service';
+import { useFetchHistoricalPrices } from '../../hooks/useFetchHistoricalPrices';
+import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
+import { PurchaseDataModal } from '../premium/PurchaseDataModal';
+import TimeframeSelector from './charts/TimeframeSelector';
+import MetricsDisplay from './charts/ChartMetricsDisplay';
+import PriceChart from './charts/MainPriceChart';
 
-// Constants
-const TIMEFRAMES: TimeframeType[] = ['1D', '7D', '1M', '6M', '1Y', '5Y', 'Custom'];
 type DataType = 'price' | 'marketCap' | 'volume';
-
-const PriceChart = memo(({ 
-  data, 
-  dataType,
-  timeframe, 
-  selectedTimezone 
-}: { 
-  data: Array<any>;
-  dataType: DataType;
-  timeframe: TimeframeType;
-  selectedTimezone: string;
-}) => (
-  <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 15 }}>
-      {/* Chart Gradients */}
-      <defs> 
-        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#38bdf8" />
-          <stop offset="50%" stopColor="#22d3ee" />
-          <stop offset="100%" stopColor="#38bdf8" />
-        </linearGradient>
-        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.12" />
-          <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.01" />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      <XAxis 
-        dataKey="timestamp"
-        tickFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
-        type="number"
-        domain={['dataMin', 'dataMax']}
-        tick={{ fill: '#94A3B8' }}
-        stroke="#334155"
-        dy={10}
-      />
-      <YAxis 
-        dataKey={dataType}
-        domain={['auto', 'auto']}
-        tickFormatter={(value) => formatYAxisValue(value, dataType)}
-        tick={{ fill: '#94A3B8' }}
-        stroke="#334155"
-        width={80}
-      />
-      <Tooltip 
-        contentStyle={{
-          backgroundColor: 'rgba(30, 41, 59, 0.9)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(148, 163, 184, 0.1)',
-          borderRadius: '0.75rem',
-          color: '#F3F4F6',
-        }}
-        labelFormatter={(ts) => formatTimestamp(ts, timeframe, selectedTimezone)}
-        formatter={(value: any) => [formatValue(value, dataType), dataType]}
-      />
-      <Area
-        type="monotone"
-        dataKey={dataType}
-        stroke="none"
-        fill="url(#areaGradient)"
-        fillOpacity={1}
-      />
-      <Line 
-        type="monotone"
-        dataKey={dataType}
-        stroke="url(#lineGradient)"
-        strokeWidth={2}
-        dot={false}
-        filter="url(#glow)"
-        style={{
-          filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.3))'
-        }}
-      />
-    </LineChart>
-  </ResponsiveContainer>
-));
-
-const MetricsDisplay = memo(({ metrics, dataType }: { 
-  metrics: any, 
-  dataType: DataType,
-  marketMetrics?: any 
-}) => (
-  <div className="flex items-center gap-4">
-    {/* Price metrics */}
-    {['high', 'low', 'change'].map((metric) => (
-      <div key={metric} className="text-xs text-gray-400">
-        {metric.charAt(0).toUpperCase() + metric.slice(1)}:
-        <span className={`ml-1 font-medium ${
-          metric === 'change' 
-            ? (metrics[dataType]?.change ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'
-            : 'text-white'
-        }`}>
-          {metric === 'change' 
-            ? formatChange(metrics[dataType]?.[metric])
-            : formatValue(metrics[dataType]?.[metric], dataType)}
-        </span>
-      </div>
-    ))}
-  </div>
-));
-
 interface PriceAnalyticsProps {
   symbol: string;
   onSymbolChange?: (symbol: string) => void;
-  onClose?: () => void;
+  onClose: () => void;
   closeable?: boolean;
 }
-
-// Separate the TimeframeSelector into its own component
-const TimeframeSelector = memo(({ 
-  timeframe, 
-  isCustomMode,
-  customDates,
-  onTimeframeClick,
-  onCustomModeToggle,
-  onBackClick,
-  onDateChange,
-  isValidDateRange
-}: {
-  timeframe: TimeframeType;
-  isCustomMode: boolean;
-  customDates: { from: Date | null; to: Date | null };
-  onTimeframeClick: (tf: TimeframeType) => void;
-  onCustomModeToggle: () => void;
-  onBackClick: () => void;
-  onDateChange: (type: 'from' | 'to', date: Date | null) => void;
-  isValidDateRange: boolean;
-}) => (
-  <AnimatePresence mode="wait">
-    {!isCustomMode ? (
-      <motion.div 
-        className="flex gap-2"
-        initial={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        key="timeframes"
-      >
-        {TIMEFRAMES.map((tf) => (
-          <motion.button
-            key={tf}
-            onClick={() => tf === 'Custom' ? onCustomModeToggle() : onTimeframeClick(tf)}
-            className={`
-              px-4 py-2.5 
-              rounded-lg 
-              font-medium
-              text-sm
-              transition-all duration-200
-              ${(tf === '5Y' || tf === 'Custom') 
-                ? timeframe === tf || (tf === 'Custom' && isCustomMode)
-                    ? `relative overflow-hidden
-                       text-white
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
-                       before:backdrop-blur-xl
-                       before:animate-[burn_3s_ease-in-out_infinite]
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
-                       shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                       [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
-                    : `relative overflow-hidden
-                       text-white
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
-                       before:backdrop-blur-xl
-                       before:animate-[burn_3s_ease-in-out_infinite]
-                       after:absolute after:inset-[-1px] after:rounded-lg
-                       after:bg-gradient-to-t after:from-pink-500/30 after:to-transparent
-                       after:animate-[pulse_2s_ease-in-out_infinite]
-                       hover:text-white
-                       hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                       hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80
-                       shadow-[0_0_20px_rgba(236,72,153,0.4)]
-                       group`
-                : timeframe === tf
-                    ? `relative overflow-hidden
-                       text-white
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                       before:backdrop-blur-xl
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                       shadow-[0_0_10px_rgba(59,130,246,0.1)]`
-                    : `text-gray-400 
-                       hover:text-white 
-                       hover:bg-slate-700/50`
-              }
-            `}
-          >
-            <span className="relative z-10">{tf}</span>
-          </motion.button>
-        ))}
-      </motion.div>
-    ) : (
-      <motion.div 
-        className="flex items-center gap-4"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        key="custom-mode"
-      >
-        <motion.button
-          onClick={onBackClick}
-          className="px-4 py-2.5 rounded-lg font-medium text-sm
-                   relative overflow-hidden text-white
-                   before:absolute before:inset-0 
-                   before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
-                   before:backdrop-blur-xl
-                   before:animate-[burn_3s_ease-in-out_infinite]
-                   shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                   hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]
-                   transition-all duration-300
-                   cursor-pointer"
-        >
-          <span className="relative z-10 flex items-center gap-2">
-            <ArrowBackIcon className="w-4 h-4" />
-          </span>
-        </motion.button>
-        <div className="flex gap-4">
-          <DatePicker
-            label="From Date"
-            value={customDates.from}
-            onChange={(date) => onDateChange('from', date)}
-            maxDate={customDates.to || undefined}
-            className="bg-slate-800/50"
-            slotProps={{
-              textField: {
-                size: "small",
-                className: "w-40 bg-slate-800/50 text-white border-white/5",
-                required: true,
-                error: !isValidDateRange && !!customDates.from && !!customDates.to,
-                helperText: !isValidDateRange && !!customDates.from && !!customDates.to ? 
-                  "Invalid date range" : undefined
-              }
-            }}
-          />
-          <DatePicker
-            label="To Date"
-            value={customDates.to}
-            onChange={(date) => onDateChange('to', date)}
-            minDate={customDates.from || undefined}
-            className="bg-slate-800/50"
-            slotProps={{
-              textField: {
-                size: "small",
-                className: "w-40 bg-slate-800/50 text-white border-white/5",
-                required: true,
-                error: !isValidDateRange && !!customDates.from && !!customDates.to,
-                helperText: !isValidDateRange && !!customDates.from && !!customDates.to ? 
-                  "Invalid date range" : undefined
-              }
-            }}
-          />
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-));
 
 export const PriceAnalytics = memo(({ 
   symbol, 
@@ -285,6 +26,7 @@ export const PriceAnalytics = memo(({
   onClose, 
   closeable = false 
 }: PriceAnalyticsProps) => {
+    // Core state
     const { selectedTimezone, setTimezone } = useTimezone();
     const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
     const [dataType, setDataType] = useState<DataType>('price');
@@ -292,64 +34,70 @@ export const PriceAnalytics = memo(({
     const [isChartLoading, setIsChartLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<any>(null);
+
+    // Modal and custom date state
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
     const prevTimeframeRef = useRef<TimeframeType>('1D');
     const [isCustomMode, setIsCustomMode] = useState(false);
-    // const [dateRange, setDateRange] = useState({
-    //     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    //     to: new Date()
-    // });
     const [customDates, setCustomDates] = useState<{
         from: Date | null;
         to: Date | null;
-    }>({
-        from: null,
-        to: null
-    });
+    }>({ from: null, to: null });
     const [customRange, setCustomRange] = useState<{from: number; to: number} | undefined>();
 
-     // Add validation for custom dates
-     const isValidDateRange = useMemo(() => {
+    // Validation and data fetching
+    const isValidDateRange = useMemo(() => {
         if (!customDates.from || !customDates.to) return false;
         return customDates.to > customDates.from;
     }, [customDates.from, customDates.to]);
 
-    // Add a flag to control when to make the API request
     const effectiveTimeframe = useMemo(() => {
-        // Only use 'Custom' timeframe when we have a valid date range
         if (timeframe === 'Custom' && (!customRange || !isValidDateRange)) {
-            return null; // Return null to prevent API call
+            return null;
         }
         return timeframe;
     }, [timeframe, customRange, isValidDateRange]);
 
     const { data, loading } = useFetchHistoricalPrices({
         symbol,
-        timeframe: effectiveTimeframe, // Pass null to prevent API call
+        timeframe: effectiveTimeframe,
         customRange
     });
 
-    useEffect(() => {
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0% { opacity: 0.4; }
-                50% { opacity: 1; }
-                100% { opacity: 0.4; }
+    // Event handlers
+    const handleTimeframeClick = async (tf: TimeframeType) => {
+        if (tf === '5Y' || tf === 'Custom') {
+            const hasAccess = await checkProAccess(symbol);
+            if (!hasAccess) {
+                setShowPurchaseModal(true);
+                return;
             }
+        }
+        
+        setTimeframe(tf);
+        if (tf !== 'Custom') {
+            setIsCustomMode(false);
+            setCustomDates({ from: null, to: null });
+            setCustomRange(undefined);
+        }
+    };
 
-            @keyframes burn {
-                0% { transform: translateY(0) scale(1); opacity: 0.3; }
-                50% { transform: translateY(-2px) scale(1.02); opacity: 0.6; }
-                100% { transform: translateY(0) scale(1); opacity: 0.3; }
-            }
-        `;
-        document.head.appendChild(style);
-        return () => {
-            document.head.removeChild(style);
-        };
-    }, []);
+    const handleDateChange = (type: 'from' | 'to', date: Date | null) => {
+        const newDates = { ...customDates, [type]: date };
+        setCustomDates(newDates);
 
+        if (newDates.from && newDates.to && newDates.to > newDates.from) {
+            setCustomRange({
+                from: newDates.from.getTime(),
+                to: newDates.to.getTime()
+            });
+            setTimeframe('Custom');
+        } else {
+            setCustomRange(undefined);
+        }
+    };
+
+    // Effects
     useEffect(() => {
         if (timeframe !== '5Y') {
             prevTimeframeRef.current = timeframe;
@@ -368,154 +116,102 @@ export const PriceAnalytics = memo(({
         setIsChartLoading(loading);
     }, [loading]);
 
-    const handleTimeframeClick = async (tf: TimeframeType) => {
-        if (tf === '5Y' || tf === 'Custom') {
-            const hasAccess = await checkProAccess(symbol);
-            if (!hasAccess) {
-                setShowPurchaseModal(true);
-                return;
-            }
-        }
-        
-        setTimeframe(tf);
-        if (tf !== 'Custom') {
-            setIsCustomMode(false);
-            setCustomDates({ from: null, to: null });
-            setCustomRange(undefined);
-        }
-    };
+    useEffect(() => {
+        onSymbolChange?.(symbol);
+    }, [symbol, onSymbolChange]);
 
-    const handleModalClose = () => {
-        setShowPurchaseModal(false);
-        setTimeframe(prevTimeframeRef.current);
-    };
-
-    const handleModalSuccess = () => {
-        setShowPurchaseModal(false);
-        setTimeframe('5Y');
-    };
-
-    const handleDateChange = (type: 'from' | 'to', date: Date | null) => {
-        const newDates = {
-            ...customDates,
-            [type]: date
-        };
-        setCustomDates(newDates);
-
-        // Only update custom range and trigger data fetch if both dates are valid
-        if (newDates.from && newDates.to && newDates.to > newDates.from) {
-            setCustomRange({
-                from: newDates.from.getTime(),
-                to: newDates.to.getTime()
-            });
-            setTimeframe('Custom'); // Ensure timeframe is set to Custom
-        } else {
-            // Clear custom range if dates are invalid
-            setCustomRange(undefined);
-        }
-    };
-
-   
-
-    const handleBackClick = () => {
-        setIsCustomMode(false);
-        setTimeframe('1D'); // Reset to default timeframe
-        setCustomDates({ from: null, to: null });
-        setCustomRange(undefined);
-    };
-
-    const handleCustomModeToggle = () => {
-        setIsCustomMode(true);
-        setTimeframe('Custom');
-        setCustomDates({ from: null, to: null });
-        setCustomRange(undefined);
-    };
-
-    const content = useMemo(() => {
-        if (!symbol) return null;
-        if (error) return <div className="text-red-500">{error}</div>;
-        if (!metrics) return <div>No metrics available</div>;
-
-        return (
-            <div className="relative h-full rounded-xl overflow-hidden">
-                {/* Background gradients and effects */}
-                <div className="absolute inset-0 
-                                before:absolute before:inset-0 
-                                before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
-                                before:backdrop-blur-xl before:transition-opacity
-                                after:absolute after:inset-0 
-                                after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
-                                after:opacity-0 group-hover:after:opacity-100 
-                                after:transition-opacity" 
-                />
-
-                {/* Content Container */}
+    return (
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-full w-full rounded-xl overflow-hidden relative group
+                         before:absolute before:inset-0 
+                         before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-800/80 before:to-slate-900/90 
+                         before:backdrop-blur-xl before:transition-opacity
+                         after:absolute after:inset-0 
+                         after:bg-gradient-to-br after:from-blue-500/5 after:via-cyan-500/5 after:to-teal-500/5 
+                         after:opacity-0 group-hover:after:opacity-100 
+                         after:transition-opacity duration-300"
+            >
                 <div className="relative z-10 p-4 sm:p-5 lg:p-6 h-full flex flex-col">
-                    {/* Title Section */}
-                    <motion.h2 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-3 text-xl sm:text-2xl font-semibold mb-4 sm:mb-6"
+                    {/* Title */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center gap-3 mb-6"
                     >
-                        <span className="bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
+                        <h2 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
                             {symbol} Analytics
-                        </span>
+                        </h2>
                         <div className="flex-1 h-px bg-gradient-to-r from-blue-400/20 via-cyan-300/20 to-transparent max-w-[180px] self-center ml-2" />
-                    </motion.h2>
+                    </motion.div>
 
-                    {/* Controls Section */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
+                    {/* Controls */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         {/* Data Type Toggle */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            {['price', 'marketCap', 'volume'].map((type) => (
-                                <button 
-                                    key={type}
-                                    onClick={() => setDataType(type as DataType)}
-                                    className={`
-                                        px-3 sm:px-4 py-2 
-                                        rounded-lg 
-                                        font-medium
-                                        text-sm
-                                        transition-all duration-200
-                                        ${dataType === type 
-                                            ? `relative overflow-hidden
-                                               text-white
-                                               before:absolute before:inset-0 
-                                               before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                                               before:backdrop-blur-xl
-                                               shadow-[0_0_10px_rgba(59,130,246,0.1)]` 
-                                            : `text-gray-400 
-                                               hover:text-white 
-                                               hover:bg-slate-700/50`
-                                        }
-                                    `}
-                                >
-                                    <span className="relative z-10">
-                                        {type === 'marketCap' ? 'Market Cap' : 
-                                         type === 'volume' ? 'Volume' : 'Price'}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                        
-                        {/* Metrics Display */}
+<div className="flex flex-wrap items-center gap-2">
+    {['price', 'marketCap', 'volume'].map((type) => (
+        <button 
+            key={type}
+            onClick={() => setDataType(type as DataType)}
+            className={`
+                px-3 sm:px-4 py-2 
+                rounded-lg 
+                font-medium
+                text-sm
+                transition-all duration-200
+                ${dataType === type 
+                    ? `relative overflow-hidden
+                       text-white
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                       before:backdrop-blur-xl
+                       after:absolute after:inset-0 
+                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                       ` 
+                    : `text-gray-400 
+                       hover:text-white 
+                       hover:bg-slate-700/50
+                       hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]
+                       relative overflow-hidden
+                       before:absolute before:inset-0 
+                       before:bg-gradient-to-r before:from-blue-500/0 before:to-cyan-500/0 
+                       before:backdrop-blur-xl
+                       before:transition-colors
+                       hover:before:from-blue-500/10 hover:before:to-cyan-500/10`
+                }
+            `}
+        >
+            <span className="relative z-10">
+                {type === 'marketCap' ? 'Market Cap' : 
+                 type === 'volume' ? 'Volume' : 'Price'}
+            </span>
+        </button>
+    ))}
+</div>
                         <MetricsDisplay metrics={metrics} dataType={dataType} />
                     </div>
 
                     {/* Time Controls */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4 sm:mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                         <TimeframeSelector
                             timeframe={timeframe}
                             isCustomMode={isCustomMode}
                             customDates={customDates}
                             onTimeframeClick={handleTimeframeClick}
-                            onCustomModeToggle={handleCustomModeToggle}
-                            onBackClick={handleBackClick}
+                            onCustomModeToggle={() => setIsCustomMode(true)}
+                            onBackClick={() => {
+                                setIsCustomMode(false);
+                                setTimeframe('1D');
+                                setCustomDates({ from: null, to: null });
+                                setCustomRange(undefined);
+                            }}
                             onDateChange={handleDateChange}
                             isValidDateRange={isValidDateRange}
                         />
 
-                        {/* Timezone Selector */}
                         <div className="sm:ml-auto flex items-center gap-2">
                             <span className="text-xs text-gray-400">Timezone:</span>
                             <select
@@ -525,7 +221,6 @@ export const PriceAnalytics = memo(({
                                     if (newTimezone) setTimezone(newTimezone);
                                 }}
                                 className="bg-slate-800/50 text-white text-xs px-3 py-2 pr-8 rounded-lg 
-                                         border border-white/5 backdrop-blur-sm 
                                          hover:bg-slate-700/50 transition-colors duration-200
                                          focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                             >
@@ -538,11 +233,9 @@ export const PriceAnalytics = memo(({
                         </div>
                     </div>
 
-                    {/* Chart Container */}
-                    {currentData.length > 0 && (
-                        <div className="relative flex-1 rounded-xl border border-white/10 overflow-hidden">
-                            <div className="absolute inset-[1px] rounded-xl bg-slate-800/95 backdrop-blur-xl" />
-
+                    {/* Chart */}
+                    {currentData.length > 0 ? (
+                        <div className="relative flex-1 rounded-xl overflow-hidden">
                             <div className="relative h-full">
                                 <div className={`absolute inset-0 flex flex-col transition-opacity duration-300 
                                               ${isChartLoading ? 'opacity-50' : ''}`}>
@@ -556,46 +249,34 @@ export const PriceAnalytics = memo(({
                                     </div>
                                 </div>
                                 
-                                {/* Loading overlay */}
                                 {isChartLoading && (
-                                    <div className="absolute inset-0 flex items-center justify-center 
-                                                 bg-slate-900/20 backdrop-blur-sm">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
                                         <CircularProgress size={30} className="text-blue-500" />
                                     </div>
                                 )}
                             </div>
                         </div>
-                    )}
-
-                    {/* Initial loading state */}
-                    {!currentData.length && !error && (
-                        <div className="flex-1 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]
-                                     bg-slate-800/50 rounded-lg 
-                                     flex items-center justify-center">
-                            <div className="flex flex-col items-center space-y-2">
-                                <CircularProgress size={40} className="text-blue-500" />
-                                <span className="text-gray-400 text-sm">Loading price data...</span>
-                            </div>
+                    ) : !error ? (
+                        <div className="flex-1 min-h-[300px] sm:min-h-[350px] flex items-center justify-center">
+                            <CircularProgress size={40} className="text-blue-500" />
                         </div>
+                    ) : (
+                        <div className="text-red-500">{error}</div>
                     )}
                 </div>
-            </div>
-        );
-    }, [currentData, metrics, isChartLoading, error, dataType, timeframe, selectedTimezone.value, symbol, onClose]);
+            </motion.div>
 
-    // Call onSymbolChange when symbol changes
-    useEffect(() => {
-        onSymbolChange?.(symbol);
-    }, [symbol, onSymbolChange]);
-
-    return (
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-            {content}
             <PurchaseDataModal
                 isOpen={showPurchaseModal}
-                onClose={handleModalClose}
+                onClose={() => {
+                    setShowPurchaseModal(false);
+                    setTimeframe(prevTimeframeRef.current);
+                }}
+                onSuccess={() => {
+                    setShowPurchaseModal(false);
+                    setTimeframe('5Y');
+                }}
                 symbol={symbol}
-                onSuccess={handleModalSuccess}
             />
         </LocalizationProvider>
     );
