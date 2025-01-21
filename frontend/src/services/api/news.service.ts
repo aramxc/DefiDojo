@@ -5,7 +5,7 @@ import { NewsItem } from '@defidojo/shared-types';
 export class NewsService {
   private baseUrl = `${API_BASE_URL}/news`;
 
-  async getNewsForSymbol(symbol: string): Promise<NewsItem[]> {
+  async getCryptoNewsBySymbol(symbol: string): Promise<NewsItem[]> {
     try {
       const response = await fetch(`${this.baseUrl}/${symbol.toLowerCase()}`);
       
@@ -20,6 +20,17 @@ export class NewsService {
     } catch (error) {
       console.error('Frontend: NewsService Error:', error);
       throw error;
+    }
+  }
+
+  async getCryptoNews(): Promise<NewsItem[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/`);
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error('Frontend: NewsService Error:', error);
+      throw error as Error;
     }
   }
 }

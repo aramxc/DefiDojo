@@ -1,16 +1,16 @@
 import { memo } from 'react';
-import { useNews } from '../../hooks/useFetchRecentNews';
+import { useFetchRecentNews } from '../../hooks/useFetchRecentNews';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Article, OpenInNew, Schedule, TrendingUp } from '@mui/icons-material';
 
 interface NewsFeedProps {
-    symbol: string;
+    symbol?: string;
     className?: string;
 }
 
 export const NewsFeed = memo(({ symbol, className = '' }: NewsFeedProps) => {
-    const { news, loading, error } = useNews(symbol);
+    const { news, loading, error } = useFetchRecentNews(symbol);
 
     const formatDate = (dateString?: string) => {
         if (!dateString) return '';
