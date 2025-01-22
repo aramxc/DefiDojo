@@ -33,7 +33,7 @@ export const News = memo(() => {
                         <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                         <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                                     bg-clip-text text-transparent tracking-tight font-extrabold">
-                            Crypto Market News
+                            Crypto News Feed 
                         </span>
                     </span>
                 </div>

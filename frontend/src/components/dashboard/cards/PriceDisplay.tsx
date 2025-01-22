@@ -12,6 +12,7 @@ interface PriceDisplayProps {
   symbol: string;
   onRemove: () => void;
   onSelectSymbol: (symbol: string, metrics: any) => void;
+  getRealTimeData?: boolean;
 }
 
 const formatPrice = (price: number): string => 
@@ -70,24 +71,23 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
 
             {/* Description */}
             <div className="flex-1 px-6 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/10 scrollbar-track-transparent">
-                {assetInfo.DESCRIPTION && (
-                    <div className="text-gray-300/90 text-sm leading-relaxed">
-                        {assetInfo.DESCRIPTION}
-                    </div>
-                )}
+                <div 
+                    className="text-gray-300/90 text-sm leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: (assetInfo.DESCRIPTION as unknown as string) || '' }}
+                />
             </div>
 
             {/* Links Footer */}
             <div className="p-4 border-t border-gray-700/20">
                 <div className="flex flex-wrap gap-2 justify-center">
                     {[
-                        { url: assetInfo.WHITEPAPER_URL, label: 'Whitepaper' },
-                        { url: assetInfo.SUBREDDIT_URL, label: 'Reddit' },
-                        { url: assetInfo.GITHUB_REPOS?.[0], label: 'GitHub' }
+                        { url: assetInfo.LINKS.WHITEPAPER?.[0], label: 'Whitepaper' },
+                        { url: assetInfo.LINKS.SUBREDDIT_URL, label: 'Reddit' },
+                        { url: assetInfo.LINKS.REPOS_URL?.GITHUB?.[0], label: 'GitHub' }
                     ].filter(link => link.url).map(link => (
                         <a
                             key={link.label}
-                            href={link.url || ''}
+                            href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -109,7 +109,12 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
     );
 });
 
-export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, onSelectSymbol }) => {
+export const PriceDisplay: React.FC<PriceDisplayProps> = ({ 
+  symbol, 
+  onRemove, 
+  onSelectSymbol,
+  getRealTimeData
+}) => {
   const [priceData, setPriceData] = useState<AssetPriceData | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -271,11 +276,11 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({ symbol, onRemove, on
                 <CardControls />
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    {assetInfo?.IMAGE_URL && (
+                    {assetInfo?.IMAGE?.THUMB && (
                       <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
                         <img 
-                          src={assetInfo.IMAGE_URL} 
+                          src={assetInfo.IMAGE.THUMB} 
                           alt={symbol} 
                           className="relative w-8 h-8 rounded-full"
                         />

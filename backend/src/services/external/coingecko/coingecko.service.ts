@@ -10,14 +10,25 @@ import {
 
 export class CoinGeckoService {
     private baseUrl: string;
+    private symbolToIdCache: Map<string, string> = new Map();
+    private lastCacheUpdate: number = 0;
+    private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes, matching CoinGecko's update frequency
   
     constructor() {
         this.baseUrl = config.coinGecko.baseUrl;
     }
 
-    async getCoinList(): Promise<any> {
+    async getCoinList(symbol?: string): Promise<any> {
         const url = `${this.baseUrl}/coins/list`;
         const response = await axios.get(url);
+        
+        if (symbol) {
+            // Find the first match for the symbol (case-insensitive)
+            return response.data.find((coin: any) => 
+                coin.symbol.toLowerCase() === symbol.toLowerCase()
+            );
+        }
+        
         return response.data;
     }
 
@@ -78,65 +89,69 @@ export class CoinGeckoService {
         return response.data;
     }
 
-    async getCoinInfo(coinId: string): Promise<AssetInfo> {
-        const baseUrl = config.coinGecko.apiKey ? config.coinGecko.proBaseUrl : config.coinGecko.baseUrl;
-        const url = `${baseUrl}/coins/${coinId}`;
+    async getAssetInfoById(id: string): Promise<AssetInfo> {
+        const response = await axios.get<any>(
+            `${this.baseUrl}/coins/${id}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=true`
+        );
+
+        // Store original name before converting to uppercase
+        const originalName = response.data.name;
         
-        const headers = config.coinGecko.apiKey ? { 'x-cg-pro-api-key': config.coinGecko.apiKey } : {};
-        
-        const response = await axios.get(url, {
-            params: {
-                localization: false,
-                tickers: false,
-                market_data: true,
-                community_data: false,
-                developer_data: true,
-                sparkline: false
+        // Convert data to uppercase
+        const upperData = this.convertKeysToUpperCase(response.data);
+
+        // Now we can safely access the uppercase properties
+        const assetInfo: AssetInfo = {
+            ID: upperData.ID,
+            COINGECKO_ID: upperData.ID,
+            SYMBOL: upperData.SYMBOL,
+            NAME: originalName,
+            WEB_SLUG: upperData.WEB_SLUG,
+            ASSET_PLATFORM_ID: upperData.ASSET_PLATFORM_ID,
+            PLATFORMS: upperData.PLATFORMS,
+            DETAIL_PLATFORMS: upperData.DETAIL_PLATFORMS,
+            BLOCK_TIME_IN_MINUTES: upperData.BLOCK_TIME_IN_MINUTES,
+            HASHING_ALGORITHM: upperData.HASHING_ALGORITHM,
+            CATEGORIES: upperData.CATEGORIES,
+            PREVIEW_LISTING: upperData.PREVIEW_LISTING,
+            PUBLIC_NOTICE: upperData.PUBLIC_NOTICE,
+            ADDITIONAL_NOTICES: upperData.ADDITIONAL_NOTICES,
+            LOCALIZATION: upperData.LOCALIZATION,
+            DESCRIPTION: upperData.DESCRIPTION,
+            LINKS: upperData.LINKS || {
+                HOMEPAGE: [],
+                WHITEPAPER: [],
+                BLOCKCHAIN_SITE: [],
+                OFFICIAL_FORUM_URL: [],
+                CHAT_URL: [],
+                ANNOUNCEMENT_URL: [],
+                SNAPSHOT_URL: null,
+                TWITTER_SCREEN_NAME: '',
+                FACEBOOK_USERNAME: '',
+                BITCOINTALK_THREAD_IDENTIFIER: null,
+                TELEGRAM_CHANNEL_IDENTIFIER: '',
+                SUBREDDIT_URL: '',
+                REPOS_URL: {
+                    GITHUB: [],
+                    BITBUCKET: []
+                }
             },
-            headers
-        });
-
-        if (!response.data) {
-            throw new Error('Invalid data format from CoinGecko API');
-        }
-        
-        // Transform the response to match our AssetInfo interface
-        return this.transformToAssetInfo(response.data);
-    }
-
-    private transformToAssetInfo(data: any): AssetInfo {
-        return {
-            ASSET_ID: data.id,
-            NAME: data.name,
-            SYMBOL: data.symbol?.toUpperCase(),
-            COINGECKO_ID: data.id,
-            PYTH_PRICE_FEED_ID: null, // Not available from CoinGecko
+            IMAGE: upperData.IMAGE,
+            MARKET_DATA: upperData.MARKET_DATA,
+            COMMUNITY_DATA: upperData.COMMUNITY_DATA,
+            DEVELOPER_DATA: upperData.DEVELOPER_DATA,
+            STATUS_UPDATES: upperData.STATUS_UPDATES,
+            LAST_UPDATED: upperData.LAST_UPDATED,
+            TICKERS: upperData.TICKERS,
+            PYTH_PRICE_FEED_ID: null,
             IS_ACTIVE: true,
-            MARKET_CAP_RANK: data.market_cap_rank,
-            CREATED_AT: new Date().toISOString(),
-            UPDATED_AT: new Date().toISOString(),
-            BLOCK_TIME_IN_MINUTES: data.block_time_in_minutes,
-            HASHING_ALGORITHM: data.hashing_algorithm,
-            DESCRIPTION: data.description?.en,
-            HOMEPAGE_URL: data.links?.homepage?.[0],
-            WHITEPAPER_URL: data.links?.whitepaper,
-            SUBREDDIT_URL: data.links?.subreddit_url,
-            IMAGE_URL: data.image?.large,
-            COUNTRY_ORIGIN: data.country_origin,
-            GENESIS_DATE: data.genesis_date ? new Date(data.genesis_date).toISOString() : null,
-            TOTAL_SUPPLY: data.market_data?.total_supply,
-            MAX_SUPPLY: data.market_data?.max_supply,
-            CIRCULATING_SUPPLY: data.market_data?.circulating_supply,
-            GITHUB_REPOS: data.links?.repos_url?.github || [],
-            GITHUB_FORKS: data.developer_data?.forks,
-            GITHUB_STARS: data.developer_data?.stars,
-            GITHUB_SUBSCRIBERS: data.developer_data?.subscribers,
-            GITHUB_TOTAL_ISSUES: data.developer_data?.total_issues,
-            GITHUB_CLOSED_ISSUES: data.developer_data?.closed_issues,
-            GITHUB_PULL_REQUESTS_MERGED: data.developer_data?.pull_requests_merged,
-            GITHUB_PULL_REQUEST_CONTRIBUTORS: data.developer_data?.pull_request_contributors,
-            BID_ASK_SPREAD_PERCENTAGE: data.market_data?.bid_ask_spread_percentage
+            COUNTRY_ORIGIN: upperData.COUNTRY_ORIGIN,
+            GENESIS_DATE: upperData.GENESIS_DATE,
+            SENTIMENT_VOTES_UP_PERCENTAGE: upperData.SENTIMENT_VOTES_UP_PERCENTAGE,
+            SENTIMENT_VOTES_DOWN_PERCENTAGE: upperData.SENTIMENT_VOTES_DOWN_PERCENTAGE
         };
+
+        return assetInfo;
     }
 
     async getMarketMetrics(coinId: string): Promise<MarketMetrics> {
@@ -157,7 +172,6 @@ export class CoinGeckoService {
             return {
                 volatility,
                 trends,
-                fearGreed: undefined 
             };
         } catch (error) {
             console.error('CoinGecko service error:', error);
@@ -273,5 +287,50 @@ export class CoinGeckoService {
             console.error('Error fetching coin market data:', error);
             throw error;
         }
+    }
+
+    private async updateSymbolCache(): Promise<void> {
+        const now = Date.now();
+        if (now - this.lastCacheUpdate > this.CACHE_DURATION) {
+            const coins = await this.getCoinList();
+            this.symbolToIdCache.clear();
+            coins.forEach((coin: any) => {
+                this.symbolToIdCache.set(coin.symbol.toLowerCase(), coin.id);
+            });
+            this.lastCacheUpdate = now;
+        }
+    }
+
+    private async getCoingeckoId(symbol: string): Promise<string> {
+        await this.updateSymbolCache();
+        const id = this.symbolToIdCache.get(symbol.toLowerCase());
+        if (!id) {
+            throw new Error(`No coin found for symbol: ${symbol}`);
+        }
+        return id;
+    }
+
+    async getAssetInfoBySymbol(symbol: string): Promise<AssetInfo> {
+        const coingeckoId = await this.getCoingeckoId(symbol);
+        return this.getAssetInfoById(coingeckoId);
+    }
+
+    // Helper method to convert object keys to uppercase
+    private convertKeysToUpperCase(obj: any): any {
+        if (!obj) return null;
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.convertKeysToUpperCase(item));
+        }
+        
+        if (typeof obj === 'object') {
+            return Object.keys(obj).reduce((acc, key) => {
+                const upperKey = key.toUpperCase();
+                acc[upperKey] = this.convertKeysToUpperCase(obj[key]);
+                return acc;
+            }, {} as any);
+        }
+        
+        return obj;
     }
 }

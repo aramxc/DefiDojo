@@ -8,13 +8,15 @@ interface SortablePriceDisplayProps {
   symbol: string;
   onRemove: () => void;
   onSelectSymbol: (symbol: string) => void;
+  getRealTimeData: boolean;
 }
 
 export const SortablePriceDisplay = ({
   id,
   symbol,
   onRemove,
-  onSelectSymbol
+  onSelectSymbol,
+  getRealTimeData
 }: SortablePriceDisplayProps) => {
   const {
     attributes,
@@ -48,6 +50,7 @@ export const SortablePriceDisplay = ({
         symbol={symbol}
         onRemove={onRemove}
         onSelectSymbol={onSelectSymbol}
+        getRealTimeData={getRealTimeData}
       />
     </div>
   );

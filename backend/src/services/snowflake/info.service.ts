@@ -23,17 +23,19 @@ export class InfoService {
         }
     }
 
-    async getAssetBySymbol(symbol: string): Promise<AssetInfo> {
-        const cacheKey = `asset_${symbol.toLowerCase()}`;
+    async getAssetInfoBySymbol(symbol: string, realTime: boolean = false): Promise<AssetInfo> {
+        const cacheKey = `asset_${symbol.toLowerCase()}_${realTime}`;
         const cached = this.cache.get<AssetInfo>(cacheKey);
         
-        if (cached) {
+        if (cached && !realTime) {
             return cached;
         }
 
         try {
             const asset = await this.assetRepository.findBySymbol(symbol);
-            this.cache.set(cacheKey, asset);
+            if (!realTime) {
+                this.cache.set(cacheKey, asset);
+            }
             return asset;
         } catch (error) {
             console.error('Error fetching asset:', error);
@@ -41,7 +43,7 @@ export class InfoService {
         }
     }
 
-    async getAssetById(assetId: string): Promise<AssetInfo> {
+    async getAssetInfoById(assetId: string): Promise<AssetInfo> {
         try {
             return await this.assetRepository.findById(assetId);
         } catch (error) {

@@ -13,5 +13,6 @@ router.use('/prices', historicalPriceRoutes);
 router.use('/market-metrics', marketMetricsRoutes);
 router.use('/users', userRoutes);
 router.use('/info', infoRoutes);
+console.log('Info routes mounted');
 router.use('/news', newsRoutes);
 export default router;

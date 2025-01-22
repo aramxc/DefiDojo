@@ -25,7 +25,7 @@ export class GoogleSearchService {
                     sort: 'date', // Sort by date if available
                 }
             });
-            console.log(response.data);
+          
 
             return response.data.items.map((item: any) => ({
                 title: item.title,

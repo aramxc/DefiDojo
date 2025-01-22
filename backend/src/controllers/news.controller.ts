@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { GoogleSearchService } from '../services/external/google/cse.service';
 import NodeCache from 'node-cache';
 
-const newsCache = new NodeCache({ stdTTL: 7200 }); // 2 hr cache
+const newsCache = new NodeCache({ stdTTL: 3600 }); // 1 hr cache
 
 export class NewsController {
     static async getCryptoNewsBySymbol(req: Request, res: Response) {

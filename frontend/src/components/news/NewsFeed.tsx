@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useFetchRecentNews } from '../../hooks/useFetchRecentNews';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Article, OpenInNew, Schedule, TrendingUp } from '@mui/icons-material';
+import { Article, OpenInNew, Schedule, TrendingUp, Newspaper } from '@mui/icons-material';
 
 interface NewsFeedProps {
     symbol?: string;
@@ -49,7 +49,7 @@ export const NewsFeed = memo(({ symbol, className = '' }: NewsFeedProps) => {
                         <div className="relative transition-all duration-300">
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-all duration-300"></div>
                             <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm border border-white/[0.05]">
-                                <TrendingUp className="w-5 h-5 text-blue-400" />
+                                <Newspaper className="w-5 h-5 text-blue-400" />
                             </div>
                         </div>
                         <span className="relative text-2xl font-bold">

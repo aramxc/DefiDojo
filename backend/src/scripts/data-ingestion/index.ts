@@ -22,7 +22,7 @@ async function main() {
             case 'assets':
                 console.log('Initializing asset ingestion...');
                 const assetIngestion = new AssetIngestion();
-                await assetIngestion.ingestAssets(numberOfCoins);
+                await assetIngestion.ingestAssets(numberOfCoins); 
                 console.log('Asset ingestion completed successfully');
                 break;
 

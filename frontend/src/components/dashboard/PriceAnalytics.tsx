@@ -107,6 +107,7 @@ export const PriceAnalytics = memo(({
 
     useEffect(() => {
         if (data?.[symbol]) {
+            console.log('Setting current data:', data[symbol].data); // Debug log
             setCurrentData(data[symbol].data);
             setMetrics(data[symbol].metrics);
             setError(null);
@@ -147,7 +148,7 @@ export const PriceAnalytics = memo(({
                             <div className="relative transition-all duration-300">
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-all duration-300"></div>
                                 <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm border border-white/[0.05]">
-                                    <ShowChart className="w-5 h-5 text-blue-400" />
+                                    <TrendingUp className="w-5 h-5 text-blue-400" />
                                 </div>
                             </div>
                             <span className="relative text-2xl font-bold">
@@ -248,7 +249,7 @@ export const PriceAnalytics = memo(({
                     </div>
 
                     {/* Chart */}
-                    {currentData.length > 0 ? (
+                    {currentData?.length > 0 ? (
                         <div className="flex-1 min-h-0">
                             <PriceChart 
                                 data={currentData}

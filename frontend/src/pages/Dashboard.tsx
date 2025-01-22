@@ -11,6 +11,7 @@ interface DashboardProps {
   selectedTickers: string[];
   onAddTickers: (tickers: string[]) => void;
   onRemoveTicker: (symbol: string) => void;
+  getRealTimeData?: boolean;
 }
 
 const DndContextComponent = DndContext as React.FC<DndContextProps>;
@@ -19,6 +20,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   selectedTickers, 
   onAddTickers, 
   onRemoveTicker,
+  getRealTimeData = true
 }): JSX.Element => {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   
@@ -97,6 +99,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                           symbol={ticker}
                           onRemove={() => onRemoveTicker(ticker)}
                           onSelectSymbol={setSelectedSymbol}
+                          getRealTimeData={getRealTimeData}
                         />
                       </motion.div>
                     ))}

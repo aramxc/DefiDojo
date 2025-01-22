@@ -18,13 +18,15 @@ interface AdvancedDashboardProps {
   onAddTickers: (tickers: string[]) => void;
   onRemoveTicker: (symbol: string) => void;
   defaultTicker?: string;
+  getRealTimeData?: boolean;
 }
 
 const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   selectedTickers,
   onAddTickers,
   onRemoveTicker,
-  defaultTicker = 'BTC'
+  defaultTicker = 'BTC',
+  getRealTimeData = false
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
@@ -36,12 +38,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   }, [defaultTicker]);
 
   // Get asset info first
-  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol);
+  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol, false);
   
   // Use assetInfo to get coingeckoId for market metrics
   const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
     selectedSymbol,
-    assetInfo?.COINGECKO_ID || undefined
+    assetInfo?.COINGECKO_ID
   );
 
   const handleDragEnd = (event: any) => {
@@ -107,7 +109,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                     price={metrics?.trends?.price?.currentPrice?.price}
                     priceChange24h={metrics?.trends?.price?.change24h}
                     volume24h={metrics?.trends?.volume?.currentVolume}
+                    marketCap={assetInfo?.market_data?.market_cap?.current_market_cap?.usd}
+                    marketCapRank={assetInfo?.market_data?.market_cap_rank}
+                    high24h={assetInfo?.market_data?.high_24h?.usd}
+                    low24h={assetInfo?.market_data?.low_24h?.usd}
                     isLoading={metricsLoading}
+                    getRealTimeData={getRealTimeData}
                   />
                 </div>
               </motion.div>

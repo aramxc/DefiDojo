@@ -26,9 +26,31 @@ export const useFetchHistoricalPrices = ({ symbol, timeframe, customRange }: Use
           timeframe,
           customRange
         );
-        setData(response);
+
+        // Format the response data for the chart
+        if (response?.[symbol]?.data) {
+          const formattedData = response[symbol].data.map((item: any) => ({
+            timestamp: item.timestamp,
+            price: item.price,
+            marketCap: item.marketCap,
+            volume: item.volume
+          }));
+
+          setData({
+            ...response,
+            [symbol]: {
+              ...response[symbol],
+              data: formattedData
+            }
+          });
+        } else {
+          setData(response);
+        }
+        
         setError(null);
+       
       } catch (err) {
+        console.error('Error fetching historical data:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch historical data');
       } finally {
         setLoading(false);

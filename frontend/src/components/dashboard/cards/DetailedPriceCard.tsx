@@ -18,6 +18,7 @@ interface DetailedPriceCardProps {
   low24h?: number;
   lastUpdated?: string;
   isLoading?: boolean;
+  getRealTimeData?: boolean;
 }
 
 export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
@@ -31,14 +32,22 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
   high24h,
   low24h,
   lastUpdated: initialLastUpdated,
-  isLoading
+  isLoading,
+  getRealTimeData = true
 }) => {
   const [isRealTime, setIsRealTime] = useState(false);
   const [price, setPrice] = useState(initialPrice);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
 
+  
+
   // Handle price updates
   useEffect(() => {
+    if (!isRealTime) {
+      setPrice(initialPrice);
+      return;
+    }
+
     const fetchPrice = async () => {
       try {
         const prices = await priceService.getLatestPrices([symbol]);
@@ -56,7 +65,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
     const interval = setInterval(fetchPrice, isRealTime ? 1000 : 120000); // 1s or 2min
 
     return () => clearInterval(interval);
-  }, [symbol, isRealTime]);
+  }, [symbol, isRealTime, initialPrice]);
 
   // Format the last update time
   const getLastUpdateText = () => {
@@ -111,11 +120,11 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
       <div className=" relative z-10 p-6 h-full flex flex-col ">
         {/* Header with Asset Info */}
         <div className="flex items-center gap-3 mb-6">
-          {assetInfo?.IMAGE_URL && (
+          {assetInfo?.IMAGE?.THUMB && (
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
               <img 
-                src={assetInfo.IMAGE_URL} 
+                src={assetInfo.IMAGE.THUMB} 
                 alt={symbol} 
                 className="relative w-10 h-10 rounded-full"
               />
@@ -130,64 +139,69 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
 
         {/* Price Section with Real-time Toggle */}
         <div className="space-y-4 mb-6">
-          <div className="font-bold flex items-baseline gap-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative w-fit"
-            >
-              <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
-              <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                            bg-clip-text text-transparent tracking-tight text-4xl">
-                {formatCurrency(price)}
-              </span>
-            </motion.div>
-            
-            {/* Price Change Indicator */}
-            {priceChange24h && (
+          {isLoading ? (
+            <div className="animate-pulse bg-gray-700/50 h-10 w-32 rounded" />
+          ) : (
+            <div className="font-bold flex items-baseline gap-3">
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                           transition-colors duration-300
-                           ${priceChange24h > 0 
-                             ? 'text-green-400 ' 
-                             : 'text-red-400 '}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative w-fit"
               >
-                {priceChange24h > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                <span className="font-medium">{formatPercentage(priceChange24h)}</span>
+                <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
+                <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                              bg-clip-text text-transparent tracking-tight text-4xl">
+                  {formatCurrency(price)}
+                </span>
               </motion.div>
-            )}
-          </div>
-          
-          <div className="flex items-center justify-between">
-            
-            
-            <div className="flex items-center gap-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${
-                isRealTime 
-                  ? 'bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.3)] animate-pulse' 
-                  : 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.3)]'
-              }`} />
-              <span className="text-xs text-gray-400">
-                {isRealTime ? 'Real-time' : 'Live Price'}
-              </span>
-              <Switch
-                checked={isRealTime}
-                onChange={() => setIsRealTime(!isRealTime)}
-                size="small"
-                className="!ml-2"
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#10B981',
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: '#10B981',
-                  },
-                }}
-              />
+              
+              {/* Price Change Indicator */}
+              {priceChange24h && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                             transition-colors duration-300
+                             ${priceChange24h > 0 
+                               ? 'text-green-400 ' 
+                               : 'text-red-400 '}`}
+                >
+                  {priceChange24h > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                  <span className="font-medium">{formatPercentage(priceChange24h)}</span>
+                </motion.div>
+              )}
             </div>
-          </div>
+          )}
+          
+          {/* Real-time Toggle - Only show if getRealTimeData is true */}
+          {getRealTimeData && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  isRealTime 
+                    ? 'bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.3)] animate-pulse' 
+                    : 'bg-blue-500 shadow-[0_0_4px_rgba(59,130,246,0.3)]'
+                }`} />
+                <span className="text-xs text-gray-400">
+                  {isRealTime ? 'Real-time' : 'Live Price'}
+                </span>
+                <Switch
+                  checked={isRealTime}
+                  onChange={() => setIsRealTime(!isRealTime)}
+                  size="small"
+                  className="!ml-2"
+                  sx={{
+                    '& .MuiSwitch-switchBase.Mui-checked': {
+                      color: '#10B981',
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      backgroundColor: '#10B981',
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-400">Market Cap</span>

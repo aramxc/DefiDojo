@@ -68,75 +68,78 @@ export class AssetIngestion {
     async ingestAssets(limit: number = 200) {
         try {
             console.log('Starting asset ingestion process...');
-            console.log(`Rate limits: ${this.RATE_LIMIT_PER_MINUTE}/minute, ${this.MIN_REQUEST_INTERVAL/1000}s between requests`);
-
-            // Get top coins by market cap directly
+            
+            // Get top coins by market cap
             await this.rateLimit();
             console.log('Fetching top coins from CoinGecko...');
-            const topCoins = await this.retryWithBackoff(() => this.coinGecko.getTopCoins(limit));
+            const topCoins = await this.retryWithBackoff(() => 
+                this.coinGecko.getTopCoins(limit));
             
-            console.log(`Processing ${topCoins.length} top coins by market cap`);
-
-            // Process coins sequentially
             for (const coin of topCoins) {
                 try {
-                    console.log(`Processing ${coin.symbol.toUpperCase()} (Rank: ${coin.market_cap_rank})...`);
+                    console.log(`Processing ${coin.symbol.toUpperCase()}...`);
                     
                     await this.rateLimit();
-                    console.log(`Fetching detailed info for ${coin.symbol}...`);
-                    const coinInfo = await this.retryWithBackoff(() => this.coinGecko.getCoinInfo(coin.id));
+                    console.log(`Fetching detailed info for ${coin.id}...`);
+                    const coinInfo = await this.retryWithBackoff(() => 
+                        this.coinGecko.getAssetInfoById(coin.id));
 
-                    console.log(`Inserting ${coin.symbol} into Snowflake...`);
+                    console.log(`Inserting ${coin.symbol.toUpperCase()} into Snowflake...`);
                     await this.insertAsset({
-                        ASSET_ID: coin.symbol.toUpperCase(),
-                        NAME: coin.name,
+                        ID: coin.symbol.toUpperCase(),
+                        NAME: coinInfo.NAME || coin.name,
                         SYMBOL: coin.symbol.toUpperCase(),
                         COINGECKO_ID: coin.id,
-                        PYTH_PRICE_FEED_ID: null, // Custom field not in API
+                        PYTH_PRICE_FEED_ID: null,
                         IS_ACTIVE: true,
-                        MARKET_CAP_RANK: coinInfo.market_cap_rank || null,
-                        BLOCK_TIME_IN_MINUTES: coinInfo.block_time_in_minutes || null,
-                        HASHING_ALGORITHM: coinInfo.hashing_algorithm || null,
-                        DESCRIPTION: coinInfo.description?.en || null,
-                        HOMEPAGE_URL: coinInfo.links?.homepage?.[0] || null,
-                        WHITEPAPER_URL: coinInfo.links?.whitepaper || null,
-                        SUBREDDIT_URL: coinInfo.links?.subreddit_url || null,
-                        IMAGE_URL: coinInfo.image?.large || null,
-                        COUNTRY_ORIGIN: coinInfo.country_origin || null,
-                        GENESIS_DATE: coinInfo.genesis_date || null,
-                        TOTAL_SUPPLY: coinInfo.market_data?.total_supply || null,
-                        MAX_SUPPLY: coinInfo.market_data?.max_supply || null,
-                        CIRCULATING_SUPPLY: coinInfo.market_data?.circulating_supply || null,
-                        GITHUB_REPOS: coinInfo.links?.repos_url?.github || null,
-                        GITHUB_FORKS: coinInfo.developer_data?.forks || null,
-                        GITHUB_STARS: coinInfo.developer_data?.stars || null,
-                        GITHUB_SUBSCRIBERS: coinInfo.developer_data?.subscribers || null,
-                        GITHUB_TOTAL_ISSUES: coinInfo.developer_data?.total_issues || null,
-                        GITHUB_CLOSED_ISSUES: coinInfo.developer_data?.closed_issues || null,
-                        GITHUB_PULL_REQUESTS_MERGED: coinInfo.developer_data?.pull_requests_merged || null,
-                        GITHUB_PULL_REQUEST_CONTRIBUTORS: coinInfo.developer_data?.pull_request_contributors || null,
+                        MARKET_CAP_RANK: coinInfo.MARKET_DATA?.MARKET_CAP_RANK,
+                        BLOCK_TIME_IN_MINUTES: coinInfo.BLOCK_TIME_IN_MINUTES,
+                        HASHING_ALGORITHM: coinInfo.HASHING_ALGORITHM,
+                        DESCRIPTION: coinInfo.DESCRIPTION?.EN,
+                        COUNTRY_ORIGIN: coinInfo.COUNTRY_ORIGIN,
+                        GENESIS_DATE: coinInfo.GENESIS_DATE,
+                        TOTAL_SUPPLY: coinInfo.MARKET_DATA?.TOTAL_SUPPLY,
+                        MAX_SUPPLY: coinInfo.MARKET_DATA?.MAX_SUPPLY,
+                        CIRCULATING_SUPPLY: coinInfo.MARKET_DATA?.CIRCULATING_SUPPLY,
+                        GITHUB_REPOS: coinInfo.LINKS?.REPOS_URL?.GITHUB || [],
+                        GITHUB_FORKS: coinInfo.DEVELOPER_DATA?.FORKS,
+                        GITHUB_STARS: coinInfo.DEVELOPER_DATA?.STARS,
+                        GITHUB_SUBSCRIBERS: coinInfo.DEVELOPER_DATA?.SUBSCRIBERS,
+                        GITHUB_TOTAL_ISSUES: coinInfo.DEVELOPER_DATA?.TOTAL_ISSUES,
+                        GITHUB_CLOSED_ISSUES: coinInfo.DEVELOPER_DATA?.CLOSED_ISSUES,
+                        GITHUB_PULL_REQUESTS_MERGED: coinInfo.DEVELOPER_DATA?.PULL_REQUESTS_MERGED,
+                        GITHUB_PULL_REQUEST_CONTRIBUTORS: coinInfo.DEVELOPER_DATA?.PULL_REQUEST_CONTRIBUTORS,
+                        BID_ASK_SPREAD_PERCENTAGE: coinInfo.TICKERS?.[0]?.BID_ASK_SPREAD_PERCENTAGE,
+                        WEB_SLUG: coinInfo.WEB_SLUG,
+                        ASSET_PLATFORM_ID: coinInfo.ASSET_PLATFORM_ID,
+                        PLATFORMS: coinInfo.PLATFORMS,
+                        DETAIL_PLATFORMS: coinInfo.DETAIL_PLATFORMS,
+                        CATEGORIES: coinInfo.CATEGORIES,
+                        PREVIEW_LISTING: coinInfo.PREVIEW_LISTING || false,
+                        PUBLIC_NOTICE: coinInfo.PUBLIC_NOTICE,
+                        ADDITIONAL_NOTICES: coinInfo.ADDITIONAL_NOTICES,
+                        LOCALIZATION: coinInfo.LOCALIZATION,
+                        LINKS: coinInfo.LINKS,
+                        IMAGE: coinInfo.IMAGE,
+                        MARKET_DATA: coinInfo.MARKET_DATA,
+                        COMMUNITY_DATA: coinInfo.COMMUNITY_DATA,
+                        DEVELOPER_DATA: coinInfo.DEVELOPER_DATA,
+                        STATUS_UPDATES: coinInfo.STATUS_UPDATES,
+                        TICKERS: coinInfo.TICKERS,
+                        SENTIMENT_VOTES_UP_PERCENTAGE: coinInfo.SENTIMENT_VOTES_UP_PERCENTAGE,
+                        SENTIMENT_VOTES_DOWN_PERCENTAGE: coinInfo.SENTIMENT_VOTES_DOWN_PERCENTAGE,
                         CREATED_AT: 'CURRENT_TIMESTAMP()',
                         UPDATED_AT: 'CURRENT_TIMESTAMP()'
                     });
 
-                    console.log(`Successfully processed ${coin.symbol}`);
+                    console.log(`Successfully processed ${coin.symbol.toUpperCase()}`);
 
-                } catch (error: unknown) {
-                    console.error(`Error processing ${coin.symbol}:`, {
-                        message: error instanceof Error ? error.message : String(error),
-                        stack: error instanceof Error ? error.stack : undefined,
-                        coinData: {
-                            symbol: coin.symbol,
-                            id: coin.id,
-                            rank: coin.market_cap_rank
-                        }
-                    });
-                    // Continue with next coin even if one fails
-                    continue;
+                } catch (error) {
+                    console.error(`Error processing ${coin.symbol}:`, error);
                 }
             }
 
-            console.log('Asset ingestion completed successfully');
+            console.log('Asset ingestion completed');
         } catch (error) {
             console.error('Fatal error during asset ingestion:', error);
             throw error;
@@ -145,114 +148,42 @@ export class AssetIngestion {
 
     protected async insertAsset(asset: any) {
         return new Promise((resolve, reject) => {
-            console.log(`Executing MERGE for ${asset.SYMBOL}...`);
-            
-            // Helper function to safely format values for SQL
             const formatValue = (value: any): string => {
                 if (value === null || value === undefined) return 'NULL';
                 if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
                 if (typeof value === 'number') return value.toString();
-                if (Array.isArray(value)) {
-                    // Handle arrays (like GitHub repos) by converting to JSON string
-                    return `PARSE_JSON('${JSON.stringify(value)}')`; 
+                if (Array.isArray(value) || typeof value === 'object') {
+                    return `PARSE_JSON('${JSON.stringify(value).replace(/'/g, "''")}')`; 
                 }
-                if (typeof value === 'string') {
-                    // Escape single quotes and wrap in quotes
-                    return `'${value.replace(/'/g, "''")}'`;
-                }
-                return 'NULL';
+                if (value === 'CURRENT_TIMESTAMP()') return value;
+                return `'${value.toString().replace(/'/g, "''")}'`;
             };
+
+            const columns = Object.keys(asset).join(', ');
+            const values = Object.values(asset).map(formatValue).join(', ');
 
             const sqlText = `
                 MERGE INTO PUBLIC.ASSETS target
-                USING (SELECT 
-                    ${formatValue(asset.ASSET_ID)} as ASSET_ID,
-                    ${formatValue(asset.NAME)} as NAME,
-                    ${formatValue(asset.SYMBOL)} as SYMBOL,
-                    ${formatValue(asset.COINGECKO_ID)} as COINGECKO_ID,
-                    ${formatValue(asset.PYTH_PRICE_FEED_ID)} as PYTH_PRICE_FEED_ID,
-                    ${formatValue(asset.IS_ACTIVE)} as IS_ACTIVE,
-                    ${formatValue(asset.MARKET_CAP_RANK)} as MARKET_CAP_RANK,
-                    ${formatValue(asset.BLOCK_TIME_IN_MINUTES)} as BLOCK_TIME_IN_MINUTES,
-                    ${formatValue(asset.HASHING_ALGORITHM)} as HASHING_ALGORITHM,
-                    ${formatValue(asset.DESCRIPTION)} as DESCRIPTION,
-                    ${formatValue(asset.HOMEPAGE_URL)} as HOMEPAGE_URL,
-                    ${formatValue(asset.WHITEPAPER_URL)} as WHITEPAPER_URL,
-                    ${formatValue(asset.SUBREDDIT_URL)} as SUBREDDIT_URL,
-                    ${formatValue(asset.IMAGE_URL)} as IMAGE_URL,
-                    ${formatValue(asset.COUNTRY_ORIGIN)} as COUNTRY_ORIGIN,
-                    ${formatValue(asset.GENESIS_DATE)} as GENESIS_DATE,
-                    ${formatValue(asset.TOTAL_SUPPLY)} as TOTAL_SUPPLY,
-                    ${formatValue(asset.MAX_SUPPLY)} as MAX_SUPPLY,
-                    ${formatValue(asset.CIRCULATING_SUPPLY)} as CIRCULATING_SUPPLY,
-                    ${formatValue(asset.GITHUB_REPOS)} as GITHUB_REPOS,
-                    ${formatValue(asset.GITHUB_FORKS)} as GITHUB_FORKS,
-                    ${formatValue(asset.GITHUB_STARS)} as GITHUB_STARS,
-                    ${formatValue(asset.GITHUB_SUBSCRIBERS)} as GITHUB_SUBSCRIBERS,
-                    ${formatValue(asset.GITHUB_TOTAL_ISSUES)} as GITHUB_TOTAL_ISSUES,
-                    ${formatValue(asset.GITHUB_CLOSED_ISSUES)} as GITHUB_CLOSED_ISSUES,
-                    ${formatValue(asset.GITHUB_PULL_REQUESTS_MERGED)} as GITHUB_PULL_REQUESTS_MERGED,
-                    ${formatValue(asset.GITHUB_PULL_REQUEST_CONTRIBUTORS)} as GITHUB_PULL_REQUEST_CONTRIBUTORS,
-                    CURRENT_TIMESTAMP() as CREATED_AT,
-                    CURRENT_TIMESTAMP() as UPDATED_AT
-                ) as source
-                ON target.ASSET_ID = source.ASSET_ID
+                USING (SELECT ${values}) source (${columns})
+                ON target.ID = source.ID
                 WHEN MATCHED THEN
                     UPDATE SET
-                        NAME = COALESCE(target.NAME, source.NAME),
-                        SYMBOL = COALESCE(target.SYMBOL, source.SYMBOL),
-                        DESCRIPTION = COALESCE(target.DESCRIPTION, source.DESCRIPTION),
-                        GENESIS_DATE = COALESCE(target.GENESIS_DATE, source.GENESIS_DATE),
-                        WHITEPAPER_URL = COALESCE(target.WHITEPAPER_URL, source.WHITEPAPER_URL),
-                        
-                        GITHUB_FORKS = source.GITHUB_FORKS,
-                        GITHUB_STARS = source.GITHUB_STARS,
-                        GITHUB_SUBSCRIBERS = source.GITHUB_SUBSCRIBERS,
-                        GITHUB_TOTAL_ISSUES = source.GITHUB_TOTAL_ISSUES,
-                        GITHUB_CLOSED_ISSUES = source.GITHUB_CLOSED_ISSUES,
-                        GITHUB_PULL_REQUESTS_MERGED = source.GITHUB_PULL_REQUESTS_MERGED,
-                        GITHUB_PULL_REQUEST_CONTRIBUTORS = source.GITHUB_PULL_REQUEST_CONTRIBUTORS,
-                        MARKET_CAP_RANK = source.MARKET_CAP_RANK,
-                        TOTAL_SUPPLY = source.TOTAL_SUPPLY,
-                        CIRCULATING_SUPPLY = source.CIRCULATING_SUPPLY,
-                        
-                        UPDATED_AT = CURRENT_TIMESTAMP()
+                        ${Object.keys(asset)
+                            .filter(key => key !== 'ID')
+                            .map(key => `${key} = COALESCE(target.${key}, source.${key})`)
+                            .join(',\n                        ')}
                 WHEN NOT MATCHED THEN
-                    INSERT (
-                        ASSET_ID, NAME, SYMBOL, COINGECKO_ID, PYTH_PRICE_FEED_ID,
-                        IS_ACTIVE, MARKET_CAP_RANK, BLOCK_TIME_IN_MINUTES,
-                        HASHING_ALGORITHM, DESCRIPTION, HOMEPAGE_URL, WHITEPAPER_URL,
-                        SUBREDDIT_URL, IMAGE_URL, COUNTRY_ORIGIN, GENESIS_DATE,
-                        TOTAL_SUPPLY, MAX_SUPPLY, CIRCULATING_SUPPLY,
-                        GITHUB_REPOS, GITHUB_FORKS, GITHUB_STARS, GITHUB_SUBSCRIBERS,
-                        GITHUB_TOTAL_ISSUES, GITHUB_CLOSED_ISSUES,
-                        GITHUB_PULL_REQUESTS_MERGED, GITHUB_PULL_REQUEST_CONTRIBUTORS,
-                        CREATED_AT, UPDATED_AT
-                    )
-                    VALUES (
-                        source.ASSET_ID, source.NAME, source.SYMBOL, source.COINGECKO_ID,
-                        source.PYTH_PRICE_FEED_ID, source.IS_ACTIVE, source.MARKET_CAP_RANK,
-                        source.BLOCK_TIME_IN_MINUTES, source.HASHING_ALGORITHM,
-                        source.DESCRIPTION, source.HOMEPAGE_URL, source.WHITEPAPER_URL,
-                        source.SUBREDDIT_URL, source.IMAGE_URL, source.COUNTRY_ORIGIN,
-                        source.GENESIS_DATE, source.TOTAL_SUPPLY, source.MAX_SUPPLY,
-                        source.CIRCULATING_SUPPLY, source.GITHUB_REPOS, source.GITHUB_FORKS,
-                        source.GITHUB_STARS, source.GITHUB_SUBSCRIBERS,
-                        source.GITHUB_TOTAL_ISSUES, source.GITHUB_CLOSED_ISSUES,
-                        source.GITHUB_PULL_REQUESTS_MERGED,
-                        source.GITHUB_PULL_REQUEST_CONTRIBUTORS, source.CREATED_AT,
-                        source.UPDATED_AT
-                    )
-            `;
+                    INSERT (${columns})
+                    VALUES (${values})`;
 
             this.connection.execute({
                 sqlText,
-                complete: (err) => {
+                complete: (err, _stmt, _rows) => {
                     if (err) {
                         console.error(`Error inserting ${asset.SYMBOL}:`, err);
                         reject(err);
                     } else {
-                        console.log(`Successfully processed ${asset.SYMBOL}`);
+                        console.log(`Successfully inserted ${asset.SYMBOL}`);
                         resolve(true);
                     }
                 }
