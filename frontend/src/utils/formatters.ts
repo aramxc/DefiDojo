@@ -30,9 +30,14 @@ export const formatPercentage = (value: any): string => {
 };
 
 export const formatCurrency = (value: any): string => {
-  if (isNaN(value)) return 'N/A';
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+    if (value == null) return 'N/A';
+    return value.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
 
 // ======================================
 // Chart & Number Formatting Functions

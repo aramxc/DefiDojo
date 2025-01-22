@@ -28,6 +28,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   defaultTicker = 'BTC',
   getRealTimeData = false
 }) => {
+  console.log('Rendering PremiumDashboard');
+
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
@@ -69,6 +71,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
 
   return (
     <div className="min-h-[100dvh] pt-[var(--navbar-height)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      <h1>Dashboard Test</h1>
       {/* First Section - Main Analysis */}
       <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <motion.div 

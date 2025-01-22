@@ -1,76 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Schedule, Info } from '@mui/icons-material';
-import { formatCurrency, formatPercentage } from '../../../utils';
+import { formatCurrency, formatPercentage, formatValue } from '../../../utils';
 import { AssetInfo } from '@defidojo/shared-types';
 import { Switch } from '@mui/material';
 import { priceService } from '../../../services/api/price.service';
+import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
+import { Skeleton } from '@mui/material';
 
 interface DetailedPriceCardProps {
   symbol: string;
-  assetInfo?: AssetInfo | null;
-  price?: number;
-  priceChange24h?: number;
-  volume24h?: number;
-  marketCap?: number;
-  marketCapRank?: number;
-  high24h?: number;
-  low24h?: number;
-  lastUpdated?: string;
-  isLoading?: boolean;
-  getRealTimeData?: boolean;
+  assetInfo: any;
+  price: number | undefined;
+  priceChange24h: number | undefined;
+  volume24h: number | undefined;
+  marketCap: any;
+  marketCapRank: any;
+  high24h: any;
+  low24h: any;
+  isLoading: boolean;
+  getRealTimeData: boolean;
+  // Add any other props that are being passed
 }
 
 export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
-  assetInfo,
   symbol,
-  price: initialPrice,
+  assetInfo,
+  price,
   priceChange24h,
   volume24h,
   marketCap,
   marketCapRank,
   high24h,
   low24h,
-  lastUpdated: initialLastUpdated,
   isLoading,
-  getRealTimeData = true
+  getRealTimeData
 }) => {
   const [isRealTime, setIsRealTime] = useState(false);
-  const [price, setPrice] = useState(initialPrice);
-  const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
-
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState<Date>(new Date());
   
+  const { 
+    price: fetchedPrice, 
+    loading: priceLoading,
+    lastUpdateTime 
+  } = useFetchLatestPrice(symbol, isRealTime);
 
-  // Handle price updates
-  useEffect(() => {
-    if (!isRealTime) {
-      setPrice(initialPrice);
-      return;
-    }
-
-    const fetchPrice = async () => {
-      try {
-        const prices = await priceService.getLatestPrices([symbol]);
-        const newPrice = prices.find(p => p.symbol.toUpperCase() === symbol.toUpperCase())?.price;
-        if (newPrice) {
-          setPrice(newPrice);
-          setLastUpdateTime(new Date());
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchPrice(); // Initial fetch
-    const interval = setInterval(fetchPrice, isRealTime ? 1000 : 120000); // 1s or 2min
-
-    return () => clearInterval(interval);
-  }, [symbol, isRealTime, initialPrice]);
+  const loading = isLoading || priceLoading;
 
   // Format the last update time
   const getLastUpdateText = () => {
-    const now = new Date();
-    const diff = now.getTime() - lastUpdateTime.getTime();
+    const diff = timeSinceUpdate.getTime() - lastUpdateTime.getTime();
     
     if (diff < 1000) return 'Just now';
     if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
@@ -83,23 +62,11 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
     if (!isRealTime) return;
     
     const interval = setInterval(() => {
-      setLastUpdateTime(prev => new Date(prev.getTime())); // Force re-render
+      setTimeSinceUpdate(new Date());
     }, 1000);
 
     return () => clearInterval(interval);
   }, [isRealTime]);
-
-  const formatMarketCap = (value?: number) => {
-    if (!value) return 'N/A';
-    
-    if (value >= 1e9) {
-      return `$${(value / 1e9).toFixed(2)}B`;
-    } else if (value >= 1e6) {
-      return `$${(value / 1e6).toFixed(2)}M`;
-    } else {
-      return `$${value.toLocaleString()}`;
-    }
-  };
 
   return (
     <motion.div
@@ -125,14 +92,14 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
               <img 
                 src={assetInfo.IMAGE.THUMB} 
-                alt={symbol} 
+                alt={assetInfo?.SYMBOL} 
                 className="relative w-10 h-10 rounded-full"
               />
             </div>
             
           )}
           <div className="space-y-1">
-            <h3 className="text-xl font-bold text-gray-100">{symbol.toUpperCase()}</h3>
+            <h3 className="text-xl font-bold text-gray-100">{assetInfo?.SYMBOL.toUpperCase()}</h3>
             <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
           </div>
         </div>
@@ -151,7 +118,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                 <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                 <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                               bg-clip-text text-transparent tracking-tight text-4xl">
-                  {formatCurrency(price)}
+                  {formatCurrency(fetchedPrice)}
                 </span>
               </motion.div>
               
@@ -162,9 +129,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg
                              transition-colors duration-300
-                             ${priceChange24h > 0 
-                               ? 'text-green-400 ' 
-                               : 'text-red-400 '}`}
+                             ${priceChange24h > 0 ? 'text-green-400 ' : 'text-red-400 '}`}
                 >
                   {priceChange24h > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                   <span className="font-medium">{formatPercentage(priceChange24h)}</span>
@@ -174,7 +139,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
           )}
           
           {/* Real-time Toggle - Only show if getRealTimeData is true */}
-          {getRealTimeData && (
+          {(
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-1.5 h-1.5 rounded-full ${
@@ -203,19 +168,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">Market Cap</span>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-200 font-medium">
-                {formatMarketCap(marketCap)}
-              </span>
-              {marketCapRank && (
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-400">
-                  #{marketCapRank}
-                </span>
-              )}
-            </div>
-          </div>
+          
         </div>
 
         {/* Divider */}
@@ -224,10 +177,22 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-6 mb-6">
           {[
-            { label: "24h Volume", value: formatCurrency(volume24h) },
-            { label: "Market Cap", value: formatCurrency(marketCap) },
-            { label: "24h High", value: formatCurrency(high24h) },
-            { label: "24h Low", value: formatCurrency(low24h) }
+            { 
+              label: "24h Volume", 
+              value: formatValue(volume24h, 'volume') 
+            },
+            { 
+              label: "Market Cap", 
+              value: formatValue(marketCap, 'marketCap') 
+            },
+            { 
+              label: "24h High", 
+              value: formatValue(high24h, 'price') 
+            },
+            { 
+              label: "24h Low", 
+              value: formatValue(low24h, 'price') 
+            }
           ].map((stat, index) => (
             <div key={index} className="group/stat">
               <p className="text-gray-400 text-sm mb-1">{stat.label}</p>
@@ -276,3 +241,5 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = ({
     </motion.div>
   );
 };
+
+export default DetailedPriceCard;

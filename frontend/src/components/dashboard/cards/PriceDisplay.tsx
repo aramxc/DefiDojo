@@ -1,12 +1,12 @@
 import React, { useEffect, useState, memo, useMemo } from 'react';
 import { BarChart, Info, TrendingUp, Schedule, People } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { priceService } from '../../../services/api/price.service';
-import { infoService } from '../../../services/api/info.service';
+
 import { Switch, CircularProgress } from '@mui/material';
 import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
 import { useFetchMarketMetrics } from '../../../hooks/useFetchMarketMetrics';
 import { useFetchAssetInfo } from '../../../hooks/useFetchAssetInfo';
+import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
 
 interface PriceDisplayProps {
   symbol: string;
@@ -115,70 +115,20 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   onSelectSymbol,
   getRealTimeData
 }) => {
-  const [priceData, setPriceData] = useState<AssetPriceData | null>(null);
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
-  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol);
   
-  // Update to pass the CoinGecko ID from assetInfo
+  const { 
+    price, 
+    loading: priceLoading, 
+    lastUpdateTime 
+  } = useFetchLatestPrice(symbol, isRealTime);
+
+  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol);
   const { metrics: marketMetrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(
     symbol,
     assetInfo?.COINGECKO_ID || undefined
   );
-
-  // Handle price updates
-  useEffect(() => {
-    const fetchPrice = async () => {
-      try {
-        const prices = await priceService.getLatestPrices([symbol]);
-        setPriceData(prices.find(p => p.symbol.toUpperCase() === symbol.toUpperCase()) || null);
-        setLastUpdateTime(new Date());
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchPrice();
-    const interval = setInterval(fetchPrice, isRealTime ? 1000 : 120000);
-    return () => clearInterval(interval);
-  }, [symbol, isRealTime]);
-
-  const timeAgo = useMemo(() => {
-    const seconds = Math.floor((new Date().getTime() - lastUpdateTime.getTime()) / 1000);
-    
-    if (isRealTime) {
-      return seconds < 5 ? 'just now' : `${seconds}s ago`;
-    }
-    
-    if (seconds < 10) {
-      return 'just now';
-    }
-    
-    if (seconds >= 10 && seconds < 30) {
-      return '10 seconds ago';
-    }
-    
-    if (seconds >= 30 && seconds < 60) {
-      return '30 seconds ago';
-    }
-    
-    if (seconds >= 60 && seconds < 120) {
-      return '1 minute ago';
-    }
-    
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes} minutes ago`;
-  }, [lastUpdateTime, isRealTime]);
-  
-  useEffect(() => {
-    if (!isRealTime) {
-      const timer = setInterval(() => {
-        setLastUpdateTime(prev => new Date(prev.getTime())); // Force update
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isRealTime]);
 
   const CardControls = ({ isBackside = false }) => {
     const handleAnalyticsButtonClick = (e: React.MouseEvent) => {
@@ -291,9 +241,8 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
                       <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
                     </div>
                   </div>
-
                   <div className="space-y-2">
-                    <PriceValue price={priceData?.price} />
+                    <PriceValue price={price ?? undefined} />
                     <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent"></div>
                   </div>
 
