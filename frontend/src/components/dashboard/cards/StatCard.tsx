@@ -2,24 +2,30 @@ import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Tooltip } from '@mui/material';
 import { InfoOutlined } from '@mui/icons-material';
+import { formatChange } from '../../../utils/formatters';
 
-export interface StatCardProps {
+interface StatCardProps {
   title: string;
-  icon?: React.ReactNode;
-  infoTooltip?: string;
-  stats: { 
+  icon: React.ReactNode;
+  infoTooltip: string;
+  stats: {
     label: string;
     value?: string | number;
-    change?: number;
+    change?: number | null;
+    className?: string;
+    suffix?: string;
+    timestamp?: string;
   }[];
+  className?: string;
   isLoading?: boolean;
 }
 
-export const StatCard = memo(({ 
+export const StatCard: React.FC<StatCardProps> = memo(({ 
   title, 
   icon, 
   infoTooltip, 
   stats, 
+  className, 
   isLoading 
 }: StatCardProps) => {
   if (isLoading) {
@@ -48,7 +54,7 @@ export const StatCard = memo(({
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-xl overflow-hidden h-full
+      className={`relative rounded-xl overflow-hidden h-full
                 
                 group hover:transform hover:scale-[1.02] transition-all duration-200
                 before:absolute before:inset-0 
@@ -59,7 +65,7 @@ export const StatCard = memo(({
                  after:opacity-0 hover:after:opacity-100 
                  after:transition-opacity
                  border border-white/[0.05]
-                 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
+                 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ${className || ''}`}
     >
       <div className="relative z-10 p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-3">
@@ -89,22 +95,20 @@ export const StatCard = memo(({
           )}
         </div>
         <div className="space-y-2 flex-1">
-          {stats.map(({ label, value, change }) => (
+          {stats.map(({ label, value, change, className: statClassName, suffix }) => (
             <div key={label} className="flex justify-between items-center min-h-[24px]">
               <span className="text-gray-400 text-sm truncate mr-2">{label}</span>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {value !== undefined && (
-                  <span className="text-gray-200 font-medium">{value}</span>
+                  <span className={`text-gray-200 font-medium ${statClassName || ''}`}>
+                    {value}{suffix && <span className="ml-1 text-xs text-gray-400">{suffix}</span>}
+                  </span>
                 )}
-                {change !== undefined && (
+                {typeof change === 'number' && (
                   <span className={`text-xs font-medium whitespace-nowrap ${
-                    change > 0 
-                      ? 'text-green-400' 
-                      : change < 0 
-                        ? 'text-red-400' 
-                        : 'text-gray-400'
+                    change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-gray-400'
                   }`}>
-                    {change > 0 ? '+' : ''}{change.toFixed(2)}%
+                    {formatChange(change)}
                   </span>
                 )}
               </div>

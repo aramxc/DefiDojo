@@ -21,48 +21,94 @@ export const truncateAddress = (
   endLength: number = 4
 ): string => {
   if (!address) return '';
-  return `${address.slice(0, startLength)}...${endLength === 0 ? '' : address.slice(-endLength)}`;
+  return `${address.slice(0, startLength)}...${address.slice(-endLength)}`;
 };
-
-export const formatPercentage = (value: any): string => {
-  if (isNaN(value)) return 'N/A';
-  return `${value.toFixed(2)}%`;
-};
-
-export const formatCurrency = (value: any): string => {
-    if (value == null) return 'N/A';
-    return value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
 
 // ======================================
-// Chart & Number Formatting Functions
+// Number & Currency Formatting Functions
 // ======================================
 
 /**
  * Formats a value based on its magnitude (B, M, K)
+ */
+export const formatValue = (value: number | null | undefined, type: 'price' | 'marketCap' | 'volume' | 'compact' | 'number'): string => {
+  if (!value && value !== 0) return 'N/A';
+  
+  try {
+    if (type === 'price') {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: value < 1 ? 4 : 2,
+        maximumFractionDigits: value < 1 ? 6 : 2
+      }).format(value);
+    }
+
+    const prefix = ['marketCap', 'volume'].includes(type) ? '$' : '';
+    
+    if (value >= 1e12) return `${prefix}${(value / 1e12).toFixed(2)}T`;
+    if (value >= 1e9) return `${prefix}${(value / 1e9).toFixed(2)}B`;
+    if (value >= 1e6) return `${prefix}${(value / 1e6).toFixed(2)}M`;
+    if (value >= 1e3) return `${prefix}${(value / 1e3).toFixed(2)}K`;
+    
+    return `${prefix}${value.toLocaleString()}`;
+  } catch {
+    return 'N/A';
+  }
+};
+
+/**
+ * Formats a percentage with proper decimals
+ */
+export const formatPercentage = (value: number | null | undefined): string => {
+  if (!value && value !== 0) return 'N/A';
+  return `${value.toFixed(2)}%`;
+};
+
+/**
+ * Formats a change value as a percentage with sign
+ */
+export const formatChange = (value: number | null | undefined): string => {
+  if (!value && value !== 0) return 'N/A';
+  const prefix = value >= 0 ? '+' : '';
+  return `${prefix}${value.toFixed(2)}%`;
+};
+
+/**
+ * Formats a currency value with proper symbol and decimals
  * @param value - Number to format
- * @param type - Type of value ('price' | 'marketCap' | 'volume')
+ * @returns Formatted currency string or 'N/A' if value is undefined or null
+ */
+export const formatCurrency = (value: number | null | undefined): string => {
+  if (!value && value !== 0) return 'N/A';
+  return value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+
+/**
+ * Formats Y-axis values based on data type
  */
 export const formatYAxisValue = (value: number, type: 'price' | 'marketCap' | 'volume'): string => {
-    if (value === 0) return '0';
-    
-    if (type === 'marketCap') {
-        if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-    } else if (type === 'volume') {
-        if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-        if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-        if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
-    }
-    
-    return value >= 1e3 ? `$${value.toLocaleString()}` : `$${value.toFixed(2)}`;
+  if (!value && value !== 0) return '0';
+
+  switch (type) {
+    case 'price':
+      return formatValue(value, 'price');
+    case 'marketCap':
+    case 'volume':
+      return formatValue(value, type);
+    default:
+      return value.toString();
+  }
 };
+
+// ======================================
+// Time & Date Formatting Functions
+// ======================================
 
 /**
  * Formats a timestamp based on timeframe
@@ -81,53 +127,26 @@ export const formatTimestamp = (
         hour: '2-digit',
         minute: '2-digit',
         month: 'short',
-        day: 'numeric',
-        weekday: 'short'
+        day: 'numeric'
     };
 
     switch (timeframe) {
         case '1D': 
             return date.toLocaleTimeString([], { 
-                ...options, 
-                month: undefined, 
-                day: undefined, 
-                weekday: undefined 
+                hour: '2-digit',
+                minute: '2-digit'
             });
         case '7D': 
             return date.toLocaleDateString([], { 
-                ...options, 
-                hour: undefined, 
-                minute: undefined 
+                month: 'short',
+                day: 'numeric'
             });
         default: 
             return date.toLocaleDateString([], { 
-                ...options, 
-                hour: undefined, 
-                minute: undefined, 
-                weekday: undefined 
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
             });
     }
 };
 
-/**
- * Formats a value with appropriate currency symbol and decimals
- * @param value - Number to format
- * @param type - Type of value ('price' | 'marketCap' | 'volume')
- */
-export const formatValue = (
-    value: number | null | undefined, 
-    type: 'price' | 'marketCap' | 'volume'
-): string => {
-    if (value == null) return 'N/A';
-    if (type === 'marketCap') return `$${(value / 1e9).toFixed(2)}B`;
-    if (type === 'volume') return `$${(value / 1e6).toFixed(2)}M`;
-    return `$${value.toLocaleString()}`;
-};
-
-/**
- * Formats a change value as a percentage with two decimal places and a % sign
- * @param change - Change value
- */
-export const formatChange = (change: number | undefined): string => {
-  return `${(change ?? 0).toFixed(2)}%`;
-};
