@@ -31,7 +31,10 @@ export const truncateAddress = (
 /**
  * Formats a value based on its magnitude (B, M, K)
  */
-export const formatValue = (value: number | null | undefined, type: 'price' | 'marketCap' | 'volume' | 'compact' | 'number'): string => {
+export const formatValue = (
+  value: number | null | undefined, 
+  type: 'price' | 'marketCap' | 'volume' | 'compact' | 'number'
+): string => {
   if (!value && value !== 0) return 'N/A';
   
   try {
@@ -39,12 +42,12 @@ export const formatValue = (value: number | null | undefined, type: 'price' | 'm
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: value < 1 ? 4 : 2,
-        maximumFractionDigits: value < 1 ? 6 : 2
+        minimumFractionDigits: value < 1 ? 3 : 2,
+        maximumFractionDigits: value < 1 ? 4 : 2
       }).format(value);
     }
 
-    const prefix = ['marketCap', 'volume'].includes(type) ? '$' : '';
+    const prefix = ['price', 'marketCap', 'volume'].includes(type) ? '$' : '';
     
     if (value >= 1e12) return `${prefix}${(value / 1e12).toFixed(2)}T`;
     if (value >= 1e9) return `${prefix}${(value / 1e9).toFixed(2)}B`;

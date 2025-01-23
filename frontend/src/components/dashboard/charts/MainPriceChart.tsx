@@ -15,7 +15,7 @@ const PriceChart = memo(({
     selectedTimezone: string;
 }) => (
     <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 15 }}>
+        <LineChart data={data} margin={{ top: 5, right: 5, left: 10, bottom: 15 }}>
             {/* Chart Gradients */}
             <defs> 
                 <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
@@ -48,7 +48,7 @@ const PriceChart = memo(({
             <YAxis 
                 dataKey={dataType}
                 domain={['auto', 'auto']}
-                tickFormatter={(value) => formatYAxisValue(value, dataType)}
+                tickFormatter={(value) => formatYAxisValue(value, 'price')}
                 tick={{ fill: '#94A3B8' }}
                 stroke="#334155"
                 width={80}

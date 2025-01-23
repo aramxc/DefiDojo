@@ -67,24 +67,6 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
     return () => clearInterval(interval);
   }, [isRealTime]);
 
-  if (isLoading) {
-    return <div className="p-4 bg-gray-800 rounded-lg">
-      <Skeleton height={100} />
-    </div>;
-  }
-
-  if (error) {
-    return <div className="p-4 bg-gray-800 rounded-lg text-red-400">
-      Error loading price data
-    </div>;
-  }
-
-  if (!assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD) {
-    return <div className="p-4 bg-gray-800 rounded-lg text-gray-400">
-      No price data available
-    </div>;
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -160,7 +142,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                     className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                               bg-clip-text text-transparent tracking-tight text-4xl"
                   >
-                    {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD, 'price')}
+                    {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, 'price')}
                   </motion.span>
                 )}
               </AnimatePresence>
