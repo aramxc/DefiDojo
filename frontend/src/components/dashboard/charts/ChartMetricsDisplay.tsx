@@ -1,51 +1,33 @@
 import { memo } from 'react';
-import { formatCurrency, formatPercentage } from '../../../utils/formatters';
+import { ArrowDropUp, ArrowDropDown } from '@mui/icons-material';
+import { formatValue, formatPercentage } from '../../../utils/formatters';
 
-// MetricsDisplay Component
 const MetricsDisplay = memo(({ metrics, dataType }: { 
-    metrics: any; 
+    metrics: Record<string, { high: number; change: number }>;
     dataType: 'price' | 'marketCap' | 'volume';
 }) => {
-    if (!metrics) return null;
+    if (!metrics?.[dataType]) return null;
 
-    const getMetricValue = () => {
-        switch (dataType) {
-            case 'price':
-                return metrics.currentPrice ? formatCurrency(metrics.currentPrice) : 'N/A';
-            case 'marketCap':
-                return metrics.marketCap ? formatCurrency(metrics.marketCap) : 'N/A';
-            case 'volume':
-                return metrics.volume ? formatCurrency(metrics.volume) : 'N/A';
-            default:
-                return 'N/A';
-        }
-    };
-
-    const getMetricChange = () => {
-        switch (dataType) {
-            case 'price':
-                return metrics.priceChange;
-            case 'marketCap':
-                return metrics.marketCapChange;
-            case 'volume':
-                return metrics.volumeChange;
-            default:
-                return null;
-        }
-    };
-
-    const change = getMetricChange();
+    const { high, change } = metrics[dataType];
 
     return (
         <div className="flex items-center gap-3">
-            <span className="text-gray-200 font-medium">{getMetricValue()}</span>
-            {change !== null && (
-                <span className={`text-sm ${change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {formatPercentage(change)}
-                </span>
-            )}
+            <span className="text-gray-200 font-medium">
+                {formatValue(high, dataType)}
+            </span>
+            <div className={`flex items-center -space-x-1 text-sm ${
+                change >= 0 ? 'text-green-400' : 'text-red-400'
+            }`}>
+                {change >= 0 
+                    ? <ArrowDropUp className="w-5 h-5" /> 
+                    : <ArrowDropDown className="w-5 h-5" />
+                }
+                {formatPercentage(Math.abs(change))}
+            </div>
         </div>
     );
 });
+
+MetricsDisplay.displayName = 'MetricsDisplay';
 
 export default MetricsDisplay;

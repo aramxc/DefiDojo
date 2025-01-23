@@ -167,12 +167,6 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
     }
   ];
 
-  if (assetLoading || metricsLoading) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="text-blue-400">Loading...</div>
-    </div>;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)]">
       {/* First Section - Main Analysis */}
@@ -210,6 +204,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   <DetailedPriceCard
                     symbol={selectedSymbol}
                     assetInfo={assetInfo}
+                    isLoading={assetLoading}
+                    marketMetrics={metrics}
                   />
                 </div>
               </motion.div>
@@ -228,8 +224,9 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   >
                     <PriceAnalytics 
                       symbol={selectedSymbol} 
-                      onSymbolChange={setSelectedSymbol} 
+                      onSymbolChange={setSelectedSymbol}
                       onClose={() => {}} 
+                      
                     />
                   </motion.div>
                 </div>
@@ -242,7 +239,10 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 className="w-full lg:w-[23%] h-auto flex-none rounded-xl"
               >
                 <div className="h-full w-full p-1 sm:p-2 flex flex-col">
-                  <NewsFeed symbol={selectedSymbol} />
+                  <NewsFeed 
+                    symbol={selectedSymbol} 
+                   
+                  />
                 </div>
               </motion.div>
             </div>
@@ -271,6 +271,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   icon={card.icon}
                   infoTooltip={card.infoTooltip}
                   stats={card.stats as any}
+                  isLoading={assetLoading || metricsLoading}
                   className="backdrop-blur-xl bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80 
                             border border-white/[0.05] shadow-xl hover:shadow-2xl transition-all duration-300
                             hover:border-white/[0.08]"
