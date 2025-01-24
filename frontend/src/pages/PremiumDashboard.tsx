@@ -170,14 +170,14 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-b md:w-full from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)] overflow-x-hidden">
       {/* First Section - Main Analysis */}
-      <div className="h-[calc(100vh-var(--navbar-height))] w-full mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="h-[calc(100vh-var(--navbar-height))]  w-[98%] mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="h-full w-full rounded-2xl relative
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
-                     border border-slate-800/[1.0]
+                     border border-slate-800/[0.25]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
         >
           <div className="h-full flex flex-col">
@@ -246,11 +246,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       </div>
 
       {/* Command Center Section */}
-      <div className="min-h-[calc(100vh-var(--navbar-height))] w-full max-w-[1920px] mx-auto 
+      <div className="min-h-[calc(100vh-var(--navbar-height))] w-[98%] mx-auto 
                       p-2 sm:p-4 md:p-6 lg:p-8">
         <div className="w-full rounded-2xl overflow-hidden backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
-                     border border-slate-800/[1.0]
+                     border border-slate-800/[0.25]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
           <div className="p-6 border-b border-white/[0.05]">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">

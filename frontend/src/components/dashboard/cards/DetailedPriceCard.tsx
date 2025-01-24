@@ -81,7 +81,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                  border border-white/[0.05]
                  shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
     >
-      <div className="relative z-10 p-4 md:p-6 h-full flex flex-col space-y-4 md:space-y-6 custom-scrollbar sm:overflow-y-auto">
+      <div className="relative z-10 p-4 md:p-6 h-full flex flex-col space-y-4 md:space-y-6 overflow-x-hidden custom-scrollbar sm:overflow-y-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
