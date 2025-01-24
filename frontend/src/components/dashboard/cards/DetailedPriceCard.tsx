@@ -7,7 +7,6 @@ import { Switch, CircularProgress, Chip } from '@mui/material';
 import { Language, Twitter, Reddit, GitHub } from '@mui/icons-material';
 
 import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
-import { Skeleton } from '@mui/material';
 
 interface DetailedPriceCardProps {
   symbol: string;
@@ -82,9 +81,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                  border border-white/[0.05]
                  shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
     >
-      <div className="relative z-10 p-6 h-full flex flex-col space-y-6">
-        {/* Header with Asset Info and Real-time Toggle */}
-        <div className="flex items-center justify-between">
+      <div className="relative z-10 p-4 md:p-6 h-full flex flex-col space-y-4 md:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             {assetInfo?.IMAGE && (
               <div className="relative">
@@ -106,62 +105,65 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
             </div>
           </div>
-        
-          
         </div>
 
-        {/* Price Section with Real-time Updates */}
-        <div className="space-y-4">
-          <div className="font-bold flex items-baseline gap-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative w-fit"
-            >
-              <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
-              <AnimatePresence mode="wait">
-                {showLoading ? (
-                  <motion.div
-                    key="loader"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-center"
-                  >
-                    <CircularProgress size={30} className="text-blue-500" />
-                  </motion.div>
-                ) : (
-                  <motion.span
-                    key={fetchedPrice}
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ 
-                      duration: 0.2,
-                      ease: "easeOut"
-                    }}
-                    className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                              bg-clip-text text-transparent tracking-tight text-4xl"
-                  >
-                    {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, 'price')}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.div>
+        {/* Price Section */}
+        <div className="space-y-3 md:space-y-4">
+          <div className="flex items-baseline">
+            {/* Price Container */}
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative w-fit"
+              >
+                <span className="absolute inset-0 w-[100%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
+                <AnimatePresence mode="wait">
+                  {showLoading ? (
+                    <motion.div
+                      key="loader"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center justify-center"
+                    >
+                      <CircularProgress size={30} className="text-blue-500" />
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      key={fetchedPrice}
+                      initial={{ opacity: 1 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ 
+                        duration: 0.2,
+                        ease: "easeOut"
+                      }}
+                      className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                                bg-clip-text text-transparent tracking-tight font-bold text-4xl"
+                    >
+                      {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, "price")}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
             
-            {/* 24h Price Change */}
-            {assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H && (
-              <div className={`flex items-center -space-x-1 text-sm ${
-                assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
-                  ? 'text-green-400' 
-                  : 'text-red-400'
-              }`}>
-                {assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
-                  ? <ArrowDropUp className="w-5 h-5" /> 
-                  : <ArrowDropDown className="w-5 h-5" />
-                }
-                {formatPercentage(Math.abs(assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H))}
-              </div>
-            )}
+            {/* Price Change */}
+            <div className="w-24 flex justify-start">
+              {assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H && (
+                <div className={`flex items-center text-sm ${
+                  assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
+                    ? 'text-green-400' 
+                    : 'text-red-400'
+                }`}>
+                  {assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
+                    ? <ArrowDropUp className="w-5 h-5" /> 
+                    : <ArrowDropDown className="w-5 h-5" />
+                  }
+                  {formatPercentage(Math.abs(assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Real-time Toggle and Last Updated */}
@@ -196,16 +198,17 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent my-6"></div>
+        {/* Main Divider */}
+        <div className="h-px w-full z-20 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-transparent 
+                        my-4 md:my-6 mx-auto max-w-[95%] md:max-w-full border-b border-white/[0.05]"></div>
 
         {/* Market Data Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Row 1 */}
-          <div className="flex flex-col p-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+          {/* Market Cap */}
+          <div className="flex flex-col p-2 md:p-3">
             <span className="text-sm text-gray-400">Market Cap</span>
             <div className="flex justify-between items-center">
-              <span className="text-lg font-medium text-gray-100">
+              <span className="text-sm font-sm text-gray-100">
                 {formatValue(assetInfo?.MARKET_DATA?.MARKET_CAP?.USD, "marketCap")}
               </span>
               <div className={`flex items-center -space-x-1 text-sm ${
@@ -222,10 +225,11 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             </div>
           </div>
 
-          <div className="flex flex-col p-3">
+          {/* Volume */}
+          <div className="flex flex-col p-2 md:p-3">
             <span className="text-sm text-gray-400">24H Volume</span>
             <div className="flex justify-between items-center">
-              <span className="text-lg font-medium text-gray-100">
+              <span className="text-sm font-sm text-gray-100">
                 {formatValue(marketMetrics?.trends?.volume?.currentVolume, "volume")}
               </span>
               {marketMetrics?.trends?.volume?.change24h && (
@@ -247,14 +251,14 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           {/* Row 2 with Supply Information */}
           <div className="flex flex-col p-3">
             <span className="text-sm text-gray-400">Circulating Supply</span>
-            <span className="text-lg font-medium text-gray-100">
+            <span className="text-sm font-sm text-gray-100">
               {formatValue(assetInfo?.CIRCULATING_SUPPLY, "compact")}
             </span>
           </div>
 
           <div className="flex flex-col p-3">
             <span className="text-sm text-gray-400">Max Supply</span>
-            <span className="text-lg font-medium text-gray-100">
+            <span className="text-sm font-sm text-gray-100">
               {assetInfo?.MAX_SUPPLY ? formatValue(assetInfo.MAX_SUPPLY, "compact") : '∞'}
             </span>
           </div>
@@ -286,7 +290,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
         </div>
 
         {/* Trading Range */}
-        <div className="space-y-2 px-3">
+        <div className="space-y-2 px-2 md:px-3">
           <span className="text-sm text-gray-400">24h Trading Range</span>
           <div className="relative">
             <div className="flex justify-between text-xs text-gray-400">
@@ -314,67 +318,100 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r  from-blue-500/10 via-cyan-500/10 to-transparent my-6"></div>
+        <div className="h-px w-full z-20 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-transparent 
+                        my-4 md:my-6 mx-auto max-w-[95%] md:max-w-full border-b border-white/[0.05]"></div>
 
-        {/* Metrics and Social Section */}
-        <div className="space-y-4  mt-4">
-          {/* Social Links Section */}
-          <div className="flex justify-center">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {assetInfo?.LINKS?.HOMEPAGE[0] && (
-                <Chip
-                  component="a"
-                  href={assetInfo.LINKS.HOMEPAGE[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  label="Website"
-                  icon={<Language className="w-4 h-4" />}
-                  className="bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300 text-sm"
-                  clickable
-                  size="small"
-                />
-              )}
-              {assetInfo?.LINKS?.TWITTER_SCREEN_NAME && (
-                <Chip
-                  component="a"
-                  href={`https://twitter.com/${assetInfo.LINKS.TWITTER_SCREEN_NAME}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  label="Twitter"
-                  icon={<Twitter className="w-4 h-4" />}
-                  className="bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300 text-sm"
-                  clickable
-                  size="small"
-                />
-              )}
-              {assetInfo?.LINKS?.SUBREDDIT_URL && (
-                <Chip
-                  component="a"
-                  href={assetInfo.LINKS.SUBREDDIT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  label="Reddit"
-                  icon={<Reddit className="w-4 h-4" />}
-                  className="bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300 text-sm"
-                  clickable
-                  size="small"
-                />
-              )}
-              {assetInfo?.LINKS?.WHITEPAPER && (
-                <Chip
-                  component="a"
-                  href={assetInfo.LINKS.WHITEPAPER}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  label="Whitepaper"
-                  icon={<Description className="w-4 h-4" />}
-                  className="bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300 text-sm"
-                  clickable
-                  size="small"
-                />
-              )}
-            </div>
+        {/* Social Links & Chips */}
+        <div className="flex flex-col space-y-4 w-full px-2 md:px-3">
+          {/* Social Links */}
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 w-full">
+            {assetInfo?.LINKS?.HOMEPAGE?.[0] && (
+              <a
+                href={assetInfo.LINKS.HOMEPAGE[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
+                         bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                         hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                         border border-white/[0.05] hover:border-blue-500/20
+                         text-gray-400 hover:text-blue-400
+                         transition-all duration-300 backdrop-blur-sm
+                         hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+              >
+                <Language className="w-4 h-4" />
+                Website
+              </a>
+            )}
+            {assetInfo?.LINKS?.WHITEPAPER && (
+              <a
+                href={assetInfo.LINKS.WHITEPAPER}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
+                         bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                         hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                         border border-white/[0.05] hover:border-blue-500/20
+                         text-gray-400 hover:text-blue-400
+                         transition-all duration-300 backdrop-blur-sm
+                         hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+              >
+                <Description className="w-4 h-4" />
+                Whitepaper
+              </a>
+            )}
+            
+            {assetInfo?.LINKS?.REPOS_URL?.GITHUB?.[0] && (
+              <a
+                href={assetInfo.LINKS.REPOS_URL.GITHUB[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
+                         bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                         hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                         border border-white/[0.05] hover:border-blue-500/20
+                         text-gray-400 hover:text-blue-400
+                         transition-all duration-300 backdrop-blur-sm
+                         hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+              >
+                <GitHub className="w-4 h-4" />
+                GitHub
+              </a>
+            )}
+            {assetInfo?.LINKS?.TWITTER_SCREEN_NAME && (
+              <a
+                href={`https://twitter.com/${assetInfo.LINKS.TWITTER_SCREEN_NAME}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
+                         bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                         hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                         border border-white/[0.05] hover:border-blue-500/20
+                         text-gray-400 hover:text-blue-400
+                         transition-all duration-300 backdrop-blur-sm
+                         hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+              >
+                <Twitter className="w-4 h-4" />
+                Twitter
+              </a>
+            )}
+            {assetInfo?.LINKS?.SUBREDDIT_URL && (
+              <a
+                href={assetInfo.LINKS.SUBREDDIT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
+                         bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                         hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                         border border-white/[0.05] hover:border-blue-500/20
+                         text-gray-400 hover:text-blue-400
+                         transition-all duration-300 backdrop-blur-sm
+                         hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+              >
+                <Reddit className="w-4 h-4" />
+                Reddit
+              </a>
+            )}
+            
           </div>
         </div>
       </div>

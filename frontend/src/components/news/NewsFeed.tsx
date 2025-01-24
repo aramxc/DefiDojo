@@ -52,7 +52,7 @@ export const NewsFeed = memo(({ symbol, className = '' }: NewsFeedProps) => {
                                 <Newspaper className="w-5 h-5 text-blue-400" />
                             </div>
                         </div>
-                        <span className="relative text-2xl font-bold">
+                        <span className="relative text-lg sm:text-lg md:text-xl font-bold">
                             <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                             <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                                         bg-clip-text text-transparent tracking-tight font-extrabold">

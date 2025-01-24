@@ -168,13 +168,13 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)]">
+    <div className="min-h-screen bg-gradient-to-b w-full from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)] overflow-x-hidden">
       {/* First Section - Main Analysis */}
-      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px]mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="h-full w-full rounded-2xl overflow-hidden
+          className="h-full w-full rounded-2xl relative
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
                      border border-white/[0.05]
@@ -193,12 +193,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full gap-2 p-4">
+            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full gap-2 p-4 overflow-x-auto">
               {/* Left Column - Detailed Price Card */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[23%] h-auto lg:h-full flex-none rounded-xl"
+                className="w-full lg:w-[23%] min-w-[280px] h-auto lg:h-full flex-none rounded-xl"
               >
                 <div className="h-full w-full p-1 sm:p-2">
                   <DetailedPriceCard
@@ -214,7 +214,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-full lg:flex-1 h-[500px] lg:h-full mx-0 lg:mx-4 rounded-xl"
+                className="w-full lg:flex-1 min-w-[400px] h-[500px] lg:h-full mx-0 lg:mx-4 rounded-xl"
               >
                 <div className="h-full p-1 sm:p-2 flex flex-col">
                   <motion.div 
@@ -236,12 +236,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[23%] h-auto flex-none rounded-xl"
+                className="w-full lg:w-[23%] min-w-[280px] h-auto flex-none rounded-xl"
               >
                 <div className="h-full w-full p-1 sm:p-2 flex flex-col">
                   <NewsFeed 
                     symbol={selectedSymbol} 
-                   
                   />
                 </div>
               </motion.div>
