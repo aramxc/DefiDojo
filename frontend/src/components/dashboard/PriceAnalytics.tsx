@@ -127,7 +127,7 @@ export const PriceAnalytics = memo(({
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className={`h-full w-full rounded-xl overflow-hidden relative group 
+                className={`h-full w-full rounded-xl overflow-hidden relative group  custom-scrollbar sm:overflow-y-auto
                          before:absolute before:inset-0 
                          before:bg-gradient-to-br before:from-slate-800/90 before:via-slate-900/90 before:to-slate-950/90 
                          before:backdrop-blur-xl before:transition-opacity
