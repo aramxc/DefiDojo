@@ -110,12 +110,12 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
         {/* Price Section */}
         <div className="space-y-3 md:space-y-4">
           <div className="flex items-baseline">
-            {/* Price Container */}
+            {/* Price Container - Added fixed width */}
             <div className="flex-1">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative w-fit"
+                className="relative min-w-[180px]" // Added fixed minimum width
               >
                 <span className="absolute inset-0 w-[100%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                 <AnimatePresence mode="wait">
@@ -139,7 +139,8 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                         ease: "easeOut"
                       }}
                       className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                                bg-clip-text text-transparent tracking-tight font-bold text-4xl"
+                                bg-clip-text text-transparent tracking-tight font-bold text-4xl
+                                inline-block min-w-[180px]" // Added fixed minimum width and inline-block
                     >
                       {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, "price")}
                     </motion.span>
@@ -148,8 +149,8 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               </motion.div>
             </div>
             
-            {/* Price Change */}
-            <div className="w-24 flex justify-start">
+            {/* Price Change - Added fixed width */}
+            <div className="w-24 flex justify-start shrink-0"> {/* Added shrink-0 */}
               {assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H && (
                 <div className={`flex items-center text-sm ${
                   assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
@@ -202,12 +203,12 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
         <div className="h-px w-full z-20 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-transparent 
                         my-4 md:my-6 mx-auto max-w-[95%] md:max-w-full border-b border-white/[0.05]"></div>
 
-        {/* Market Data Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-          {/* Market Cap */}
-          <div className="flex flex-col p-2 md:p-3">
+        {/* Market Data Grid - Reduced vertical spacing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2"> {/* Reduced gap from gap-3 to gap-2 */}
+          {/* Market Cap - Reduced padding */}
+          <div className="flex flex-col p-2"> {/* Reduced padding from p-2 md:p-3 to just p-2 */}
             <span className="text-sm text-gray-400">Market Cap</span>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
               <span className="text-sm font-sm text-gray-100">
                 {formatValue(assetInfo?.MARKET_DATA?.MARKET_CAP?.USD, "marketCap")}
               </span>
@@ -225,10 +226,10 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             </div>
           </div>
 
-          {/* Volume */}
-          <div className="flex flex-col p-2 md:p-3">
+          {/* Volume - Reduced padding */}
+          <div className="flex flex-col p-2"> {/* Reduced padding */}
             <span className="text-sm text-gray-400">24H Volume</span>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
               <span className="text-sm font-sm text-gray-100">
                 {formatValue(marketMetrics?.trends?.volume?.currentVolume, "volume")}
               </span>
@@ -248,19 +249,23 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             </div>
           </div>
 
-          {/* Row 2 with Supply Information */}
-          <div className="flex flex-col p-3">
+          {/* Supply Information - Reduced padding */}
+          <div className="flex flex-col p-2"> {/* Reduced padding */}
             <span className="text-sm text-gray-400">Circulating Supply</span>
-            <span className="text-sm font-sm text-gray-100">
-              {formatValue(assetInfo?.CIRCULATING_SUPPLY, "compact")}
-            </span>
+            <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
+              <span className="text-sm font-sm text-gray-100">
+                {formatValue(assetInfo?.CIRCULATING_SUPPLY, "compact")}
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-col p-3">
+          <div className="flex flex-col p-2"> {/* Reduced padding */}
             <span className="text-sm text-gray-400">Max Supply</span>
-            <span className="text-sm font-sm text-gray-100">
-              {assetInfo?.MAX_SUPPLY ? formatValue(assetInfo.MAX_SUPPLY, "compact") : '∞'}
-            </span>
+            <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
+              <span className="text-sm font-sm text-gray-100">
+                {assetInfo?.MAX_SUPPLY ? formatValue(assetInfo.MAX_SUPPLY, "compact") : '∞'}
+              </span>
+            </div>
           </div>
         </div>
 

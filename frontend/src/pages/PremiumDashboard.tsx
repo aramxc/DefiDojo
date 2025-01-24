@@ -168,21 +168,21 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b w-full from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)] overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b md:w-full from-slate-950 via-slate-900 to-slate-950 pt-[var(--navbar-height)] overflow-x-hidden">
       {/* First Section - Main Analysis */}
-      <div className="h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px]mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="h-[calc(100vh-var(--navbar-height))] w-full mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="h-full w-full rounded-2xl relative
                      backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
-                     border border-white/[0.05]
+                     border border-slate-800/[1.0]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]"
         >
           <div className="h-full flex flex-col">
             {/* Header Section - Ticker Input */}
-            <div className="p-3 lg:p-4 flex-none">
+            <div className="p-2 sm:p-3 lg:p-4 flex-none">
               <TickerInputForm 
                 onSelectTicker={setSelectedSymbol}
                 selectedTicker={selectedSymbol}
@@ -193,14 +193,17 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full gap-2 p-4 overflow-x-auto">
+            <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-[calc(100%-4rem)] w-full 
+                           gap-2 sm:gap-3 md:gap-4 lg:gap-6 
+                           p-2 sm:p-3 md:p-4 lg:p-6 
+                           overflow-x-auto">
               {/* Left Column - Detailed Price Card */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[23%] min-w-[280px] h-auto lg:h-full flex-none rounded-xl"
+                className="w-full lg:w-[25%] min-w-[280px] h-[500px] lg:h-full flex-none"
               >
-                <div className="h-full w-full p-1 sm:p-2">
+                <div className="h-full w-full">
                   <DetailedPriceCard
                     symbol={selectedSymbol}
                     assetInfo={assetInfo}
@@ -214,21 +217,14 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-full lg:flex-1 min-w-[400px] h-[500px] lg:h-full mx-0 lg:mx-4 rounded-xl"
+                className="w-full lg:w-[50%] min-w-[400px] h-[500px] lg:h-full"
               >
-                <div className="h-full p-1 sm:p-2 flex flex-col">
-                  <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex-1 rounded-xl overflow-hidden"
-                  >
-                    <PriceAnalytics 
-                      symbol={selectedSymbol} 
-                      onSymbolChange={setSelectedSymbol}
-                      onClose={() => {}} 
-                      
-                    />
-                  </motion.div>
+                <div className="h-full w-full">
+                  <PriceAnalytics 
+                    symbol={selectedSymbol} 
+                    onSymbolChange={setSelectedSymbol}
+                    onClose={() => {}} 
+                  />
                 </div>
               </motion.div>
 
@@ -236,9 +232,9 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="w-full lg:w-[23%] min-w-[280px] h-auto flex-none rounded-xl"
+                className="w-full lg:w-[25%] min-w-[280px] h-[500px] lg:h-full flex-none"
               >
-                <div className="h-full w-full p-1 sm:p-2 flex flex-col">
+                <div className="h-full w-full">
                   <NewsFeed 
                     symbol={selectedSymbol} 
                   />
@@ -250,10 +246,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       </div>
 
       {/* Command Center Section */}
-      <div className="min-h-[calc(100dvh-var(--navbar-height))] w-full max-w-[1920px] mx-auto px-4 py-2 sm:p-6 lg:p-8">
+      <div className="min-h-[calc(100vh-var(--navbar-height))] w-full max-w-[1920px] mx-auto 
+                      p-2 sm:p-4 md:p-6 lg:p-8">
         <div className="w-full rounded-2xl overflow-hidden backdrop-blur-xl 
                      bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
-                     border border-white/[0.05]
+                     border border-slate-800/[1.0]
                      shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
           <div className="p-6 border-b border-white/[0.05]">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
