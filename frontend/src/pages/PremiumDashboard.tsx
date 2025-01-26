@@ -31,11 +31,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onRemoveTicker,
   defaultTicker = 'BTC',
   getRealTimeData = false
+  
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
-  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol, false);
+  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol);
   const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
     selectedSymbol,
     assetInfo?.COINGECKO_ID

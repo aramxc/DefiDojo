@@ -304,22 +304,14 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             </div>
             {(() => {
               const currentPrice = fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD;
-              const lowPrice = marketMetrics?.trends?.price?.low24h  || assetInfo?.MARKET_DATA?.LOW_24H?.USD;
-              const highPrice = marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD;
+              const lowPrice = currentPrice && marketMetrics?.trends?.price?.low24h && currentPrice < marketMetrics.trends.price.low24h 
+                ? currentPrice 
+                : marketMetrics?.trends?.price?.low24h || assetInfo?.MARKET_DATA?.LOW_24H?.USD;
+              const highPrice = currentPrice && marketMetrics?.trends?.price?.high24h && currentPrice > marketMetrics.trends.price.high24h
+                ? currentPrice
+                : marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD;
               
-              // Debug logging
-              console.log('Trading Range Debug:', {
-                symbol,
-                currentPrice,
-                lowPrice,
-                highPrice,
-                fetchedPrice,
-                marketDataPrice: assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
-                marketMetricsLow: marketMetrics?.trends?.price?.low24h,
-                marketMetricsHigh: marketMetrics?.trends?.price?.high24h
-              });
-
-              // Calculate position percentage with bounds checking
+              // Calculate position percentage
               const position = Math.min(Math.max(
                 ((currentPrice - lowPrice) / (highPrice - lowPrice)) * 100,
                 0
@@ -329,7 +321,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                 <div className="w-full bg-gray-800/50 h-1.5 mt-1 rounded-full relative">
                   <div className="absolute rounded-full inset-0 bg-gradient-to-r from-[#38bdf8] via-[#22d3ee] to-[#38bdf8] opacity-10" />
                   {!isNaN(position) && isFinite(position) && (
-                    <div 
+                    <div        
                       className="absolute w-2 h-3 bg-gradient-to-r from-[#38bdf8] to-[#22d3ee] -mt-0.5 group/indicator cursor-pointer"
                       style={{ 
                         left: `${position}%`,

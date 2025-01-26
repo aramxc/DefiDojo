@@ -124,7 +124,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
     lastUpdateTime 
   } = useFetchLatestPrice(symbol, isRealTime);
 
-  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol);
+  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol, getRealTimeData);
   const { metrics: marketMetrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(
     symbol,
     assetInfo?.COINGECKO_ID || undefined

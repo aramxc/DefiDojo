@@ -12,7 +12,8 @@ export const config = {
   },
   pythHermesBaseUrl: 'https://hermes.pyth.network',
   coinGecko: {
-    apiKey: process.env.COINGECKO_PRO_API_KEY,
+    apiKey: process.env.COINGECKO_API_KEY,
+    proApiKey: process.env.COINGECKO_PRO_API_KEY,
     baseUrl: 'https://api.coingecko.com/api/v3',
     proBaseUrl: 'https://pro-api.coingecko.com/api/v3'
   },
@@ -35,7 +36,7 @@ export const validateFlipsideKey = () => {
 };
 
 export const validateCoinGeckoKey = () => {
-  if (config.coinGecko.proBaseUrl && !config.coinGecko.apiKey) {
+  if (config.coinGecko.proBaseUrl && !config.coinGecko.proApiKey) {
     throw new Error('COINGECKO_PRO_API_KEY is not defined in .env file');
   }
   return true;

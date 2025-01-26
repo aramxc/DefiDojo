@@ -99,7 +99,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                           symbol={ticker}
                           onRemove={() => onRemoveTicker(ticker)}
                           onSelectSymbol={setSelectedSymbol}
-                          getRealTimeData={getRealTimeData}
                         />
                       </motion.div>
                     ))}
