@@ -231,6 +231,31 @@ export class CoinGeckoService {
         const volume7dAgo = this.findValueNHoursAgo(volumes, 24 * 7);
         const volume30dAgo = this.findValueNHoursAgo(volumes, 24 * 30);
 
+        // More robust 24h price filtering
+        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+        const last24hPrices = prices.filter(p => {
+            const timestamp = p[0]; // CoinGecko returns timestamps in milliseconds
+            return timestamp >= oneDayAgo;
+        });
+
+        // Add safety check for empty price arrays
+        const high24h = last24hPrices.length > 0 
+            ? Math.max(...last24hPrices.map(p => p[1]))
+            : currentPrice;
+        const low24h = last24hPrices.length > 0 
+            ? Math.min(...last24hPrices.map(p => p[1]))
+            : currentPrice;
+
+        // Add debug logging
+        console.log('24h Price Range Debug:', {
+            dataPointsIn24h: last24hPrices.length,
+            high24h,
+            low24h,
+            currentPrice,
+            firstTimestamp: last24hPrices[0]?.[0],
+            lastTimestamp: last24hPrices[last24hPrices.length - 1]?.[0]
+        });
+
         return {
             price: {
                 change24h: this.calculatePercentageChange(price24hAgo, currentPrice),
@@ -242,7 +267,9 @@ export class CoinGeckoService {
                     timestamp: Date.now(),
                     volume: currentVolume
                 },
-                historicalData: data
+                historicalData: data,
+                high24h,
+                low24h
             },
             volume: {
                 change24h: this.calculatePercentageChange(volume24hAgo, currentVolume),

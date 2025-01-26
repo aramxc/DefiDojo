@@ -85,26 +85,45 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       ]
     },
     {
-      title: "Price Statistics",
+      title: "ATH/ATL Statistics",
       icon: <ShowChart />,
-      infoTooltip: "Historical price data and milestones",
+      infoTooltip: "All Time High and All Time Low",
       stats: [
         { 
           label: "All Time High", 
-          value: formatValue(108786, 'price'),
+          value: formatValue(assetInfo?.ATH, 'price'),
           change: -4.17,
-          timestamp: formatTimestamp(Date.now(), '1D', 'UTC')
+          timestamp: assetInfo?.ATH_DATE
         },
         { 
           label: "All Time Low", 
-          value: formatValue(67.81, 'price'),
+          value: formatValue(assetInfo?.ATL, 'price'),
           change: formatChange(153636.21),
-          timestamp: formatTimestamp(Date.now(), '1D', 'UTC')
+          timestamp: assetInfo?.ATL_DATE
+        },
+        
+      ]
+    },
+    {
+      title: "Volatility Metrics",
+      icon: <TrendingUp />,
+      infoTooltip: "Measures how much the price tends to change over time. Higher percentages mean more dramatic price swings. We look at price movements across different time windows (daily, weekly, monthly) to understand both short-term and long-term price stability",
+      stats: [
+        { 
+          label: "Daily", 
+          value: formatPercentage(metrics?.volatility?.daily|| 0),
         },
         { 
-          label: "Current Price", 
-          value: formatValue(104169, 'price'),
-          className: "text-lg font-bold"
+          label: "Weekly", 
+          value: formatPercentage(metrics?.volatility?.weekly|| 0)
+        },
+        { 
+          label: "Monthly", 
+          value: formatPercentage(metrics?.volatility?.monthly|| 0)
+        },
+        { 
+          label: "Standard Deviation", 
+          value: formatPercentage(metrics?.volatility?.standardDeviation|| 0)
         }
       ]
     },

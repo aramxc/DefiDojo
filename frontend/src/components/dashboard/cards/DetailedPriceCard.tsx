@@ -299,27 +299,54 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           <span className="text-sm text-gray-400">24h Trading Range</span>
           <div className="relative">
             <div className="flex justify-between text-xs text-gray-400">
-              <span>{formatValue(assetInfo?.MARKET_DATA?.LOW_24H?.USD, "price")}</span>
-              <span>{formatValue(assetInfo?.MARKET_DATA?.HIGH_24H?.USD, "price")}</span>
+              <span>{formatValue(marketMetrics?.trends?.price?.low24h || assetInfo?.MARKET_DATA?.LOW_24H?.USD, "price")}</span>
+              <span>{formatValue(marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD, "price")}</span>
             </div>
-            <div className="w-full bg-gray-800/50 h-1.5 mt-1 rounded-full relative">
-              <div className="absolute rounded-full inset-0 bg-gradient-to-r from-[#38bdf8] via-[#22d3ee] to-[#38bdf8] opacity-10" />
-              <div 
-                className="absolute w-2 h-3 bg-gradient-to-r from-[#38bdf8] to-[#22d3ee] -mt-0.5 group/indicator cursor-pointer"
-                style={{ 
-                  left: `${((assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD - assetInfo?.MARKET_DATA?.LOW_24H?.USD) / 
-                    (assetInfo?.MARKET_DATA?.HIGH_24H?.USD - assetInfo?.MARKET_DATA?.LOW_24H?.USD)) * 100}%`,
-                  transform: 'translateX(-50%)',
-                  filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.3))'
-                }}
-              >
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 rounded-md 
-                              text-xs text-gray-100 whitespace-nowrap opacity-0 group-hover/indicator:opacity-100 
-                              transition-opacity duration-200 border border-gray-700">
-                  {formatValue(assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD, "price")}
+            {(() => {
+              const currentPrice = fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD;
+              const lowPrice = marketMetrics?.trends?.price?.low24h  || assetInfo?.MARKET_DATA?.LOW_24H?.USD;
+              const highPrice = marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD;
+              
+              // Debug logging
+              console.log('Trading Range Debug:', {
+                symbol,
+                currentPrice,
+                lowPrice,
+                highPrice,
+                fetchedPrice,
+                marketDataPrice: assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
+                marketMetricsLow: marketMetrics?.trends?.price?.low24h,
+                marketMetricsHigh: marketMetrics?.trends?.price?.high24h
+              });
+
+              // Calculate position percentage with bounds checking
+              const position = Math.min(Math.max(
+                ((currentPrice - lowPrice) / (highPrice - lowPrice)) * 100,
+                0
+              ), 100);
+
+              return (
+                <div className="w-full bg-gray-800/50 h-1.5 mt-1 rounded-full relative">
+                  <div className="absolute rounded-full inset-0 bg-gradient-to-r from-[#38bdf8] via-[#22d3ee] to-[#38bdf8] opacity-10" />
+                  {!isNaN(position) && isFinite(position) && (
+                    <div 
+                      className="absolute w-2 h-3 bg-gradient-to-r from-[#38bdf8] to-[#22d3ee] -mt-0.5 group/indicator cursor-pointer"
+                      style={{ 
+                        left: `${position}%`,
+                        transform: 'translateX(-50%)',
+                        filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.3))'
+                      }}
+                    >
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 rounded-md 
+                                    text-xs text-gray-100 whitespace-nowrap opacity-0 group-hover/indicator:opacity-100 
+                                    transition-opacity duration-200 border border-gray-700">
+                        {formatValue(currentPrice, "price")}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
 

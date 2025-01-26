@@ -47,12 +47,12 @@ export const NewsFeed = memo(({ symbol, className = '' }: NewsFeedProps) => {
                 >
                     <div className="flex items-center gap-3">
                         <div className="relative transition-all duration-300">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm group-hover:from-blue-500/20 group-hover:to-cyan-500/20 transition-all duration-300"></div>
-                            <div className="relative p-2 rounded-xl bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm border border-white/[0.05]">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm  transition-all duration-300"></div>
+                            <div className="relative p-2 rounded-xl from-blue-500/5 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm ">
                                 <Newspaper className="w-5 h-5 text-blue-400" />
                             </div>
                         </div>
-                        <span className="relative text-lg sm:text-lg md:text-xl font-bold">
+                        <span className="relative sm:text-lg md:text-xl font-bold">
                             <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                             <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                                         bg-clip-text text-transparent tracking-tight font-extrabold">

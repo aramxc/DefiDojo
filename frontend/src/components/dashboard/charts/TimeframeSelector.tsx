@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowLeft from '@mui/icons-material/ArrowLeft';
 import { TimeframeType } from '../../../services/api/historicalPrice.service';
 
 // Constants
@@ -111,7 +111,7 @@ const TimeframeSelector = memo(({
                              transition-all duration-300"
                 >
                     <span className="relative z-10 flex items-center">
-                        <ArrowBackIcon className="w-4 h-4" />
+                        <ArrowLeft className="w-4 h-4" />
                     </span>
                 </motion.button>
                 <div className="flex gap-4">

@@ -36,23 +36,23 @@ export class MarketMetricsController {
                 return res.status(400).json({ error: 'Symbol and coingeckoId parameters are required' });
             }
 
-            // Check cache first
-            const cacheKey = `market-metrics-${symbol.toLowerCase()}`;
+            // Include both symbol and coingeckoId in cache key for uniqueness
+            const cacheKey = `market-metrics-${symbol.toLowerCase()}-${coingeckoId}`;
             const cachedData = this.cache.get(cacheKey);
             
             if (cachedData) {
-                console.log(`Cache hit for ${symbol} market metrics`);
+                console.log(`Cache hit for ${symbol}/${coingeckoId} market metrics`);
                 return res.json(cachedData);
             }
 
-            console.log(`Cache miss for ${symbol} - fetching from API`);
+            console.log(`Cache miss for ${symbol}/${coingeckoId} - fetching from API`);
 
             const metrics = await this.coinGeckoService.getMarketMetrics(coingeckoId as string);
-            console.log('Metrics calculated:', metrics);
+            console.log(`Metrics calculated for ${symbol}/${coingeckoId}:`, metrics);
 
-            // Cache the results
+            // Cache with the unique key
             const cacheSuccess = this.cache.set(cacheKey, metrics);
-            console.log(`Cache ${cacheSuccess ? 'set' : 'failed'} for ${symbol} market metrics`);
+            console.log(`Cache ${cacheSuccess ? 'set' : 'failed'} for ${symbol}/${coingeckoId} market metrics`);
 
             res.json(metrics);
         } catch (error) {
@@ -64,13 +64,14 @@ export class MarketMetricsController {
         }
     };
 
-
-    clearCache = (symbol?: string) => {
-        if (symbol) {
-            const cacheKey = `market-metrics-${symbol.toLowerCase()}`;
+    clearCache = (symbol?: string, coingeckoId?: string) => {
+        if (symbol && coingeckoId) {
+            const cacheKey = `market-metrics-${symbol.toLowerCase()}-${coingeckoId}`;
             this.cache.del(cacheKey);
+            console.log(`Cleared cache for ${symbol}/${coingeckoId}`);
         } else {
             this.cache.flushAll();
+            console.log('Cleared all market metrics cache');
         }
     };
 }

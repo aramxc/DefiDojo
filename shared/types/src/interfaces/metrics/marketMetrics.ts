@@ -15,6 +15,8 @@ export interface MarketTrends {
     change30d: number;
     currentPrice: AssetPriceData;
     historicalData: AssetHistoricalRangeData;
+    high24h: number;
+    low24h: number;
   };
   volume: {
     change24h: number;
