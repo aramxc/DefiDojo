@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useFetchRecentNews } from '../../hooks/useFetchRecentNews';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Article, OpenInNew, Schedule, TrendingUp, Newspaper } from '@mui/icons-material';
+import { OpenInNew, Schedule } from '@mui/icons-material';
 
 interface NewsFeedProps {
     symbol?: string;
@@ -43,23 +43,15 @@ export const NewsFeed = memo(({ symbol, className = '' }: NewsFeedProps) => {
                 <motion.div 
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col gap-2 mb-6"
+                    className="flex flex-col gap-4 mb-6"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="relative transition-all duration-300">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm  transition-all duration-300"></div>
-                            <div className="relative p-2 rounded-xl from-blue-500/5 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm ">
-                                <Newspaper className="w-5 h-5 text-blue-400" />
-                            </div>
-                        </div>
-                        <span className="relative sm:text-lg md:text-xl font-bold">
-                            <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
-                            <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                                        bg-clip-text text-transparent tracking-tight font-extrabold">
-                                {symbol} Market Insights
-                            </span>
+                    <h2 className="font-sans text-2xl tracking-tight">
+                        <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                                     bg-clip-text text-transparent 
+                                     font-extrabold">
+                            {symbol} Market Insights
                         </span>
-                    </div>
+                    </h2>
                     <div className="h-px w-full bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent"></div>
                 </motion.div>
 

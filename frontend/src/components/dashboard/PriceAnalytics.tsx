@@ -11,7 +11,6 @@ import { PurchaseDataModal } from '../premium/PurchaseDataModal';
 import TimeframeSelector from './charts/TimeframeSelector';
 import MetricsDisplay from './charts/ChartMetricsDisplay';
 import PriceChart from './charts/MainPriceChart';
-import { ShowChart, TrendingUp } from '@mui/icons-material';
 
 type DataType = 'price' | 'marketCap' | 'volume';
 interface PriceAnalyticsProps {
@@ -142,70 +141,62 @@ export const PriceAnalytics = memo(({
                     <motion.div 
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col gap-2 mb-6"
+                        className="flex flex-col gap-4 mb-6"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="relative transition-all duration-300">
-                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/0 to-cyan-500/0 rounded-full blur-sm  transition-all duration-300"></div>
-                                <div className="relative p-2 rounded-xl  from-blue-500/0 via-cyan-500/5 to-slate-900/50 backdrop-blur-sm ">
-                                    <TrendingUp className="w-6 h-6 text-blue-400" />
-                                </div>
-                            </div>
-                            <span className="relative  sm:text-lg md:text-xl font-bold">
-                                <span className="absolute inset-0 w-[105%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
-                                <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                                            bg-clip-text text-transparent tracking-tight font-extrabold">
-                                    {symbol} Analytics
-                                </span>
+                        <h2 className="font-sans text-2xl tracking-tight">
+                            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                                         bg-clip-text text-transparent 
+                                         font-extrabold">
+                                {symbol} Analytics
                             </span>
-                        </div>
+                        </h2>
                         <div className="h-px w-full bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-transparent"></div>
                     </motion.div>
 
                     {/* Controls */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         {/* Data Type Toggle */}
-<div className="flex flex-wrap items-center gap-2">
-    {['price', 'marketCap', 'volume'].map((type) => (
-        <button 
-            key={type}
-            onClick={() => setDataType(type as DataType)}
-            className={`
-                px-3 sm:px-4 py-2 
-                rounded-lg 
-                font-medium
-                text-sm
-                transition-all duration-200
-                ${dataType === type 
-                    ? `relative overflow-hidden
-                       text-white
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
-                       before:backdrop-blur-xl
-                       after:absolute after:inset-0 
-                       after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
-                       shadow-[0_0_10px_rgba(59,130,246,0.1)]
-                       ` 
-                    : `text-gray-400 
-                       hover:text-white 
-                       hover:bg-slate-700/50
-                       hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]
-                       relative overflow-hidden
-                       before:absolute before:inset-0 
-                       before:bg-gradient-to-r before:from-blue-500/0 before:to-cyan-500/0 
-                       before:backdrop-blur-xl
-                       before:transition-colors
-                       hover:before:from-blue-500/10 hover:before:to-cyan-500/10`
-                }
-            `}
-        >
-            <span className="relative z-10">
-                {type === 'marketCap' ? 'Market Cap' : 
-                 type === 'volume' ? 'Volume' : 'Price'}
-            </span>
-        </button>
-    ))}
-</div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {['price', 'marketCap', 'volume'].map((type) => (
+                                <button 
+                                    key={type}
+                                    onClick={() => setDataType(type as DataType)}
+                                    className={`
+                                        px-3 sm:px-4 py-2 
+                                        rounded-lg 
+                                        font-medium
+                                        text-sm
+                                        transition-all duration-200
+                                        ${dataType === type 
+                                            ? `relative overflow-hidden
+                                               text-white
+                                               before:absolute before:inset-0 
+                                               before:bg-gradient-to-r before:from-blue-500/20 before:to-cyan-500/20 
+                                               before:backdrop-blur-xl
+                                               after:absolute after:inset-0 
+                                               after:bg-gradient-to-r after:from-blue-500/10 after:to-cyan-500/10
+                                               shadow-[0_0_10px_rgba(59,130,246,0.1)]
+                                               ` 
+                                            : `text-gray-400 
+                                               hover:text-white 
+                                               hover:bg-slate-700/50
+                                               hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]
+                                               relative overflow-hidden
+                                               before:absolute before:inset-0 
+                                               before:bg-gradient-to-r before:from-blue-500/0 before:to-cyan-500/0 
+                                               before:backdrop-blur-xl
+                                               before:transition-colors
+                                               hover:before:from-blue-500/10 hover:before:to-cyan-500/10`
+                                        }
+                                    `}
+                                >
+                                    <span className="relative z-10">
+                                        {type === 'marketCap' ? 'Market Cap' : 
+                                         type === 'volume' ? 'Volume' : 'Price'}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
                         <MetricsDisplay metrics={metrics} dataType={dataType} />
                     </div>
 

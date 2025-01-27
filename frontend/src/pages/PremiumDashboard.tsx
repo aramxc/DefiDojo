@@ -70,8 +70,8 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
         },
         { 
           label: "Market Sentiment", 
-          value: formatPercentage(assetInfo?.SENTIMENT_VOTES_UP_PERCENTAGE),
-          change: assetInfo?.SENTIMENT_VOTES_DOWN_PERCENTAGE
+          value: "",
+          change: assetInfo?.SENTIMENT_VOTES_UP_PERCENTAGE
         },
         { 
           label: "Total Supply", 
@@ -92,17 +92,24 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "All Time High", 
-          value: formatValue(assetInfo?.ATH, 'price'),
-          change: -4.17,
-          timestamp: assetInfo?.ATH_DATE
+          value: formatValue(assetInfo?.MARKET_DATA?.ATH?.USD, 'price'),
+          change: assetInfo?.MARKET_DATA?.ATH_CHANGE_PERCENTAGE,
+          
+        },
+        { 
+          label: "All Time High Date", 
+          value: formatTimestamp(assetInfo?.MARKET_DATA?.ATH_DATE.USD, 'MM/DD/YYYY', 'America/Denver'),
         },
         { 
           label: "All Time Low", 
-          value: formatValue(assetInfo?.ATL, 'price'),
-          change: formatChange(153636.21),
-          timestamp: assetInfo?.ATL_DATE
+          value: formatValue(assetInfo?.MARKET_DATA?.ATL?.USD, 'price'),
+          change: assetInfo?.MARKET_DATA?.ATL_CHANGE_PERCENTAGE,
+         
         },
-        
+        { 
+          label: "All Time Low Date", 
+          value: formatTimestamp(assetInfo?.MARKET_DATA?.ATL_DATE.USD, 'MM/DD/YYYY', 'America/Denver'),
+        }
       ]
     },
     {
@@ -157,7 +164,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
         { 
           label: "Issue Resolution Rate", 
           value: formatPercentage((assetInfo?.GITHUB_CLOSED_ISSUES || 0) / (assetInfo?.GITHUB_TOTAL_ISSUES || 1) * 100),
-          change: assetInfo?.GITHUB_CLOSED_ISSUES
+          
         },
         { 
           label: "Total PRs Merged", 
