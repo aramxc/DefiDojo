@@ -11,7 +11,7 @@ import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
 interface PriceDisplayProps {
   symbol: string;
   onRemove: () => void;
-  onSelectSymbol: (symbol: string, metrics: any) => void;
+  onSelectSymbol: (symbol: string) => void;
   getRealTimeData?: boolean;
 }
 
@@ -133,8 +133,8 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   const CardControls = ({ isBackside = false }) => {
     const handleAnalyticsButtonClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      // You can pass both symbol and metrics data to the parent
-      onSelectSymbol(symbol, marketMetrics);
+      // Just pass the symbol, remove the metrics parameter
+      onSelectSymbol(symbol);
     };
 
     return (

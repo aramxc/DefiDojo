@@ -15,6 +15,7 @@ import { News } from './pages/News';
 import 'react-toastify/dist/ReactToastify.css';
 import { requestAccount } from './services/web3/contract.service';
 import { TimezoneProvider } from './contexts/TimezoneContext';
+import AuthLandingPage from './pages/AuthLandingPage';
 
 // Define a dark theme for the application
 const darkTheme = createTheme({
@@ -95,24 +96,32 @@ function App() {
                   <Route 
                     path="/" 
                     element={
-                      <Home 
-                        account={account}
-                        setAccount={setAccount}
-                        selectedTickers={selectedTickers}
-                        onAddTickers={handleAddTickers}
-                        onRemoveTicker={handleRemoveTicker}
-                        isSidebarExpanded={isSidebarExpanded}
-                      />
+                      account ? (
+                        <Home 
+                          account={account}
+                          setAccount={setAccount}
+                          selectedTickers={selectedTickers}
+                          onAddTickers={handleAddTickers}
+                          onRemoveTicker={handleRemoveTicker}
+                          isSidebarExpanded={isSidebarExpanded}
+                        />
+                      ) : (
+                        <AuthLandingPage setAccount={setAccount} />
+                      )
                     }
                   />
                   <Route 
                     path="/advanced-dashboard" 
                     element={
-                      <AdvancedDashboard 
-                        selectedTickers={selectedTickers}
-                        onAddTickers={handleAddTickers}
-                        onRemoveTicker={handleRemoveTicker}
-                      />
+                      account ? (
+                        <AdvancedDashboard 
+                          selectedTickers={selectedTickers}
+                          onAddTickers={handleAddTickers}
+                          onRemoveTicker={handleRemoveTicker}
+                        />
+                      ) : (
+                        <AuthLandingPage setAccount={setAccount} />
+                      )
                     }
                   />
                   <Route 
@@ -121,15 +130,19 @@ function App() {
                       account ? (
                         <LearningHub />
                       ) : (
-                        <div className="flex justify-center items-center min-h-screen">
-                          <ConnectWalletButton setAccount={setAccount} />
-                        </div>
+                        <AuthLandingPage setAccount={setAccount} />
                       )
                     }
                   />
                   <Route 
                     path="/news" 
-                    element={<News />}
+                    element={
+                      account ? (
+                        <News />
+                      ) : (
+                        <AuthLandingPage setAccount={setAccount} />
+                      )
+                    }
                   />
                 </Routes>
               </div>

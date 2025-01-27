@@ -66,6 +66,26 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
     return () => clearInterval(interval);
   }, [isRealTime]);
 
+  const getLow24h = (currentPrice: number | null, marketMetricsLow: number | null, assetInfoLow: number | null): number => {
+    const validPrices = [
+      currentPrice,
+      marketMetricsLow,
+      assetInfoLow
+    ].filter((price): price is number => price !== null && !isNaN(price));
+  
+    return validPrices.length > 0 ? Math.min(...validPrices) : 0;
+  };
+  
+  const getHigh24h = (currentPrice: number | null, marketMetricsHigh: number | null, assetInfoHigh: number | null): number => {
+    const validPrices = [
+      currentPrice,
+      marketMetricsHigh,
+      assetInfoHigh
+    ].filter((price): price is number => price !== null && !isNaN(price));
+  
+    return validPrices.length > 0 ? Math.max(...validPrices) : 0;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -299,17 +319,29 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           <span className="text-sm text-gray-400">24h Trading Range</span>
           <div className="relative">
             <div className="flex justify-between text-xs text-gray-400">
-              <span>{formatValue(marketMetrics?.trends?.price?.low24h || assetInfo?.MARKET_DATA?.LOW_24H?.USD, "price")}</span>
-              <span>{formatValue(marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD, "price")}</span>
+              <span>{formatValue(getLow24h(
+                fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
+                marketMetrics?.trends?.price?.low24h,
+                assetInfo?.MARKET_DATA?.LOW_24H?.USD
+              ), "price")}</span>
+              <span>{formatValue(getHigh24h(
+                fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
+                marketMetrics?.trends?.price?.high24h,
+                assetInfo?.MARKET_DATA?.HIGH_24H?.USD
+              ), "price")}</span>
             </div>
             {(() => {
               const currentPrice = fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD;
-              const lowPrice = currentPrice && marketMetrics?.trends?.price?.low24h && currentPrice < marketMetrics.trends.price.low24h 
-                ? currentPrice 
-                : marketMetrics?.trends?.price?.low24h || assetInfo?.MARKET_DATA?.LOW_24H?.USD;
-              const highPrice = currentPrice && marketMetrics?.trends?.price?.high24h && currentPrice > marketMetrics.trends.price.high24h
-                ? currentPrice
-                : marketMetrics?.trends?.price?.high24h || assetInfo?.MARKET_DATA?.HIGH_24H?.USD;
+              const lowPrice = getLow24h(
+                currentPrice,
+                marketMetrics?.trends?.price?.low24h,
+                assetInfo?.MARKET_DATA?.LOW_24H?.USD
+              );
+              const highPrice = getHigh24h(
+                currentPrice,
+                marketMetrics?.trends?.price?.high24h,
+                assetInfo?.MARKET_DATA?.HIGH_24H?.USD
+              );
               
               // Calculate position percentage
               const position = Math.min(Math.max(
