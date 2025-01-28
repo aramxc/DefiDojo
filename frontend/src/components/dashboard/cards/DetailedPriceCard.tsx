@@ -160,7 +160,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                       }}
                       className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                                 bg-clip-text text-transparent tracking-tight font-bold text-4xl
-                                inline-block min-w-[180px]" // Added fixed minimum width and inline-block
+                                inline-block min-w-[180px]" 
                     >
                       {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, "price")}
                     </motion.span>

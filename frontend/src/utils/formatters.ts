@@ -114,41 +114,45 @@ export const formatYAxisValue = (value: number, type: 'price' | 'marketCap' | 'v
 // ======================================
 
 /**
- * Formats a timestamp based on timeframe
+ * Formats a timestamp based on timeframe or custom date range
  * @param timestamp - Unix timestamp
  * @param timeframe - Chart timeframe
  * @param timezone - User's timezone
+ * @param customDateRange - Optional date range for custom view
  */
 export const formatTimestamp = (
     timestamp: number, 
     timeframe: string, 
-    timezone: string
+    timezone: string,
+    customDateRange?: { from: Date | null; to: Date | null }
 ): string => {
     const date = new Date(timestamp);
-    const options: Intl.DateTimeFormatOptions = {
-        timeZone: timezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        month: 'short',
-        day: 'numeric'
-    };
+    
+    const durationInDays = timeframe === 'custom' && customDateRange?.from && customDateRange?.to
+        ? Math.ceil((customDateRange.to.getTime() - customDateRange.from.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
 
-    switch (timeframe) {
-        case '1D': 
+    switch (true) {
+        case timeframe === '1D' || (durationInDays && durationInDays <= 1):
             return date.toLocaleTimeString([], { 
-                hour: '2-digit',
-                minute: '2-digit'
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZone: timezone 
             });
-        case '7D': 
+            
+        case timeframe === '7D' || (durationInDays && durationInDays <= 7):
             return date.toLocaleDateString([], { 
-                month: 'short',
-                day: 'numeric'
+                month: 'short', 
+                day: 'numeric',
+                timeZone: timezone
             });
-        default: 
+            
+        default:
             return date.toLocaleDateString([], { 
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: timezone
             });
     }
 };

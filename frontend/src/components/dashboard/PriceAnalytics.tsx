@@ -247,6 +247,7 @@ export const PriceAnalytics = memo(({
                                 dataType={dataType}
                                 timeframe={timeframe}
                                 selectedTimezone={selectedTimezone.value}
+                                customDateRange={customDates}
                             />
                         </div>
                     ) : !error ? (
