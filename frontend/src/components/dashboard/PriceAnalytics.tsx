@@ -69,13 +69,17 @@ export const PriceAnalytics = memo(({
         if (tf === '5Y' || tf === 'Custom') {
             const hasAccess = await checkProAccess(symbol);
             if (!hasAccess) {
+                prevTimeframeRef.current = timeframe;
                 setShowPurchaseModal(true);
+                setTimeframe(tf);
                 return;
             }
         }
         
         setTimeframe(tf);
-        if (tf !== 'Custom') {
+        if (tf === 'Custom') {
+            setIsCustomMode(true);
+        } else {
             setIsCustomMode(false);
             setCustomDates({ from: null, to: null });
             setCustomRange(undefined);
@@ -91,7 +95,6 @@ export const PriceAnalytics = memo(({
                 from: newDates.from.getTime(),
                 to: newDates.to.getTime()
             });
-            setTimeframe('Custom');
         } else {
             setCustomRange(undefined);
         }
@@ -207,7 +210,6 @@ export const PriceAnalytics = memo(({
                             isCustomMode={isCustomMode}
                             customDates={customDates}
                             onTimeframeClick={handleTimeframeClick}
-                            onCustomModeToggle={() => setIsCustomMode(true)}
                             onBackClick={() => {
                                 setIsCustomMode(false);
                                 setTimeframe('1D');
@@ -266,11 +268,15 @@ export const PriceAnalytics = memo(({
                     setShowPurchaseModal(false);
                     setTimeframe(prevTimeframeRef.current);
                 }}
-                onSuccess={() => {
+                onSuccess={(tf) => {
                     setShowPurchaseModal(false);
-                    setTimeframe('5Y');
+                    setTimeframe(tf);
+                    if (tf === 'Custom') {
+                        setIsCustomMode(true);
+                    }
                 }}
                 symbol={symbol}
+                timeframe={timeframe as '5Y' | 'Custom'}
             />
         </LocalizationProvider>
     );

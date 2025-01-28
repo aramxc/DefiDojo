@@ -7,17 +7,18 @@ interface PurchaseDataModalProps {
   isOpen: boolean;
   onClose: () => void;
   symbol: string;
-  onSuccess: () => void;
+  onSuccess: (timeframe: '5Y' | 'Custom') => void;
+  timeframe: '5Y' | 'Custom';
 }
 
-export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess }: PurchaseDataModalProps) => {
+export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess, timeframe }: PurchaseDataModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePurchase = async () => {
     try {
       setIsProcessing(true);
       await purchaseProAccess(symbol);
-      onSuccess();
+      onSuccess(timeframe);
     } catch (error) {
       console.error('Purchase failed:', error);
     } finally {

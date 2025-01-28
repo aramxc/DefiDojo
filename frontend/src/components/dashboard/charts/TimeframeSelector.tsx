@@ -13,19 +13,19 @@ const TimeframeSelector = memo(({
     isCustomMode,
     customDates,
     onTimeframeClick,
-    onCustomModeToggle,
     onBackClick,
     onDateChange,
-    isValidDateRange
+    isValidDateRange,
+    onCustomModeToggle
 }: {
     timeframe: TimeframeType;
     isCustomMode: boolean;
     customDates: { from: Date | null; to: Date | null };
     onTimeframeClick: (tf: TimeframeType) => void;
-    onCustomModeToggle: () => void;
     onBackClick: () => void;
     onDateChange: (type: 'from' | 'to', date: Date | null) => void;
     isValidDateRange: boolean;
+    onCustomModeToggle?: () => void;
 }) => (
     <AnimatePresence mode="wait">
         {!isCustomMode ? (
@@ -38,7 +38,7 @@ const TimeframeSelector = memo(({
                 {TIMEFRAMES.map((tf) => (
                     <motion.button
                         key={tf}
-                        onClick={() => tf === 'Custom' ? onCustomModeToggle() : onTimeframeClick(tf)}
+                        onClick={() => onTimeframeClick(tf)}
                         className={`
                             h-10 px-4
                             rounded-lg 
