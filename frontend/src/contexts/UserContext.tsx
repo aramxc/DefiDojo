@@ -1,70 +1,106 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile } from '@defidojo/shared-types';
+import { toast } from 'react-toastify';
+import { WalletService } from '../services/web3/wallet.service';
 
 interface UserContextType {
-  user: UserProfile | null;
-  setUser: (user: UserProfile | null) => void;
+  wallet: string | null;
+  profile: UserProfile | null;
   isLoading: boolean;
-  login: (emailOrWallet: string, password?: string) => Promise<void>;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
+  upgradeToFullProfile: (email: string, username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [wallet, setWallet] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Session check failed:', error);
-      } finally {
-        setIsLoading(false);
+    // Setup wallet listeners
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        setWallet(null);
+        localStorage.removeItem('walletAddress');
+      } else {
+        setWallet(accounts[0]);
+        localStorage.setItem('walletAddress', accounts[0]);
       }
     };
 
-    checkSession();
+    WalletService.setupWalletListeners(handleAccountsChanged);
+    return () => WalletService.removeWalletListeners();
   }, []);
 
-  const login = async (emailOrWallet: string, password?: string) => {
+  const connectWallet = async () => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/auth/login', {
+      const address = await WalletService.requestConnection();
+      if (address) {
+        setWallet(address);
+        localStorage.setItem('walletAddress', address);
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    await WalletService.disconnectWallet();
+    setWallet(null);
+    setProfile(null);
+  };
+
+  const upgradeToFullProfile = async (email: string, username: string, password: string) => {
+    if (!wallet) {
+      throw new Error('Wallet must be connected first');
+    }
+
+    try {
+      const response = await fetch('/api/users/upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ emailOrWallet, password }),
+        body: JSON.stringify({
+          wallet_address: wallet,
+          email,
+          username,
+          password
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error('Profile upgrade failed');
       }
 
-      const userData = await response.json();
-      setUser(userData);
-    } finally {
-      setIsLoading(false);
+      const profileData = await response.json();
+      setProfile(profileData);
+      toast.success('Profile upgraded successfully!');
+    } catch (error) {
+      toast.error('Failed to upgrade profile');
+      throw error;
     }
   };
 
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+  const logout = () => {
+    setWallet(null);
+    setProfile(null);
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, isLoading, login, logout }}>
+    <UserContext.Provider 
+      value={{ 
+        wallet, 
+        profile, 
+        isLoading, 
+        connectWallet, 
+        disconnectWallet,
+        upgradeToFullProfile, 
+        logout 
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

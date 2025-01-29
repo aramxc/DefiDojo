@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu } from '@mui/icons-material';
+import { useUser } from '../../contexts/UserContext';
+import ConnectWalletButton from '../auth/ConnectWalletButton';
 import CreateUserForm from '../auth/CreateUserForm';
 import { truncateAddress } from '../../utils';
 import UpgradeModal from '../premium/UpgradePremiumModal';
@@ -13,7 +15,6 @@ interface NavLinkProps {
 interface NavigationBarProps {
   isExpanded: boolean;
   onToggle: () => void;
-  account?: string;
 }
 
 // Shared style constants
@@ -29,7 +30,8 @@ const NavLink = ({ to, children }: NavLinkProps) => (
   </Link>
 );
 
-const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) => {
+const NavigationBar = ({ isExpanded, onToggle }: NavigationBarProps) => {
+  const { wallet, profile } = useUser();
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
@@ -63,20 +65,18 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
               </div>
 
               <div className="flex items-center space-x-4">
-                {/* Sign Up Button */}
-                <button
-                  onClick={() => setIsSignupOpen(true)}
-                  className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
-                           text-white transition-all duration-200
-                           before:absolute before:inset-0 
-                           before:bg-gradient-to-r before:from-fuchsia-500/80 before:via-violet-500/80 before:to-indigo-500/80
-                           after:absolute after:inset-0 
-                           after:bg-gradient-to-r after:from-fuchsia-500/40 after:via-violet-500/40 after:to-indigo-500/40
-                           hover:shadow-[0_0_20px_rgba(217,70,239,0.4)]
-                           active:transform active:scale-95"
-                >
-                  <span className="relative z-10">Sign Up</span>
-                </button>
+                {/* Show Sign Up if wallet is connected but no profile exists */}
+                {wallet && !profile && (
+                  <button
+                    onClick={() => setIsSignupOpen(true)}
+                    className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
+                             text-white transition-all duration-200
+                             before:absolute before:inset-0 
+                             before:bg-gradient-to-r before:from-fuchsia-500/80 before:via-violet-500/80 before:to-indigo-500/80"
+                  >
+                    <span className="relative z-10">Sign Up</span>
+                  </button>
+                )}
 
                 {/* Upgrade Button */}
                 <Link
@@ -99,29 +99,28 @@ const NavigationBar = ({ isExpanded, onToggle, account }: NavigationBarProps) =>
                 >
                   <span className="relative z-10">Upgrade</span>
                 </Link>
-                
-                {account && (
-                  <div className="text-gray-300 py-2 px-4 rounded-lg font-mono text-sm">
-                    {truncateAddress(account)}
-                  </div>
-                )}
+
+                {/* Login/Wallet Connection Button */}
+                <ConnectWalletButton />
               </div>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Form for creating full profile with email/password */}
       <CreateUserForm
         isOpen={isSignupOpen}
         onClose={() => setIsSignupOpen(false)}
         onSuccess={() => setIsSignupOpen(false)}
-        walletAddress={undefined}
+        walletAddress={wallet || undefined}
       />
 
+      {/* Premium upgrade modal */}
       <UpgradeModal
         isOpen={isUpgradeOpen}
         onClose={() => setIsUpgradeOpen(false)}
-        walletAddress={account}
+        walletAddress={wallet || undefined}
       />
     </>
   );

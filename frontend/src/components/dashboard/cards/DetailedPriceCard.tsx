@@ -131,15 +131,15 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
 
         {/* Price Section */}
         <div className="space-y-3 md:space-y-4">
-          <div className="flex items-baseline">
-            {/* Price Container - Added fixed width */}
-            <div className="flex-1">
+          <div className="flex items-baseline justify-between">
+            {/* Price Container */}
+            <div className="w-[180px]"> {/* Fixed width container */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative min-w-[180px]" // Added fixed minimum width
+                className="relative"
               >
-                <span className="absolute inset-0 w-[100%] bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
+                <span className="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 blur-xl opacity-10" />
                 <AnimatePresence mode="wait">
                   {showLoading ? (
                     <motion.div
@@ -147,32 +147,30 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="flex items-center justify-center"
+                      className="flex items-center h-[48px] justify-start" // Fixed height
                     >
                       <CircularProgress size={30} className="text-blue-500" />
                     </motion.div>
                   ) : (
-                    <motion.span
+                    <motion.div
                       key={fetchedPrice}
                       initial={{ opacity: 1 }}
                       animate={{ opacity: 1 }}
-                      transition={{ 
-                        duration: 0.2,
-                        ease: "easeOut"
-                      }}
-                      className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
-                                bg-clip-text text-transparent tracking-tight font-bold text-4xl
-                                inline-block min-w-[180px]" 
+                      className="h-[48px] flex items-center" // Fixed height container
                     >
-                      {formatValue(fetchedPrice || assetInfo?.marketData?.currentPrice?.usd || 0, "price")}
-                    </motion.span>
+                      <span className="relative bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
+                                     bg-clip-text text-transparent tracking-tight font-bold text-4xl
+                                     whitespace-nowrap"> {/* Added whitespace-nowrap */}
+                        {formatValue(fetchedPrice || assetInfo?.marketData?.currentPrice?.usd || 0, "price")}
+                      </span>
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </motion.div>
             </div>
             
-            {/* Price Change - Added fixed width */}
-            <div className="w-24 flex justify-start shrink-0"> {/* Added shrink-0 */}
+            {/* Price Change - Fixed width */}
+            <div className="w-24 flex justify-end"> {/* Fixed width and right alignment */}
               {assetInfo?.marketData?.priceChangePercentage24h && (
                 <div className={`flex items-center text-sm ${
                   assetInfo.marketData.priceChangePercentage24h > 0 

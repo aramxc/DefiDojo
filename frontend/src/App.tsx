@@ -47,7 +47,7 @@ function App() {
               <NavigationBar 
                 isExpanded={isSidebarExpanded}
                 onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                account={account || undefined}
+               
               />
               <ToastContainer />
               

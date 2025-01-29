@@ -1,73 +1,80 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useUser } from '../../contexts/UserContext';
+import { toast } from 'react-toastify';
+import { truncateAddress } from '../../utils/formatters';
+import { useNavigate } from 'react-router-dom';
 
 interface ConnectWalletButtonProps {
-  onConnect: () => Promise<string>;
+  variant?: 'nav' | 'landing';
 }
 
-const LoadingSpinner = () => (
-  <div className="flex items-center gap-2">
-    <div className="w-4 h-4 border-2 border-cyan-300 border-t-transparent rounded-full animate-spin" />
-    <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 bg-clip-text text-transparent">
-      Connecting...
-    </span>
-  </div>
-);
-
-const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ onConnect }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ variant = 'nav' }) => {
+  const { wallet, connectWallet, disconnectWallet } = useUser();
+  const [showDisconnect, setShowDisconnect] = useState(false);
+  const navigate = useNavigate();
 
   const handleWalletAction = async () => {
-    if (isConnected) {
-      setIsConnected(false);
-      return;
-    }
-
-    setIsLoading(true);
     try {
-      const account = await onConnect();
-      setIsConnected(true);
-    } catch (error) {
-      console.error('Error connecting wallet', error);
-    } finally {
-      setIsLoading(false);
+      if (wallet) {
+        await disconnectWallet();
+        window.location.href = '/';
+      } else {
+        await connectWallet();
+        window.location.href = '/dashboard';
+      }
+    } catch (error: any) {
+      console.error('Wallet action failed:', error);
+      toast.error(error.message || 'Wallet connection failed');
     }
   };
 
-  return (
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <motion.button
+  if (variant === 'landing') {
+    return (
+      <button
         onClick={handleWalletAction}
-        disabled={isLoading}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className={`
-          relative overflow-hidden rounded-lg font-medium text-lg px-8 py-4
-          transition-all duration-200 min-w-[280px]
-          before:absolute before:inset-0 
-          before:bg-gradient-to-r before:from-blue-400 before:via-cyan-300 before:to-teal-400
-          before:opacity-70 before:transition-all before:duration-200
-          after:absolute after:inset-0 
-          after:bg-gradient-to-r after:from-blue-400 after:via-cyan-300 after:to-teal-400
-          after:opacity-50
-          shadow-[0_0_12px_rgba(34,211,238,0.25)]
-          hover:shadow-[0_0_20px_rgba(34,211,238,0.35)]
-          disabled:opacity-75 disabled:cursor-not-allowed
-          ${isConnected ? 'before:opacity-50 after:opacity-30' : ''}
-        `}
+        className="relative overflow-hidden px-8 py-4 rounded-xl font-semibold text-lg
+                   bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400
+                   text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.4)]
+                   transition-all duration-300 transform hover:scale-[1.02]
+                   shadow-[0_0_20px_rgba(34,211,238,0.3)]"
       >
-        <span className="relative z-10 text-white font-semibold">
-          {isLoading ? <LoadingSpinner /> : (
-            isConnected ? 'Disconnect Wallet' : 'Connect Web3 Wallet'
+        <span className="relative z-10">
+          {wallet ? truncateAddress(wallet) : 'Connect Wallet'}
+        </span>
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/30 via-cyan-300/30 to-teal-400/30 
+                      blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleWalletAction}
+      onMouseEnter={() => setShowDisconnect(true)}
+      onMouseLeave={() => setShowDisconnect(false)}
+      className="flex items-center justify-center w-[140px] rounded-lg font-medium text-sm px-6 py-3
+                 bg-gradient-to-br from-slate-800/50 via-slate-800/30 to-slate-900/50
+                 hover:from-slate-700/50 hover:via-slate-800/30 hover:to-slate-800/50
+                 border border-white/[0.05] hover:border-blue-500/20
+                 text-gray-400 hover:text-blue-400
+                 transition-all duration-300 backdrop-blur-sm
+                 hover:shadow-[0_8px_16px_-8px_rgba(59,130,246,0.3)]"
+    >
+      {wallet ? (
+        <span className="flex items-center justify-center gap-2 w-full">
+          {showDisconnect ? (
+            <>
+              <span className="text-blue-400">Disconnect</span>
+              <span className="text-red-400 text-xl">×</span>
+            </>
+          ) : (
+            truncateAddress(wallet)
           )}
         </span>
-      </motion.button>
-    </motion.div>
+      ) : (
+        'Connect Wallet'
+      )}
+    </button>
   );
 };
 

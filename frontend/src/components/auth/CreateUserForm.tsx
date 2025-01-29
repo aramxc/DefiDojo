@@ -21,12 +21,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onClose, 
   isOpen 
 }) => {
-  const { setUser } = useUser();
+  const { upgradeToFullProfile } = useUser();
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
+    username: '',
     password: '',
-    walletAddress: walletAddress || '',
+    walletAddress: walletAddress || undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
@@ -76,43 +76,22 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form
-    if (usernameError) {
-      toast.error('Please fix username errors before submitting');
+    if (!walletAddress) {
+      toast.error('Please connect your wallet first');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await userService.createUser({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        walletAddress: formData.walletAddress || null,
-      });
-
-      // Set the complete user profile in context
-      if (response && response.user) {
-        const userProfile: UserProfile = {
-          ...response.user,
-          wallet_address: formData.walletAddress || null,
-          user_id: crypto.randomUUID(), // Generate temporary ID
-          is_email_verified: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          last_login: null,
-          subscriptions: [],
-          preferences: {}
-        };
-        
-        setUser(userProfile);
-        toast.success('Profile created successfully!');
-        onSuccess();
-      } else {
-        throw new Error('Invalid response from server');
-      }
+      await upgradeToFullProfile(
+        formData.email,
+        formData.username,
+        formData.password
+      );
+      
+      toast.success('Profile created successfully!');
+      onSuccess();
     } catch (error) {
       console.error('Error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create profile');
@@ -280,42 +259,19 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                   </motion.div>
 
                   {/* Wallet Connection */}
-                  {!formData.walletAddress && (
-                    <motion.button
-                      type="button"
-                      onClick={handleConnectWallet}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      // transition={{ delay: 0.5 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 
-                               text-blue-400 hover:bg-blue-500/20 
-                               transition-all duration-200"
-                    >
-                      Connect Wallet (Optional)
-                    </motion.button>
-                  )}
-
-                  {formData.walletAddress && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      // transition={{ delay: 0.5 }}
-                      className="p-3 rounded-lg bg-slate-800/50 border border-slate-600"
-                    >
-                      <p className="text-sm text-slate-300">Connected Wallet</p>
-                      <p className="text-xs text-slate-400 truncate mt-1">{formData.walletAddress}</p>
-                    </motion.div>
-                  )}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-600"
+                  >
+                    <p className="text-sm text-slate-300">Connected Wallet</p>
+                    <p className="text-xs text-slate-400 truncate mt-1">{walletAddress}</p>
+                  </motion.div>
 
                   {/* Submit Button */}
                   <motion.button
                     type="submit"
                     disabled={isLoading}
-                    // initial={{ opacity: 0 }}
-                    // animate={{ opacity: 1 }}
-                    // transition={{ delay: 0.6 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full p-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 

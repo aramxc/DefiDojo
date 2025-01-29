@@ -59,7 +59,7 @@ const AuthLandingPage = () => {
           Connect your wallet to access real-time analytics and start learning about the future of finance.
         </p>
 
-        <ConnectWalletButton onConnect={connectWallet} />
+        <ConnectWalletButton variant="landing" />
       </motion.div>
     </div>
   );
