@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import { useWalletConnection } from './hooks/useWalletConnection';
+import { UserProvider } from './contexts/UserContext';
 
 import PaymentsSidebar from './components/sidebar/SidebarContainer';
 import ConnectWalletButton from './components/auth/ConnectWalletButton';
@@ -38,85 +39,87 @@ function App() {
   };
 
   return (
-    <TimezoneProvider>
-      <ThemeProvider theme={darkTheme}>
-        <Router>
-          <div className="min-h-screen bg-slate-900" style={{ '--navbar-height': '5rem' } as React.CSSProperties}>
-            <NavigationBar 
-              isExpanded={isSidebarExpanded}
-              onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-              account={account || undefined}
-            />
-            <ToastContainer />
-            
-            <div className="flex">
-              {account && (
-                <PaymentsSidebar 
-                  account={account}
-                  isExpanded={isSidebarExpanded}
-                  onClose={() => setIsSidebarExpanded(false)}
-                />
-              )}
+    <UserProvider>
+      <TimezoneProvider>
+        <ThemeProvider theme={darkTheme}>
+          <Router>
+            <div className="min-h-screen bg-slate-900" style={{ '--navbar-height': '5rem' } as React.CSSProperties}>
+              <NavigationBar 
+                isExpanded={isSidebarExpanded}
+                onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                account={account || undefined}
+              />
+              <ToastContainer />
               
-              <div className="flex-1">
-                <Routes>
-                  <Route 
-                    path="/" 
-                    element={
-                      account ? (
-                        <Home 
-                          account={account}
-                          selectedTickers={selectedTickers}
-                          onAddTickers={handleAddTickers}
-                          onRemoveTicker={handleRemoveTicker}
-                          isSidebarExpanded={isSidebarExpanded}
-                        />
-                      ) : (
-                        <AuthLandingPage />
-                      )
-                    }
+              <div className="flex">
+                {account && (
+                  <PaymentsSidebar 
+                    account={account}
+                    isExpanded={isSidebarExpanded}
+                    onClose={() => setIsSidebarExpanded(false)}
                   />
-                  <Route 
-                    path="/advanced-dashboard" 
-                    element={
-                      account ? (
-                        <AdvancedDashboard 
-                          selectedTickers={selectedTickers}
-                          onAddTickers={handleAddTickers}
-                          onRemoveTicker={handleRemoveTicker}
-                        />
-                      ) : (
-                        <AuthLandingPage />
-                      )
-                    }
-                  />
-                  <Route 
-                    path="/learning" 
-                    element={
-                      account ? (
-                        <LearningHub />
-                      ) : (
-                        <AuthLandingPage />
-                      )
-                    }
-                  />
-                  <Route 
-                    path="/news" 
-                    element={
-                      account ? (
-                        <News />
-                      ) : (
-                        <AuthLandingPage />
-                      )
-                    }
-                  />
-                </Routes>
+                )}
+                
+                <div className="flex-1">
+                  <Routes>
+                    <Route 
+                      path="/" 
+                      element={
+                        account ? (
+                          <Home 
+                            account={account}
+                            selectedTickers={selectedTickers}
+                            onAddTickers={handleAddTickers}
+                            onRemoveTicker={handleRemoveTicker}
+                            isSidebarExpanded={isSidebarExpanded}
+                          />
+                        ) : (
+                          <AuthLandingPage />
+                        )
+                      }
+                    />
+                    <Route 
+                      path="/advanced-dashboard" 
+                      element={
+                        account ? (
+                          <AdvancedDashboard 
+                            selectedTickers={selectedTickers}
+                            onAddTickers={handleAddTickers}
+                            onRemoveTicker={handleRemoveTicker}
+                          />
+                        ) : (
+                          <AuthLandingPage />
+                        )
+                      }
+                    />
+                    <Route 
+                      path="/learning" 
+                      element={
+                        account ? (
+                          <LearningHub />
+                        ) : (
+                          <AuthLandingPage />
+                        )
+                      }
+                    />
+                    <Route 
+                      path="/news" 
+                      element={
+                        account ? (
+                          <News />
+                        ) : (
+                          <AuthLandingPage />
+                        )
+                      }
+                    />
+                  </Routes>
+                </div>
               </div>
             </div>
-          </div>
-        </Router>
-      </ThemeProvider>
-    </TimezoneProvider>
+          </Router>
+        </ThemeProvider>
+      </TimezoneProvider>
+    </UserProvider>
   );
 }
 

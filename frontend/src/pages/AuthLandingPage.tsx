@@ -19,7 +19,7 @@ const AuthLandingPage = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.1),transparent_50%)]" />
       </motion.div>
 
-      {/* Floating elements */}
+      {/* Animated Floating elements */}
       {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}

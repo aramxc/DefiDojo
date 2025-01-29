@@ -1,11 +1,11 @@
 import { API_BASE_URL } from '../../config/constants';
 
-export interface CreateUserData {
-  username: string;
-  email: string;
-  password: string;
-  walletAddress?: string | null;
-}
+// export interface CreateUserData {
+//   username: string;
+//   email: string;
+//   password: string;
+//   walletAddress?: string | null;
+// }
 
 export interface UserData {
   userId: string;
@@ -29,8 +29,33 @@ export class UserService {
    * @returns Promise containing created user data
    * @throws Error if user creation fails
    */
-  async createUser(userData: CreateUserData): Promise<UserData> {
+  async checkUsernameAvailability(username: string): Promise<boolean> {
     try {
+      const response = await fetch(`${this.baseUrl}/check-username/${username}`);
+      if (!response.ok) {
+        throw new Error('Failed to check username');
+      }
+      const { available } = await response.json();
+      return available;
+    } catch (error) {
+      console.error('Error checking username:', error);
+      throw error;
+    }
+  }
+
+  async createUser(userData: {
+    username: string;
+    email: string;
+    password: string;
+    walletAddress: string | null;
+  }): Promise<{ user: UserData }> {
+    try {
+      // Check username availability before creating user
+      const isAvailable = await this.checkUsernameAvailability(userData.username);
+      if (!isAvailable) {
+        throw new Error('Username is already taken');
+      }
+
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
@@ -46,10 +71,8 @@ export class UserService {
 
       return await response.json();
     } catch (error) {
-      // Rethrow with more context if needed
-      throw error instanceof Error 
-        ? error 
-        : new Error('User creation failed');
+      console.error('Error creating user:', error);
+      throw error;
     }
   }
 }

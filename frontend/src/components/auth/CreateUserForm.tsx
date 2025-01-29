@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { requestAccount } from '../../services/web3/contract.service';
 import { UserService } from '../../services/api/user.service';
+import { useUser } from '../../contexts/UserContext';
+import type { UserProfile } from '@defidojo/shared-types';
 
 interface CreateUserFormProps {
   onSuccess: () => void;
@@ -19,6 +21,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onClose, 
   isOpen 
 }) => {
+  const { setUser } = useUser();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -26,21 +29,90 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
     walletAddress: walletAddress || '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [checkUsernameTimeout, setCheckUsernameTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Username availability check with timeout-based debounce
+  const checkUsername = async (username: string) => {
+    if (username.length < 3) {
+      setUsernameError('Username must be at least 3 characters');
+      return;
+    }
+
+    try {
+      const isAvailable = await userService.checkUsernameAvailability(username);
+      setUsernameError(isAvailable ? null : 'Username is already taken');
+    } catch (error) {
+      console.error('Error checking username:', error);
+      setUsernameError('Error checking username availability');
+    }
+  };
+
+  // Handle username changes with debounce
+  const handleUsernameChange = (username: string) => {
+    setFormData(prev => ({ ...prev, username }));
+    
+    // Clear any existing timeout
+    if (checkUsernameTimeout) {
+      clearTimeout(checkUsernameTimeout);
+    }
+
+    // Set new timeout for username check
+    const timeoutId = setTimeout(() => {
+      checkUsername(username);
+    }, 500);
+
+    setCheckUsernameTimeout(timeoutId);
+  };
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (checkUsernameTimeout) {
+        clearTimeout(checkUsernameTimeout);
+      }
+    };
+  }, [checkUsernameTimeout]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    if (usernameError) {
+      toast.error('Please fix username errors before submitting');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await userService.createUser({
+      const response = await userService.createUser({
         username: formData.username,
         email: formData.email,
         password: formData.password,
         walletAddress: formData.walletAddress || null,
       });
 
-      toast.success('Profile created successfully!');
-      onSuccess();
+      // Set the complete user profile in context
+      if (response && response.user) {
+        const userProfile: UserProfile = {
+          ...response.user,
+          wallet_address: formData.walletAddress || null,
+          user_id: crypto.randomUUID(), // Generate temporary ID
+          is_email_verified: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_login: null,
+          subscriptions: [],
+          preferences: {}
+        };
+        
+        setUser(userProfile);
+        toast.success('Profile created successfully!');
+        onSuccess();
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create profile');
@@ -147,14 +219,20 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                     <input
                       type="text"
                       value={formData.username}
-                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                      className="w-full p-3 rounded-lg bg-slate-800/50 border border-slate-600 
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      className={`w-full p-3 rounded-lg bg-slate-800/50 border 
                                text-slate-200 placeholder-slate-400
-                               focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 
-                               transition-all duration-200"
+                               focus:ring-2 transition-all duration-200
+                               ${usernameError 
+                                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                                 : 'border-slate-600 focus:border-purple-500 focus:ring-purple-500/20'
+                               }`}
                       placeholder="Choose a username"
                       required
                     />
+                    {usernameError && (
+                      <p className="mt-1 text-sm text-red-400">{usernameError}</p>
+                    )}
                   </motion.div>
 
                   {/* Email Field */}
