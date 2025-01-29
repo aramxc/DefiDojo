@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { newsService } from '../services/api/news.service';
 import { NewsItem } from '@defidojo/shared-types';
 
+/**
+ * Hook for fetching recent news articles related to a specific crypto asset or general crypto news
+ * @param symbol Optional trading symbol (e.g., 'BTC') to fetch asset-specific news
+ * @returns Object containing news items, loading state, and any errors
+ */
 export const useFetchRecentNews = (symbol?: string) => {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +24,6 @@ export const useFetchRecentNews = (symbol?: string) => {
                 setNews(newsData);
             } catch (err) {
                 setError('Unable to fetch latest news');
-                console.error(err);
             } finally {
                 setLoading(false);
             }

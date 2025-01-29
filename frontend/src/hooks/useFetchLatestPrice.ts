@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { priceService } from '../services/api/price.service';
-import { AssetPriceData } from '@defidojo/shared-types';
 
 interface UseFetchLatestPriceResult {
   price: number | null;
@@ -10,6 +9,12 @@ interface UseFetchLatestPriceResult {
   refetch: () => Promise<void>;
 }
 
+/**
+ * Hook for fetching the latest price of a crypto asset with optional real-time updates
+ * @param symbol Trading symbol (e.g., 'BTC')
+ * @param realTime Whether to enable real-time price updates (defaults to false)
+ * @returns Object containing latest price, loading state, error state, last update time, and refetch function
+ */
 export const useFetchLatestPrice = (
   symbol: string,
   realTime: boolean = false
@@ -38,10 +43,17 @@ export const useFetchLatestPrice = (
     fetchPrice(); // Initial fetch
     
     if (realTime) {
-      const interval = setInterval(fetchPrice, 1000); // 1 second
+      // Set up real-time updates if enabled
+      const interval = setInterval(fetchPrice, 1000); // 1 second interval
       return () => clearInterval(interval);
     }
   }, [symbol, realTime]);
 
-  return { price, loading, error, lastUpdateTime, refetch: fetchPrice };
+  return { 
+    price, 
+    loading, 
+    error, 
+    lastUpdateTime, 
+    refetch: fetchPrice 
+  };
 };

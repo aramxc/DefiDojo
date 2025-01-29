@@ -10,6 +10,11 @@ interface UseHistoricalPricesParams {
   };
 }
 
+/**
+ * Hook for fetching historical price data with optional custom date range
+ * @param params Object containing symbol, timeframe, and optional custom date range
+ * @returns Object containing historical price data, loading state, error state, and data availability flag
+ */
 export const useFetchHistoricalPrices = ({ symbol, timeframe, customRange }: UseHistoricalPricesParams) => {
   const [data, setData] = useState<HistoricalPriceData | null>(null);
   const [loading, setLoading] = useState(false);
