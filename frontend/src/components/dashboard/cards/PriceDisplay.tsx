@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { Switch, CircularProgress } from '@mui/material';
 import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
-import { useFetchMarketMetrics } from '../../../hooks/useFetchMarketMetrics';
-import { useFetchAssetInfo } from '../../../hooks/useFetchAssetInfo';
-import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
+import { useFetchMarketMetrics } from '../../../hooks/useMarketMetrics';
+import { useFetchAssetInfo } from '../../../hooks/useAssetInfo';
+import { useFetchLatestPrice } from '../../../hooks/useLivePrice';
 
 interface PriceDisplayProps {
   symbol: string;

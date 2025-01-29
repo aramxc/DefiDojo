@@ -29,7 +29,7 @@ export const truncateAddress = (
 // ======================================
 
 /**
- * Formats a value based on its magnitude (B, M, K)
+ * Formats a value based on its magnitude (Thousands, Millions, Billions, Trillions)
  */
 export const formatValue = (
   value: number | null | undefined, 

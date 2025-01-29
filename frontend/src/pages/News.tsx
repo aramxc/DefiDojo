@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { NewsFeed } from '../components/news/NewsFeed';
 import { Article, TrendingUp, Language } from '@mui/icons-material';
-import { useFetchRecentNews } from '../hooks/useFetchRecentNews';
+import { useFetchRecentNews } from '../hooks/useRecentNews';
 import { Chip } from '@mui/material';
 
 export const News = memo(() => {

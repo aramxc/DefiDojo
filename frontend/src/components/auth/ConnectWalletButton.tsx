@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { requestAccount } from '../../services/web3/contract.service';
 
 interface ConnectWalletButtonProps {
-  setAccount: (account: string | null) => void;
+  onConnect: () => Promise<string>;
 }
 
 const LoadingSpinner = () => (
@@ -15,23 +14,19 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ 
-  setAccount 
-}): JSX.Element => {
+const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ onConnect }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleWalletAction = async () => {
     if (isConnected) {
-      setAccount(null);
       setIsConnected(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const account = await requestAccount();
-      setAccount(account);
+      const account = await onConnect();
       setIsConnected(true);
     } catch (error) {
       console.error('Error connecting wallet', error);

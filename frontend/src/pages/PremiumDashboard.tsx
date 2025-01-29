@@ -13,10 +13,10 @@ import {
   Psychology,
 } from '@mui/icons-material';
 import { StatCard } from '../components/dashboard/cards/StatCard';
-import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
-import { useFetchMarketMetrics } from '../hooks/useFetchMarketMetrics';
+import { useFetchAssetInfo } from '../hooks/useAssetInfo';
+import { useFetchMarketMetrics } from '../hooks/useMarketMetrics';
 import { formatValue, formatPercentage, formatChange, formatTimestamp } from '../utils/formatters';
-import { useFetchCoingeckoId } from '../hooks/useFetchCoingeckoId';
+import { useFetchCoingeckoId } from '../hooks/useCoingeckoId';
 import { AssetInfo } from '@defidojo/shared-types';
 
 interface AdvancedDashboardProps {

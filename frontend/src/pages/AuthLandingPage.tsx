@@ -1,12 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import ConnectWalletButton from '../components/auth/ConnectWalletButton';
+import { useWalletConnection } from '../hooks/useWalletConnection';
 
-interface AuthLandingPageProps {
-  setAccount: (account: string | null) => void;
-}
-
-const AuthLandingPage: React.FC<AuthLandingPageProps> = ({ setAccount }) => {
+const AuthLandingPage = () => {
+  const { connectWallet } = useWalletConnection();
+  
   return (
     <div className="flex flex-col justify-center items-center min-h-screen relative overflow-hidden">
       {/* Animated background elements */}
@@ -60,7 +59,7 @@ const AuthLandingPage: React.FC<AuthLandingPageProps> = ({ setAccount }) => {
           Connect your wallet to access real-time analytics and start learning about the future of finance.
         </p>
 
-        <ConnectWalletButton setAccount={setAccount} />
+        <ConnectWalletButton onConnect={connectWallet} />
       </motion.div>
     </div>
   );

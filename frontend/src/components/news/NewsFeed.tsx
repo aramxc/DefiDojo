@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useFetchRecentNews } from '../../hooks/useFetchRecentNews';
+import { useFetchRecentNews } from '../../hooks/useRecentNews';
 import { CircularProgress, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { OpenInNew, Schedule } from '@mui/icons-material';

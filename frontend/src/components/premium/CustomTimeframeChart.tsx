@@ -4,7 +4,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import { CircularProgress } from '@mui/material';
-import { useFetchHistoricalPrices } from '../../hooks/useFetchHistoricalPrices';
+import { useFetchHistoricalPrices } from '../../hooks/usePriceHistory';
 import { formatTimestamp, formatValue, formatYAxisValue } from '../../utils/formatters';
 
 interface CustomTimeframeChartProps {

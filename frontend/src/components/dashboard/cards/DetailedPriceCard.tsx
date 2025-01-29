@@ -6,7 +6,7 @@ import { AssetInfo } from '@defidojo/shared-types';
 import { Switch, CircularProgress, Chip } from '@mui/material';
 import { Language, Twitter, Reddit, GitHub } from '@mui/icons-material';
 
-import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
+import { useFetchLatestPrice } from '../../../hooks/useLivePrice';
 
 interface DetailedPriceCardProps {
   symbol: string;

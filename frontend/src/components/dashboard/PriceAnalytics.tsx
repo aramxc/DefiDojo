@@ -5,7 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { TimeframeType } from '../../services/api/historicalPrice.service';
 import { checkProAccess } from '../../services/web3/contract.service';
-import { useFetchHistoricalPrices } from '../../hooks/useFetchHistoricalPrices';
+import { useFetchHistoricalPrices } from '../../hooks/usePriceHistory';
 import { useTimezone, TIMEZONE_OPTIONS } from '../../contexts/TimezoneContext';
 import { PurchaseDataModal } from '../premium/PurchaseDataModal';
 import TimeframeSelector from './charts/TimeframeSelector';
