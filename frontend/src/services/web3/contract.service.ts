@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { BrowserProvider, Contract, parseEther, formatEther, JsonRpcSigner } from 'ethers';
 import { CONTRACT_ADDRESS } from '../../config/constants';
 
-// Module level variables to store provider, signer, and contract
+// Module level variables to store provider, signer, and contract instances
 let provider: BrowserProvider;
 let signer: JsonRpcSigner;
 let contract: Contract;
@@ -16,9 +16,14 @@ declare global {
   }
 }
 
+/**
+ * Initializes the contract instance with MetaMask provider
+ * Ensures only one initialization process runs at a time
+ * @throws Error if MetaMask is not installed or initialization fails
+ */
 const initializeContract = async () => {
     if (isInitializing) {
-        // Wait for initialization to complete
+        // Wait for initialization to complete if already in progress
         while (isInitializing) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -34,7 +39,7 @@ const initializeContract = async () => {
             signer = await provider.getSigner();
             contract = new Contract(CONTRACT_ADDRESS, LOCK_ABI, signer);
         } else {
-            throw new Error('Please install metamask!');
+            throw new Error('Please install MetaMask!');
         }
     } catch (error) {
         console.error('Error initializing contract:', error);
@@ -44,10 +49,12 @@ const initializeContract = async () => {
     }
 };
 
-// Function to request account
+/**
+ * Requests user's MetaMask account
+ * @returns Promise containing the connected account address or null if request fails
+ */
 export const requestAccount = async () => {
   if (isProcessingRequest) {
-    console.log('Request already in progress');
     return null;
   }
 
@@ -65,6 +72,10 @@ export const requestAccount = async () => {
   }
 };
 
+/**
+ * Fetches the current balance of the smart contract
+ * @returns Promise containing contract balance in ETH as string
+ */
 export const getContractBalance = async (): Promise<string> => {
   try {
     await initializeContract();
@@ -76,19 +87,27 @@ export const getContractBalance = async (): Promise<string> => {
   }
 };
 
-// Function to get wallet balance in Eth (FYI, 1 eth = 10^18 wei!)
+/**
+ * Fetches the wallet balance for a given account
+ * @param account Ethereum address to check balance for
+ * @returns Promise containing wallet balance in ETH as string
+ */
 export const getWalletBalanceInEth = async (account: string): Promise<string> => {
   try {
     provider = new BrowserProvider(window.ethereum);
     const balanceWei = await provider.getBalance(account);
-    const balanceEth = formatEther(balanceWei);
-    return balanceEth;
+    return formatEther(balanceWei);
   } catch (error) {
     console.error('Error in getWalletBalanceInEth:', error);
     return '0';
   }
 };
-// Function to fetch both contract and wallet balances at once
+
+/**
+ * Fetches both contract and wallet balances in a single call
+ * @param account Ethereum address to check wallet balance for
+ * @returns Promise containing both balances as numbers
+ */
 export const fetchBalances = async (account: string) => {
   try {
     const contractBal = await getContractBalance();
@@ -106,7 +125,11 @@ export const fetchBalances = async (account: string) => {
   }
 };
 
-// Function to deposit ETH into the contract
+/**
+ * Deposits ETH into the smart contract
+ * @param depositValue Amount of ETH to deposit as string
+ * @throws Error if deposit fails
+ */
 export const depositFunds = async (depositValue: string): Promise<void> => {
   try {
     await initializeContract();
@@ -121,7 +144,11 @@ export const depositFunds = async (depositValue: string): Promise<void> => {
   }
 };
 
-// Function to withdraw ETH from the contract
+/**
+ * Withdraws ETH from the smart contract
+ * @param withdrawValue Amount of ETH to withdraw as string
+ * @throws Error if withdrawal fails
+ */
 export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
   try {
     await initializeContract();
@@ -136,17 +163,26 @@ export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
   }
 };
 
+/**
+ * Checks if an address has pro access for a given symbol
+ * @param symbol Trading symbol to check access for
+ * @returns Promise containing boolean indicating access status
+ */
 export const checkProAccess = async (symbol: string): Promise<boolean> => {
   try {
     await initializeContract();
-    const hasAccess = await contract.hasProAccess(symbol);
-    return hasAccess;
+    return await contract.hasProAccess(symbol);
   } catch (error) {
     console.error('Error checking pro access:', error);
     return false;
   }
 };
 
+/**
+ * Purchases pro access for a given symbol
+ * @param symbol Trading symbol to purchase access for
+ * @throws Error if purchase fails
+ */
 export const purchaseProAccess = async (symbol: string): Promise<void> => {
   try {
     await initializeContract();
