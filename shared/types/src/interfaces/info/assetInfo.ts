@@ -1,161 +1,161 @@
 export interface AssetInfo {
-    ID: string;
-    SYMBOL: string;
-    NAME: string;
-    WEB_SLUG: string;
-    ASSET_PLATFORM_ID: string | null;
-    PLATFORMS: {
+    id: string;
+    symbol: string;
+    name: string;
+    webSlug: string;
+    assetPlatformId: string | null;
+    platforms: {
         [key: string]: string;
     };
-    DETAIL_PLATFORMS: {
+    detailPlatforms: {
         [key: string]: {
-            DECIMAL_PLACE: number | null;
-            CONTRACT_ADDRESS: string;
+            decimalPlace: number | null;
+            contractAddress: string;
         };
     };
-    BLOCK_TIME_IN_MINUTES: number;
-    HASHING_ALGORITHM: string;
-    CATEGORIES: string[];
-    PREVIEW_LISTING: boolean;
-    PUBLIC_NOTICE: string | null;
-    ADDITIONAL_NOTICES: string[];
-    LOCALIZATION: {
+    blockTimeInMinutes: number;
+    hashingAlgorithm: string;
+    categories: string[];
+    previewListing: boolean;
+    publicNotice: string | null;
+    additionalNotices: string[];
+    localization: {
         [key: string]: string;
     };
-    DESCRIPTION: {
+    description: {
         [key: string]: string;
     };
-    LINKS: {
-        HOMEPAGE: string[];
-        WHITEPAPER: string[];
-        BLOCKCHAIN_SITE: string[];
-        OFFICIAL_FORUM_URL: string[];
-        CHAT_URL: string[];
-        ANNOUNCEMENT_URL: string[];
-        SNAPSHOT_URL: string | null;
-        TWITTER_SCREEN_NAME: string;
-        FACEBOOK_USERNAME: string;
-        BITCOINTALK_THREAD_IDENTIFIER: number | null;
-        TELEGRAM_CHANNEL_IDENTIFIER: string;
-        SUBREDDIT_URL: string;
-        REPOS_URL: {
-            GITHUB: string[];
-            BITBUCKET: string[];
+    links: {
+        homepage: string[];
+        whitepaper: string;
+        blockchainSite: string[];
+        officialForumUrl: string[];
+        chatUrl: string[];
+        announcementUrl: string[];
+        snapshotUrl: string | null;
+        twitterScreenName: string;
+        facebookUsername: string;
+        bitcointalkThreadIdentifier: number | null;
+        telegramChannelIdentifier: string;
+        subredditUrl: string;
+        reposUrl: {
+            github: string[];
+            bitbucket: string[];
         };
     };
-    IMAGE: {
-        THUMB: string;
-        SMALL: string;
-        LARGE: string;
+    image: {
+        thumb: string;
+        small: string;
+        large: string;
     };
-    MARKET_DATA: {
-        CURRENT_PRICE: { [key: string]: number };
-        TOTAL_VALUE_LOCKED: number | null;
-        MCAP_TO_TVL_RATIO: number | null;
-        FDV_TO_TVL_RATIO: number | null;
-        ROI: number | null;
-        ATH: { [key: string]: number };
-        ATH_CHANGE_PERCENTAGE: { [key: string]: number };
-        ATH_DATE: { [key: string]: string };
-        ATL: { [key: string]: number };
-        ATL_CHANGE_PERCENTAGE: { [key: string]: number };
-        ATL_DATE: { [key: string]: string };
-        MARKET_CAP: { [key: string]: number };
-        MARKET_CAP_RANK: number;
-        FULLY_DILUTED_VALUATION: { [key: string]: number };
-        PRICE_CHANGE_24H_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_1H_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_24H_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_7D_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_14D_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_30D_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_60D_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_200D_IN_CURRENCY: { [key: string]: number };
-        PRICE_CHANGE_PERCENTAGE_1Y_IN_CURRENCY: { [key: string]: number };
-        MARKET_CAP_CHANGE_24H_IN_CURRENCY: { [key: string]: number };
-        MARKET_CAP_CHANGE_PERCENTAGE_24H_IN_CURRENCY: { [key: string]: number };
-        TOTAL_SUPPLY: number;
-        MAX_SUPPLY: number;
-        CIRCULATING_SUPPLY: number;
-        LAST_UPDATED: string;
-        MARKET_CAP_FDV_RATIO: number;
-        TOTAL_VOLUME: { [key: string]: number };
-        HIGH_24H: { [key: string]: number };
-        LOW_24H: { [key: string]: number };
-        PRICE_CHANGE_24H: number;
-        PRICE_CHANGE_PERCENTAGE_24H: number;
-        PRICE_CHANGE_PERCENTAGE_7D: number;
-        PRICE_CHANGE_PERCENTAGE_14D: number;
-        PRICE_CHANGE_PERCENTAGE_30D: number;
-        PRICE_CHANGE_PERCENTAGE_60D: number;
-        PRICE_CHANGE_PERCENTAGE_200D: number;
-        PRICE_CHANGE_PERCENTAGE_1Y: number;
-        MARKET_CAP_CHANGE_24H: number;
-        MARKET_CAP_CHANGE_PERCENTAGE_24H: number;
+    marketData: {
+        currentPrice: { [key: string]: number };
+        totalValueLocked: number | null;
+        mcapToTvlRatio: number | null;
+        fdvToTvlRatio: number | null;
+        roi: number | null;
+        ath: { [key: string]: number };
+        athChangePercentage: { [key: string]: number };
+        athDate: { [key: string]: string };
+        atl: { [key: string]: number };
+        atlChangePercentage: { [key: string]: number };
+        atlDate: { [key: string]: string };
+        marketCap: { [key: string]: number };
+        marketCapRank: number;
+        fullyDilutedValuation: { [key: string]: number };
+        priceChange24hInCurrency: { [key: string]: number };
+        priceChangePercentage1hInCurrency: { [key: string]: number };
+        priceChangePercentage24hInCurrency: { [key: string]: number };
+        priceChangePercentage7dInCurrency: { [key: string]: number };
+        priceChangePercentage14dInCurrency: { [key: string]: number };
+        priceChangePercentage30dInCurrency: { [key: string]: number };
+        priceChangePercentage60dInCurrency: { [key: string]: number };
+        priceChangePercentage200dInCurrency: { [key: string]: number };
+        priceChangePercentage1yInCurrency: { [key: string]: number };
+        marketCapChange24hInCurrency: { [key: string]: number };
+        marketCapChangePercentage24hInCurrency: { [key: string]: number };
+        totalSupply: number;
+        maxSupply: number;
+        circulatingSupply: number;
+        lastUpdated: string;
+        marketCapFdvRatio: number;
+        totalVolume: { [key: string]: number };
+        high24h: { [key: string]: number };
+        low24h: { [key: string]: number };
+        priceChange24h: number;
+        priceChangePercentage24h: number;
+        priceChangePercentage7d: number;
+        priceChangePercentage14d: number;
+        priceChangePercentage30d: number;
+        priceChangePercentage60d: number;
+        priceChangePercentage200d: number;
+        priceChangePercentage1y: number;
+        marketCapChange24h: number;
+        marketCapChangePercentage24h: number;
     };
-    COMMUNITY_DATA: {
-        FACEBOOK_LIKES: number | null;
-        TWITTER_FOLLOWERS: number;
-        REDDIT_AVERAGE_POSTS_48H: number;
-        REDDIT_AVERAGE_COMMENTS_48H: number;
-        REDDIT_SUBSCRIBERS: number;
-        REDDIT_ACCOUNTS_ACTIVE_48H: number;
-        TELEGRAM_CHANNEL_USER_COUNT: number | null;
+    communityData: {
+        facebookLikes: number | null;
+        twitterFollowers: number;
+        redditAveragePosts48h: number;
+        redditAverageComments48h: number;
+        redditSubscribers: number;
+        redditAccountsActive48h: number;
+        telegramChannelUserCount: number | null;
     };
-    DEVELOPER_DATA: {
-        FORKS: number;
-        STARS: number;
-        SUBSCRIBERS: number;
-        TOTAL_ISSUES: number;
-        CLOSED_ISSUES: number;
-        PULL_REQUESTS_MERGED: number;
-        PULL_REQUEST_CONTRIBUTORS: number;
-        CODE_ADDITIONS_DELETIONS_4_WEEKS: {
-            ADDITIONS: number;
-            DELETIONS: number;
+    developerData: {
+        forks: number;
+        stars: number;
+        subscribers: number;
+        totalIssues: number;
+        closedIssues: number;
+        pullRequestsMerged: number;
+        pullRequestContributors: number;
+        codeAdditionsDeletions4Weeks: {
+            additions: number;
+            deletions: number;
         };
-        COMMIT_COUNT_4_WEEKS: number;
-        LAST_4_WEEKS_COMMIT_ACTIVITY_SERIES: number[];
+        commitCount4Weeks: number;
+        last4WeeksCommitActivitySeries: number[];
     };
-    STATUS_UPDATES: any[];
-    LAST_UPDATED: string;
-    TICKERS: Array<{
-        BASE: string;
-        TARGET: string;
-        MARKET: {
-            NAME: string;
-            IDENTIFIER: string;
-            HAS_TRADING_INCENTIVE: boolean;
+    statusUpdates: any[];
+    lastUpdated: string;
+    tickers: Array<{
+        base: string;
+        target: string;
+        market: {
+            name: string;
+            identifier: string;
+            hasTradingIncentive: boolean;
         };
-        LAST: number;
-        VOLUME: number;
-        CONVERTED_LAST: {
-            BTC: number;
-            ETH: number;
-            USD: number;
+        last: number;
+        volume: number;
+        convertedLast: {
+            btc: number;
+            eth: number;
+            usd: number;
         };
-        CONVERTED_VOLUME: {
-            BTC: number;
-            ETH: number;
-            USD: number;
+        convertedVolume: {
+            btc: number;
+            eth: number;
+            usd: number;
         };
-        TRUST_SCORE: string;
-        BID_ASK_SPREAD_PERCENTAGE: number;
-        TIMESTAMP: string;
-        LAST_TRADED_AT: string;
-        LAST_FETCH_AT: string;
-        IS_ANOMALY: boolean;
-        IS_STALE: boolean;
-        TRADE_URL: string;
-        TOKEN_INFO_URL: string | null;
-        COIN_ID: string;
-        TARGET_COIN_ID: string;
+        trustScore: string;
+        bidAskSpreadPercentage: number;
+        timestamp: string;
+        lastTradedAt: string;
+        lastFetchAt: string;
+        isAnomaly: boolean;
+        isStale: boolean;
+        tradeUrl: string;
+        tokenInfoUrl: string | null;
+        coinId: string;
+        targetCoinId: string;
     }>;
-    PYTH_PRICE_FEED_ID: string | null;
-    COINGECKO_ID: string | null;
-    IS_ACTIVE: boolean;
-    COUNTRY_ORIGIN: string;
-    GENESIS_DATE: string;
-    SENTIMENT_VOTES_UP_PERCENTAGE: number;
-    SENTIMENT_VOTES_DOWN_PERCENTAGE: number;
+    pythPriceFeedId: string | null;
+    coingeckoId: string | null;
+    isActive: boolean;
+    countryOrigin: string;
+    genesisDate: string;
+    sentimentVotesUpPercentage: number;
+    sentimentVotesDownPercentage: number;
 }

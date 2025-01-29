@@ -16,6 +16,8 @@ import { StatCard } from '../components/dashboard/cards/StatCard';
 import { useFetchAssetInfo } from '../hooks/useFetchAssetInfo';
 import { useFetchMarketMetrics } from '../hooks/useFetchMarketMetrics';
 import { formatValue, formatPercentage, formatChange, formatTimestamp } from '../utils/formatters';
+import { useFetchCoingeckoId } from '../hooks/useFetchCoingeckoId';
+import { AssetInfo } from '@defidojo/shared-types';
 
 interface AdvancedDashboardProps {
   selectedTickers: string[];
@@ -30,21 +32,52 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
   onAddTickers,
   onRemoveTicker,
   defaultTicker = 'BTC',
-  getRealTimeData = false
-  
+  getRealTimeData = true
 }) => {
+  // Prevent console clear
+  console.clear = () => {
+    console.log('Console clear prevented');
+  };
+  
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
-  const { assetInfo, loading: assetLoading } = useFetchAssetInfo(selectedSymbol);
-  const { metrics, loading: metricsLoading } = useFetchMarketMetrics(
-    selectedSymbol,
-    assetInfo?.COINGECKO_ID
+  // First fetch coingeckoId
+  const { 
+    coingeckoId,
+    loading: idLoading,
+    error: idError 
+  } = useFetchCoingeckoId(selectedSymbol);
+  
+  // Only fetch asset info once we have a coingeckoId
+  const { 
+    assetInfo, 
+    loading: assetLoading, 
+    error: assetError 
+  } = useFetchAssetInfo(
+    coingeckoId, // This will trigger the hook only when coingeckoId is available
+    getRealTimeData // Request real-time data if coingeckoId is available
   );
+
+  const { 
+    metrics, 
+    loading: metricsLoading,
+    error: metricsError 
+  } = useFetchMarketMetrics(
+    selectedSymbol,
+    assetInfo?.coingeckoId || undefined
+  );
+
+  console.log('Dashboard State:', {
+    selectedSymbol,
+    coingeckoId,
+    idLoading,
+    idError
+  });
 
   console.log('Asset Info:', assetInfo);
   console.log('Metrics:', metrics);
-  console.log('Loading States:', { assetLoading, metricsLoading });
+  console.log('Loading States:', { idLoading, assetLoading, metricsLoading });
 
   useEffect(() => {
     if (!selectedSymbol) {
@@ -56,6 +89,19 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
     setItems(selectedTickers);
   }, [selectedTickers]);
 
+  // Handle loading and error states
+  if (idError) {
+    console.error('ID Error:', idError);
+  }
+
+  if (assetError) {
+    console.error('Asset Info Error:', assetError);
+  }
+
+  if (metricsError) {
+    console.error('Metrics Error:', metricsError);
+  }
+
   // Define statCards here, before any conditional returns
   const statCards = [
     {
@@ -65,23 +111,23 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "Market Cap Rank", 
-          value: `#${assetInfo?.MARKET_CAP_RANK || 'N/A'}`,
+          value: `#${assetInfo?.marketData?.marketCapRank || 'N/A'}`,
           className: "text-blue-500 font-bold"
         },
         { 
           label: "Market Sentiment", 
           value: "",
-          change: assetInfo?.SENTIMENT_VOTES_UP_PERCENTAGE
+          change: assetInfo?.sentimentVotesUpPercentage
         },
         { 
           label: "Total Supply", 
-          value: formatValue(assetInfo?.TOTAL_SUPPLY, 'compact'),
-          suffix: assetInfo?.SYMBOL
+          value: formatValue(assetInfo?.marketData?.totalSupply, 'compact'),
+          suffix: assetInfo?.symbol
         },
         { 
           label: "Circulating Supply", 
-          value: formatValue(assetInfo?.CIRCULATING_SUPPLY, 'compact'),
-          suffix: assetInfo?.SYMBOL
+          value: formatValue(assetInfo?.marketData?.circulatingSupply, 'compact'),
+          suffix: assetInfo?.symbol
         }
       ]
     },
@@ -92,23 +138,23 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "All Time High", 
-          value: formatValue(assetInfo?.MARKET_DATA?.ATH?.USD, 'price'),
-          change: assetInfo?.MARKET_DATA?.ATH_CHANGE_PERCENTAGE,
+          value: formatValue(assetInfo?.marketData?.ath?.usd, 'price'),
+          change: assetInfo?.marketData?.athChangePercentage,
           
         },
         { 
           label: "All Time High Date", 
-          value: formatTimestamp(assetInfo?.MARKET_DATA?.ATH_DATE.USD, 'MM/DD/YYYY', 'America/Denver'),
+          value: formatTimestamp(Number(assetInfo?.marketData?.athDate?.usd || 0), 'MM/DD/YYYY', 'America/Denver'),
         },
         { 
           label: "All Time Low", 
-          value: formatValue(assetInfo?.MARKET_DATA?.ATL?.USD, 'price'),
-          change: assetInfo?.MARKET_DATA?.ATL_CHANGE_PERCENTAGE,
+          value: formatValue(assetInfo?.marketData?.atl?.usd, 'price'),
+          change: assetInfo?.marketData?.atlChangePercentage,
          
         },
         { 
           label: "All Time Low Date", 
-          value: formatTimestamp(assetInfo?.MARKET_DATA?.ATL_DATE.USD, 'MM/DD/YYYY', 'America/Denver'),
+          value: formatTimestamp(Number(assetInfo?.marketData?.atlDate?.usd || 0), 'MM/DD/YYYY', 'America/Denver'),
         }
       ]
     },
@@ -142,16 +188,16 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "GitHub Stars", 
-          value: formatValue(assetInfo?.GITHUB_STARS, 'number'),
+          value: formatValue(assetInfo?.developerData?.stars, 'number'),
           className: "text-yellow-500"
         },
         { 
           label: "Total Forks", 
-          value: formatValue(assetInfo?.GITHUB_FORKS, 'number')
+          value: formatValue(assetInfo?.developerData?.forks, 'number')
         },
         { 
           label: "Active Contributors", 
-          value: formatValue(assetInfo?.GITHUB_PULL_REQUEST_CONTRIBUTORS, 'number'),
+          value: formatValue(assetInfo?.developerData?.pullRequestContributors, 'number'),
           className: "text-green-500"
         }
       ]
@@ -163,16 +209,16 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "Issue Resolution Rate", 
-          value: formatPercentage((assetInfo?.GITHUB_CLOSED_ISSUES || 0) / (assetInfo?.GITHUB_TOTAL_ISSUES || 1) * 100),
+          value: formatPercentage((assetInfo?.developerData?.closedIssues || 0) / (assetInfo?.developerData?.totalIssues || 1) * 100),
           
         },
         { 
           label: "Total PRs Merged", 
-          value: formatValue(assetInfo?.GITHUB_PULL_REQUESTS_MERGED, 'compact')
+          value: formatValue(assetInfo?.developerData?.pullRequestsMerged, 'compact')
         },
         { 
           label: "Active Subscribers", 
-          value: formatValue(assetInfo?.GITHUB_SUBSCRIBERS, 'compact')
+          value: formatValue(assetInfo?.developerData?.subscribers, 'compact')
         }
       ]
     },
@@ -183,12 +229,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
       stats: [
         { 
           label: "Sentiment Score", 
-          value: formatPercentage(assetInfo?.SENTIMENT_VOTES_UP_PERCENTAGE),
-          change: assetInfo?.SENTIMENT_VOTES_UP_PERCENTAGE
+          value: formatPercentage(assetInfo?.sentimentVotesUpPercentage),
+          change: assetInfo?.sentimentVotesUpPercentage
         },
         { 
           label: "Categories", 
-          value: `${assetInfo?.CATEGORIES?.length || 0} Tags`
+          value: `${assetInfo?.categories?.length || 0} Tags`
         }
       ]
     }
@@ -233,9 +279,11 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 <div className="h-full w-full">
                   <DetailedPriceCard
                     symbol={selectedSymbol}
-                    assetInfo={assetInfo}
-                    isLoading={assetLoading}
+                    coingeckoId={coingeckoId}
+                    assetInfo={assetInfo as AssetInfo}
+                    isLoading={idLoading || assetLoading}
                     marketMetrics={metrics}
+                    error={assetError?.message || idError?.message}
                   />
                 </div>
               </motion.div>
@@ -294,7 +342,7 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   icon={card.icon}
                   infoTooltip={card.infoTooltip}
                   stats={card.stats as any}
-                  isLoading={assetLoading || metricsLoading}
+                  isLoading={idLoading || assetLoading || metricsLoading}
                   className="backdrop-blur-xl bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80 
                             border border-white/[0.05] shadow-xl hover:shadow-2xl transition-all duration-300
                             hover:border-white/[0.08]"

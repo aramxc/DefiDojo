@@ -2,13 +2,13 @@ import { Request, Response } from 'express';
 import NodeCache from 'node-cache';
 import { InfoService } from '../services/snowflake/info.service';
 import { CoinGeckoService } from '../services/external/coingecko/coingecko.service';
+import { transformSnowflakeToApi, transformCoinGeckoToApi } from '../utils/transformers';
 
 export class InfoController {
     private infoService: InfoService;
     private coingeckoService: CoinGeckoService;
     private cache: NodeCache;
     
-
     constructor() {
         this.infoService = new InfoService();
         this.coingeckoService = new CoinGeckoService();
@@ -26,70 +26,105 @@ export class InfoController {
 
     async getAssetIdBySymbol(req: Request, res: Response) {
         try {
-            const { symbol } = req.params;
-            const assetId = await this.coingeckoService.getCoinList(symbol.toUpperCase());
-            res.status(200).json(assetId);
+            const symbol = req.params.symbol;
+            
+            if (!symbol) {
+                return res.status(400).json({ message: 'Symbol is required' });
+            }
+
+            const asset = await this.infoService.getAssetInfoBySymbol(symbol.toUpperCase());
+            
+            // Send only the essential fields needed for ID lookup
+            const response = {
+                symbol: asset.symbol,
+                coingeckoId: asset.coingeckoId,
+                name: asset.name
+            };
+            
+            res.json(response);
         } catch (error) {
-            console.error('Error fetching asset id:', error);
-            res.status(500).json({ message: 'Failed to fetch asset id' });
+            res.status(404).json({ 
+                message: `No asset found for symbol:`,
+                error: 'NOT_FOUND'
+            });
         }
     }
 
     async getAssetInfoBySymbol(req: Request, res: Response) {
         try {
             const { symbol } = req.params;
-            // Just return the Snowflake data (includes COINGECKO_ID)
-            const data = await this.infoService.getAssetInfoBySymbol(symbol.toUpperCase());
-            if (!data) {
-                return res.status(404).json({ message: 'Asset not found' });
+            const realTime = req.query.realTime === 'true';
+
+            if (realTime) {
+                // Get real-time data from CoinGecko
+                const coingeckoData = await this.coingeckoService.getAssetInfoBySymbol(symbol.toUpperCase());
+                const transformedCoinGeckoData = transformCoinGeckoToApi(coingeckoData);
+                return res.status(200).json(transformedCoinGeckoData);
+            } else {
+                // Get static data from Snowflake
+                const snowflakeData = await this.infoService.getAssetInfoBySymbol(symbol.toUpperCase());
+                const transformedSnowflakeData = transformSnowflakeToApi(snowflakeData);
+                return res.status(200).json(transformedSnowflakeData);
             }
-            res.status(200).json(data);
         } catch (error) {
-            res.status(500).json({ message: 'Failed to fetch asset info' });
+            console.error('Error in getAssetInfoBySymbol:', error);
+            res.status(500).json({ 
+                message: 'Failed to fetch asset info',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     }
 
     async getAssetInfoById(req: Request, res: Response) {
         try {
-            const { id } = req.params;
+            const { coingeckoId } = req.params;
+            const realTime = req.query.realTime === 'true';
             
-            if (!id) {
-                return res.status(400).json({ message: 'Asset ID is required' });
+            if (!coingeckoId) {
+                console.error('❌ Backend: Missing coingeckoId parameter');
+                return res.status(400).json({ message: 'Coingecko ID is required' });
             }
 
-            const getRealTimeData = req.query.getRealTimeData === 'true';
-            const cacheKey = this.getCacheKey('id', id, getRealTimeData);
+            console.log('🔍 Backend: Processing request:', { coingeckoId, realTime });
 
+            const cacheKey = this.getCacheKey('asset_info', coingeckoId, realTime);
+            
+            // Check cache first
             const cachedData = this.cache.get(cacheKey);
             if (cachedData) {
-                console.log(`Cache hit for ${cacheKey}`);
+                console.log('📦 Backend: Returning cached data for:', coingeckoId);
                 return res.status(200).json(cachedData);
             }
 
-            console.log(`Cache miss for ${cacheKey}`);
-
-            if (getRealTimeData) {
+            // Try to get real-time data if requested
+            if (realTime) {
                 try {
-                    const realTimeData = await this.coingeckoService.getAssetInfoById(id);
+                    console.log('🔄 Backend: Fetching real-time data from CoinGecko for:', coingeckoId);
+                    const realTimeData = await this.coingeckoService.getAssetInfoById(coingeckoId);
                     if (realTimeData) {
-                        this.cache.set(cacheKey, realTimeData);
-                        return res.status(200).json(realTimeData);
+                        const transformedData = transformCoinGeckoToApi(realTimeData);
+                        this.cache.set(cacheKey, transformedData);
+                        return res.status(200).json(transformedData);
                     }
                 } catch (error) {
-                    console.warn('Failed to fetch real-time data, falling back to Snowflake data:', error);
+                    console.warn('⚠️ Backend: Failed to fetch real-time data, falling back to Snowflake');
                 }
             }
 
             // Fallback to Snowflake data
-            const snowflakeData = await this.infoService.getAssetInfoById(id);
+            console.log('📊 Backend: Fetching Snowflake data for:', coingeckoId);
+            const snowflakeData = await this.infoService.getAssetInfoById(coingeckoId);
             if (!snowflakeData) {
+                console.error('❌ Backend: Asset not found in Snowflake');
                 return res.status(404).json({ message: 'Asset not found' });
             }
 
-            this.cache.set(cacheKey, snowflakeData);
-            return res.status(200).json(snowflakeData);
+            const transformedData = transformSnowflakeToApi(snowflakeData);
+            this.cache.set(cacheKey, transformedData);
+            return res.status(200).json(transformedData);
+
         } catch (error) {
-            console.error('Error in getAssetInfoById:', error);
+            console.error('❌ Backend: Error in getAssetInfoById:', error);
             return res.status(500).json({ 
                 message: 'Failed to fetch asset info',
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -107,7 +142,8 @@ export class InfoController {
             }
 
             const assets = await this.infoService.getTopAssets(limit);
-            res.status(200).json(assets);
+            const transformedAssets = assets.map(asset => transformSnowflakeToApi(asset));
+            res.status(200).json(transformedAssets);
         } catch (error) {
             console.error('Error fetching top assets:', error);
             if (error instanceof Error) {
@@ -130,8 +166,9 @@ export class InfoController {
 
             // Fetch fresh market data
             const marketData = await this.coingeckoService.getCoinMarketData(coingeckoId);
-            this.cache.set(cacheKey, marketData);
-            res.status(200).json(marketData);
+            const transformedCoinGeckoData = transformCoinGeckoToApi(marketData);
+            this.cache.set(cacheKey, transformedCoinGeckoData);
+            res.status(200).json(transformedCoinGeckoData);
         } catch (error) {
             res.status(500).json({ message: 'Failed to fetch market data' });
         }

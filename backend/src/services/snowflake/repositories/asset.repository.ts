@@ -1,15 +1,30 @@
 import { getConnection } from '../../../config/snowflake.config';
 import { AssetInfo } from '@defidojo/shared-types';
+import { transformSnowflakeToApi } from '../../../utils/transformers';
 
+/**
+ * Repository class for handling asset-related database operations
+ */
 export class AssetRepository {
+    /**
+     * Finds an asset by its trading symbol
+     * @param symbol The trading symbol (e.g., 'BTC')
+     * @returns Promise<AssetInfo>
+     */
     async findBySymbol(symbol: string): Promise<AssetInfo> {
         const connection = getConnection();
         
         return new Promise((resolve, reject) => {
             const query = `
-                SELECT *
+                SELECT 
+                    ID,
+                    SYMBOL,
+                    NAME,
+                    COINGECKO_ID,
+                    IS_ACTIVE
                 FROM ASSETS
                 WHERE SYMBOL = ?
+                AND IS_ACTIVE = TRUE
                 LIMIT 1
             `;
 
@@ -22,13 +37,9 @@ export class AssetRepository {
                     } else if (!rows?.[0]) {
                         reject(new Error(`Asset not found for symbol: ${symbol}`));
                     } else {
-                        const asset = rows[0] as AssetInfo;
-                        
-                        if (asset.GENESIS_DATE) {
-                            asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
-                        }
-
-                        resolve(asset);
+                        const rawAsset = rows[0] as any;
+                        const transformedAsset = transformSnowflakeToApi(rawAsset);
+                        resolve(transformedAsset);
                     }
                 }
             });
@@ -40,37 +51,7 @@ export class AssetRepository {
         
         return new Promise((resolve, reject) => {
             const query = `
-                SELECT 
-                    ASSET_ID as asset_id,
-                    NAME as name,
-                    SYMBOL as symbol,
-                    COINGECKO_ID as coingecko_id,
-                    PYTH_PRICE_FEED_ID as pyth_price_feed_id,
-                    IS_ACTIVE as is_active,
-                    MARKET_CAP_RANK as market_cap_rank,
-                    CREATED_AT as created_at,
-                    UPDATED_AT as updated_at,
-                    BLOCK_TIME_IN_MINUTES as block_time_in_minutes,
-                    HASHING_ALGORITHM as hashing_algorithm,
-                    DESCRIPTION as description,
-                    HOMEPAGE_URL as homepage_url,
-                    WHITEPAPER_URL as whitepaper_url,
-                    SUBREDDIT_URL as subreddit_url,
-                    IMAGE_URL as image_url,
-                    COUNTRY_ORIGIN as country_origin,
-                    GENESIS_DATE as genesis_date,
-                    TOTAL_SUPPLY as total_supply,
-                    MAX_SUPPLY as max_supply,
-                    CIRCULATING_SUPPLY as circulating_supply,
-                    GITHUB_REPOS as github_repos,
-                    GITHUB_FORKS as github_forks,
-                    GITHUB_STARS as github_stars,
-                    GITHUB_SUBSCRIBERS as github_subscribers,
-                    GITHUB_TOTAL_ISSUES as github_total_issues,
-                    GITHUB_CLOSED_ISSUES as github_closed_issues,
-                    GITHUB_PULL_REQUESTS_MERGED as github_pull_requests_merged,
-                    GITHUB_PULL_REQUEST_CONTRIBUTORS as github_pull_request_contributors,
-                    BID_ASK_SPREAD_PERCENTAGE as bid_ask_spread_percentage
+                SELECT *
                 FROM PUBLIC.ASSETS
                 WHERE IS_ACTIVE = TRUE
                 ORDER BY MARKET_CAP_RANK ASC NULLS LAST
@@ -85,13 +66,8 @@ export class AssetRepository {
                         reject(err);
                     } else {
                         const assets = (rows || []).map(row => {
-                            const asset = row as AssetInfo;
-                            
-                            if (asset.GENESIS_DATE) {
-                                asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
-                            }
-
-                            return asset;
+                            const rawAsset = row as any;
+                            return transformSnowflakeToApi(rawAsset);
                         });
                         resolve(assets);
                     }
@@ -105,37 +81,7 @@ export class AssetRepository {
         
         return new Promise((resolve, reject) => {
             const query = `
-                SELECT 
-                    ASSET_ID as asset_id,
-                    NAME as name,
-                    SYMBOL as symbol,
-                    COINGECKO_ID as coingecko_id,
-                    PYTH_PRICE_FEED_ID as pyth_price_feed_id,
-                    IS_ACTIVE as is_active,
-                    MARKET_CAP_RANK as market_cap_rank,
-                    CREATED_AT as created_at,
-                    UPDATED_AT as updated_at,
-                    BLOCK_TIME_IN_MINUTES as block_time_in_minutes,
-                    HASHING_ALGORITHM as hashing_algorithm,
-                    DESCRIPTION as description,
-                    HOMEPAGE_URL as homepage_url,
-                    WHITEPAPER_URL as whitepaper_url,
-                    SUBREDDIT_URL as subreddit_url,
-                    IMAGE_URL as image_url,
-                    COUNTRY_ORIGIN as country_origin,
-                    GENESIS_DATE as genesis_date,
-                    TOTAL_SUPPLY as total_supply,
-                    MAX_SUPPLY as max_supply,
-                    CIRCULATING_SUPPLY as circulating_supply,
-                    GITHUB_REPOS as github_repos,
-                    GITHUB_FORKS as github_forks,
-                    GITHUB_STARS as github_stars,
-                    GITHUB_SUBSCRIBERS as github_subscribers,
-                    GITHUB_TOTAL_ISSUES as github_total_issues,
-                    GITHUB_CLOSED_ISSUES as github_closed_issues,
-                    GITHUB_PULL_REQUESTS_MERGED as github_pull_requests_merged,
-                    GITHUB_PULL_REQUEST_CONTRIBUTORS as github_pull_request_contributors,
-                    BID_ASK_SPREAD_PERCENTAGE as bid_ask_spread_percentage
+                SELECT *
                 FROM PUBLIC.ASSETS
                 WHERE ASSET_ID = :1
                 AND IS_ACTIVE = TRUE
@@ -150,13 +96,52 @@ export class AssetRepository {
                     } else if (!rows?.[0]) {
                         reject(new Error('Asset not found'));
                     } else {
-                        const asset = rows[0] as AssetInfo;
-                        
-                        if (asset.GENESIS_DATE) {
-                            asset.GENESIS_DATE = new Date(asset.GENESIS_DATE).toISOString();
-                        }
+                        const rawAsset = rows[0] as any;
+                        const transformedAsset = transformSnowflakeToApi(rawAsset);
+                        resolve(transformedAsset);
+                    }
+                }
+            });
+        });
+    }
 
-                        resolve(asset);
+    async findCoingeckoIdBySymbol(symbol: string): Promise<string> {
+        const connection = getConnection();
+        
+        return new Promise((resolve, reject) => {
+            const query = `
+                SELECT COINGECKO_ID
+                FROM PUBLIC.ASSETS
+                WHERE SYMBOL = :1
+                AND IS_ACTIVE = TRUE
+                LIMIT 1
+            `;
+
+            console.log('🔍 Querying Snowflake for COINGECKO_ID, symbol:', symbol);
+            
+            connection.execute({
+                sqlText: query,
+                binds: [symbol.toUpperCase()],
+                complete: (err, _stmt, rows) => {
+                    if (err) {
+                        console.error('❌ Snowflake Error:', err);
+                        reject(err);
+                    } else if (!rows?.[0]) {
+                        console.warn('⚠️ No asset found for symbol:', symbol);
+                        reject(new Error(`Asset not found for symbol: ${symbol}`));
+                    } else {
+                        const rawAsset = rows[0] as any;
+                        console.log('📥 Snowflake response:', {
+                            symbol: symbol,
+                            coingeckoId: rawAsset.COINGECKO_ID
+                        });
+                        
+                        if (!rawAsset.COINGECKO_ID) {
+                            console.warn('⚠️ COINGECKO_ID is null for symbol:', symbol);
+                            reject(new Error(`No COINGECKO_ID found for symbol: ${symbol}`));
+                        }
+                        
+                        resolve(rawAsset.COINGECKO_ID);
                     }
                 }
             });

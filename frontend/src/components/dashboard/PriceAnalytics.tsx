@@ -109,7 +109,6 @@ export const PriceAnalytics = memo(({
 
     useEffect(() => {
         if (data?.[symbol]) {
-            console.log('Setting current data:', data[symbol].data); // Debug log
             setCurrentData(data[symbol].data);
             setMetrics(data[symbol].metrics);
             setError(null);

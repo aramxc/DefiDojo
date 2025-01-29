@@ -64,7 +64,7 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
             {/* Header */}
             <div className="flex items-center justify-between p-4">
                 <h3 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-100 bg-clip-text text-transparent">
-                    About {assetInfo.NAME}
+                    About {assetInfo.name}
                 </h3>
                 <CardControls isBackside />
             </div>
@@ -73,7 +73,7 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
             <div className="flex-1 px-6 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/10 scrollbar-track-transparent">
                 <div 
                     className="text-gray-300/90 text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: (assetInfo.DESCRIPTION as unknown as string) || '' }}
+                    dangerouslySetInnerHTML={{ __html: (assetInfo.description as unknown as string) || '' }}
                 />
             </div>
 
@@ -81,9 +81,9 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
             <div className="p-4 border-t border-gray-700/20">
                 <div className="flex flex-wrap gap-2 justify-center">
                     {[
-                        { url: assetInfo.LINKS.WHITEPAPER?.[0], label: 'Whitepaper' },
-                        { url: assetInfo.LINKS.SUBREDDIT_URL, label: 'Reddit' },
-                        { url: assetInfo.LINKS.REPOS_URL?.GITHUB?.[0], label: 'GitHub' }
+                        { url: assetInfo.links.whitepaper?.[0], label: 'Whitepaper' },
+                        { url: assetInfo.links.subredditUrl, label: 'Reddit' },
+                        { url: assetInfo.links.reposUrl?.github?.[0], label: 'GitHub' }
                     ].filter(link => link.url).map(link => (
                         <a
                             key={link.label}
@@ -113,7 +113,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   symbol, 
   onRemove, 
   onSelectSymbol,
-  getRealTimeData
+  getRealTimeData = false
 }) => {
   const [isRealTime, setIsRealTime] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -124,11 +124,28 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
     lastUpdateTime 
   } = useFetchLatestPrice(symbol, isRealTime);
 
-  const { assetInfo, loading: assetInfoLoading, error: assetInfoError } = useFetchAssetInfo(symbol, getRealTimeData);
-  const { metrics: marketMetrics, loading: metricsLoading, error: metricsError } = useFetchMarketMetrics(
+  const { 
+    assetInfo, 
+    loading: assetInfoLoading, 
+    error: assetInfoError 
+  } = useFetchAssetInfo(symbol, getRealTimeData);
+
+  const { 
+    metrics: marketMetrics, 
+    loading: metricsLoading, 
+    error: metricsError 
+  } = useFetchMarketMetrics(
     symbol,
-    assetInfo?.COINGECKO_ID || undefined
+    assetInfo?.coingeckoId || undefined
   );
+
+  if (assetInfoError) {
+    return (
+      <div className="text-red-500">
+        Error loading asset info: {assetInfoError.message}
+      </div>
+    );
+  }
 
   const CardControls = ({ isBackside = false }) => {
     const handleAnalyticsButtonClick = (e: React.MouseEvent) => {
@@ -194,6 +211,21 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
     );
   };
 
+  const renderThumbnail = () => {
+    if (!assetInfo?.image?.thumb) return null;
+    
+    return (
+      <div className="relative">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
+        <img 
+          src={assetInfo.image.thumb} 
+          alt={symbol} 
+          className="relative w-8 h-8 rounded-full"
+        />
+      </div>
+    );
+  };
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -226,19 +258,10 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
                 <CardControls />
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    {assetInfo?.IMAGE?.THUMB && (
-                      <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
-                        <img 
-                          src={assetInfo.IMAGE.THUMB} 
-                          alt={symbol} 
-                          className="relative w-8 h-8 rounded-full"
-                        />
-                      </div>
-                    )}
+                    {renderThumbnail()}
                     <div className="space-y-1">
                       <h3 className="text-lg font-bold text-gray-100">{symbol.toUpperCase()}</h3>
-                      <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
+                      <span className="text-sm text-gray-400">{assetInfo?.name || 'Loading...'}</span>
                     </div>
                   </div>
                   <div className="space-y-2">

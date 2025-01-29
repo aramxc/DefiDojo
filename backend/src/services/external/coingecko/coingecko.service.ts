@@ -113,7 +113,7 @@ export class CoinGeckoService {
      * Fetches detailed asset information by CoinGecko ID
      * Includes market data, community stats, and developer metrics
      */
-    async getAssetInfoById(id: string): Promise<AssetInfo> {
+    async getAssetInfoById(id: string): Promise<any> {
         const url = `${this.baseUrl}/coins/${id}`;
         const params = {
             localization: false,
@@ -124,10 +124,7 @@ export class CoinGeckoService {
         };
         
         const data = await this.makeRequest(url, params);
-        const originalName = data.name;
-        const upperData = this.convertKeysToUpperCase(data);
-
-        return this.formatAssetInfo(upperData, originalName);
+        return data;
     }
 
     /**
@@ -314,84 +311,5 @@ export class CoinGeckoService {
     // Helper method to calculate percentage changes
     private calculatePercentageChange(oldValue: number, newValue: number): number {
         return ((newValue - oldValue) / oldValue) * 100;
-    }
-
-    /**
-     * Recursively converts all object keys to uppercase
-     * @param obj Object to convert
-     */
-    private convertKeysToUpperCase(obj: any): any {
-        if (!obj) return null;
-        
-        if (Array.isArray(obj)) {
-            return obj.map(item => this.convertKeysToUpperCase(item));
-        }
-        
-        if (typeof obj === 'object') {
-            return Object.keys(obj).reduce((acc, key) => {
-                const upperKey = key.toUpperCase();
-                acc[upperKey] = this.convertKeysToUpperCase(obj[key]);
-                return acc;
-            }, {} as any);
-        }
-        
-        return obj;
-    }
-
-    /**
-     * Formats raw API data into AssetInfo structure
-     * @param upperData Data with uppercase keys
-     * @param originalName Original asset name
-     */
-    private formatAssetInfo(upperData: any, originalName: string): AssetInfo {
-        return {
-            ID: upperData.ID,
-            COINGECKO_ID: upperData.ID,
-            SYMBOL: upperData.SYMBOL,
-            NAME: originalName,
-            WEB_SLUG: upperData.WEB_SLUG,
-            ASSET_PLATFORM_ID: upperData.ASSET_PLATFORM_ID,
-            PLATFORMS: upperData.PLATFORMS,
-            DETAIL_PLATFORMS: upperData.DETAIL_PLATFORMS,
-            BLOCK_TIME_IN_MINUTES: upperData.BLOCK_TIME_IN_MINUTES,
-            HASHING_ALGORITHM: upperData.HASHING_ALGORITHM,
-            CATEGORIES: upperData.CATEGORIES,
-            PREVIEW_LISTING: upperData.PREVIEW_LISTING,
-            PUBLIC_NOTICE: upperData.PUBLIC_NOTICE,
-            ADDITIONAL_NOTICES: upperData.ADDITIONAL_NOTICES,
-            LOCALIZATION: upperData.LOCALIZATION,
-            DESCRIPTION: upperData.DESCRIPTION,
-            LINKS: upperData.LINKS || {
-                HOMEPAGE: [],
-                WHITEPAPER: [],
-                BLOCKCHAIN_SITE: [],
-                OFFICIAL_FORUM_URL: [],
-                CHAT_URL: [],
-                ANNOUNCEMENT_URL: [],
-                SNAPSHOT_URL: null,
-                TWITTER_SCREEN_NAME: '',
-                FACEBOOK_USERNAME: '',
-                BITCOINTALK_THREAD_IDENTIFIER: null,
-                TELEGRAM_CHANNEL_IDENTIFIER: '',
-                SUBREDDIT_URL: '',
-                REPOS_URL: {
-                    GITHUB: [],
-                    BITBUCKET: []
-                }
-            },
-            IMAGE: upperData.IMAGE,
-            MARKET_DATA: upperData.MARKET_DATA,
-            COMMUNITY_DATA: upperData.COMMUNITY_DATA,
-            DEVELOPER_DATA: upperData.DEVELOPER_DATA,
-            STATUS_UPDATES: upperData.STATUS_UPDATES,
-            LAST_UPDATED: upperData.LAST_UPDATED,
-            TICKERS: upperData.TICKERS,
-            PYTH_PRICE_FEED_ID: null,
-            IS_ACTIVE: true,
-            COUNTRY_ORIGIN: upperData.COUNTRY_ORIGIN,
-            GENESIS_DATE: upperData.GENESIS_DATE,
-            SENTIMENT_VOTES_UP_PERCENTAGE: upperData.SENTIMENT_VOTES_UP_PERCENTAGE,
-            SENTIMENT_VOTES_DOWN_PERCENTAGE: upperData.SENTIMENT_VOTES_DOWN_PERCENTAGE
-        };
     }
 }

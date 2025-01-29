@@ -10,7 +10,8 @@ import { useFetchLatestPrice } from '../../../hooks/useFetchLatestPrice';
 
 interface DetailedPriceCardProps {
   symbol: string;
-  assetInfo: any;
+  coingeckoId: string;  
+  assetInfo: AssetInfo;
   isLoading?: boolean;
   error?: string;
   priceChange?: number;
@@ -19,6 +20,7 @@ interface DetailedPriceCardProps {
 
 export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({ 
   symbol, 
+  coingeckoId,
   assetInfo, 
   isLoading,
   error,
@@ -105,11 +107,11 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            {assetInfo?.IMAGE && (
+            {assetInfo?.image && (
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-sm opacity-30"></div>
                 <img 
-                  src={assetInfo.IMAGE.LARGE} 
+                  src={assetInfo.image.large} 
                   alt={symbol} 
                   className="relative w-10 h-10 rounded-full"
                 />
@@ -119,10 +121,10 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold text-gray-100">{symbol?.toUpperCase()}</h3>
                 <span className="px-2 py-0.5 text-xs font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
-                  #{assetInfo?.MARKET_CAP_RANK}
+                  #{assetInfo?.marketData?.marketCapRank}
                 </span>
               </div>
-              <span className="text-sm text-gray-400">{assetInfo?.NAME}</span>
+              <span className="text-sm text-gray-400">{assetInfo?.name}</span>
             </div>
           </div>
         </div>
@@ -162,7 +164,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                                 bg-clip-text text-transparent tracking-tight font-bold text-4xl
                                 inline-block min-w-[180px]" 
                     >
-                      {formatValue(fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD || 0, "price")}
+                      {formatValue(fetchedPrice || assetInfo?.marketData?.currentPrice?.usd || 0, "price")}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -171,17 +173,17 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             
             {/* Price Change - Added fixed width */}
             <div className="w-24 flex justify-start shrink-0"> {/* Added shrink-0 */}
-              {assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H && (
+              {assetInfo?.marketData?.priceChangePercentage24h && (
                 <div className={`flex items-center text-sm ${
-                  assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
+                  assetInfo.marketData.priceChangePercentage24h > 0 
                     ? 'text-green-400' 
                     : 'text-red-400'
                 }`}>
-                  {assetInfo.MARKET_DATA.PRICE_CHANGE_PERCENTAGE_24H > 0 
+                  {assetInfo.marketData.priceChangePercentage24h > 0 
                     ? <ArrowDropUp className="w-5 h-5" /> 
                     : <ArrowDropDown className="w-5 h-5" />
                   }
-                  {formatPercentage(Math.abs(assetInfo?.MARKET_DATA?.PRICE_CHANGE_PERCENTAGE_24H))}
+                  {formatPercentage(Math.abs(assetInfo?.marketData?.priceChangePercentage24h))}
                 </div>
               )}
             </div>
@@ -230,18 +232,18 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             <span className="text-sm text-gray-400">Market Cap</span>
             <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
               <span className="text-sm font-sm text-gray-100">
-                {formatValue(assetInfo?.MARKET_DATA?.MARKET_CAP?.USD, "marketCap")}
+                {formatValue(assetInfo?.marketData?.marketCap?.usd, "marketCap")}
               </span>
               <div className={`flex items-center -space-x-1 text-sm ${
-                assetInfo?.MARKET_DATA?.MARKET_CAP_CHANGE_PERCENTAGE_24H > 0 
+                assetInfo?.marketData?.marketCapChangePercentage24h > 0 
                   ? 'text-green-400' 
                   : 'text-red-400'
               }`}>
-                {assetInfo?.MARKET_DATA?.MARKET_CAP_CHANGE_PERCENTAGE_24H > 0 
+                {assetInfo?.marketData?.marketCapChangePercentage24h > 0 
                   ? <ArrowDropUp className="w-5 h-5" /> 
                   : <ArrowDropDown className="w-5 h-5" />
                 }
-                {formatPercentage(Math.abs(assetInfo?.MARKET_DATA?.MARKET_CAP_CHANGE_PERCENTAGE_24H))}
+                {formatPercentage(Math.abs(assetInfo?.marketData?.marketCapChangePercentage24h))}
               </div>
             </div>
           </div>
@@ -274,7 +276,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             <span className="text-sm text-gray-400">Circulating Supply</span>
             <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
               <span className="text-sm font-sm text-gray-100">
-                {formatValue(assetInfo?.CIRCULATING_SUPPLY, "compact")}
+                {formatValue(assetInfo?.marketData?.circulatingSupply, "compact")}
               </span>
             </div>
           </div>
@@ -283,7 +285,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             <span className="text-sm text-gray-400">Max Supply</span>
             <div className="flex justify-between items-center mt-0.5"> {/* Added small top margin */}
               <span className="text-sm font-sm text-gray-100">
-                {assetInfo?.MAX_SUPPLY ? formatValue(assetInfo.MAX_SUPPLY, "compact") : '∞'}
+                {assetInfo?.marketData?.maxSupply ? formatValue(assetInfo.marketData.maxSupply, "compact") : '∞'}
               </span>
             </div>
           </div>
@@ -294,11 +296,11 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           <div className="flex justify-between items-center mb-1 text-xs text-gray-400">
             <div className="flex flex-col items-start">
               <span className="text-gray-500 text-[10px]">Circulating</span>
-              <span>{formatValue(assetInfo?.CIRCULATING_SUPPLY, "compact")}</span>
+              <span>{formatValue(assetInfo?.marketData?.circulatingSupply, "compact")}</span>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-gray-500 text-[10px]">Max Supply</span>
-              <span>{assetInfo?.MAX_SUPPLY ? formatValue(assetInfo.MAX_SUPPLY, "compact") : '∞'}</span>
+              <span>{assetInfo?.marketData?.maxSupply ? formatValue(assetInfo.marketData.maxSupply, "compact") : '∞'}</span>
             </div>
           </div>
           <div className="w-full bg-gray-800/50 rounded-full h-1.5 relative overflow-hidden">
@@ -306,8 +308,8 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
             <div 
               className="h-full bg-gradient-to-r from-[#38bdf8] to-[#22d3ee] rounded-full transition-all duration-300"
               style={{ 
-                width: `${assetInfo?.MAX_SUPPLY 
-                  ? (assetInfo.CIRCULATING_SUPPLY / assetInfo.MAX_SUPPLY) * 100
+                width: `${assetInfo?.marketData?.maxSupply 
+                  ? (assetInfo.marketData.circulatingSupply / assetInfo.marketData.maxSupply) * 100
                   : 100}%` 
               }}
             />
@@ -320,27 +322,27 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
           <div className="relative">
             <div className="flex justify-between text-xs text-gray-400">
               <span>{formatValue(getLow24h(
-                fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
+                fetchedPrice || assetInfo?.marketData?.currentPrice?.usd,
                 marketMetrics?.trends?.price?.low24h,
-                assetInfo?.MARKET_DATA?.LOW_24H?.USD
+                assetInfo?.marketData?.low24h?.usd
               ), "price")}</span>
               <span>{formatValue(getHigh24h(
-                fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD,
+                fetchedPrice || assetInfo?.marketData?.currentPrice?.usd,
                 marketMetrics?.trends?.price?.high24h,
-                assetInfo?.MARKET_DATA?.HIGH_24H?.USD
+                assetInfo?.marketData?.high24h?.usd
               ), "price")}</span>
             </div>
             {(() => {
-              const currentPrice = fetchedPrice || assetInfo?.MARKET_DATA?.CURRENT_PRICE?.USD;
+              const currentPrice = fetchedPrice || assetInfo?.marketData?.currentPrice?.usd;
               const lowPrice = getLow24h(
                 currentPrice,
                 marketMetrics?.trends?.price?.low24h,
-                assetInfo?.MARKET_DATA?.LOW_24H?.USD
+                assetInfo?.marketData?.low24h?.usd
               );
               const highPrice = getHigh24h(
                 currentPrice,
                 marketMetrics?.trends?.price?.high24h,
-                assetInfo?.MARKET_DATA?.HIGH_24H?.USD
+                assetInfo?.marketData?.high24h?.usd
               );
               
               // Calculate position percentage
@@ -381,9 +383,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
         <div className="flex flex-col space-y-4 w-full px-2 md:px-3">
           {/* Social Links */}
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 w-full">
-            {assetInfo?.LINKS?.HOMEPAGE?.[0] && (
+            {assetInfo?.links?.homepage?.[0] && (
               <a
-                href={assetInfo.LINKS.HOMEPAGE[0]}
+                href={assetInfo.links.homepage[0]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
@@ -398,9 +400,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                 Website
               </a>
             )}
-            {assetInfo?.LINKS?.WHITEPAPER && (
+            {assetInfo?.links?.whitepaper && (
               <a
-                href={assetInfo.LINKS.WHITEPAPER}
+                href={assetInfo.links.whitepaper}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
@@ -416,9 +418,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               </a>
             )}
             
-            {assetInfo?.LINKS?.REPOS_URL?.GITHUB?.[0] && (
+            {assetInfo?.links?.reposUrl?.github?.[0] && (
               <a
-                href={assetInfo.LINKS.REPOS_URL.GITHUB[0]}
+                href={assetInfo.links.reposUrl.github[0]}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
@@ -433,9 +435,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                 GitHub
               </a>
             )}
-            {assetInfo?.LINKS?.TWITTER_SCREEN_NAME && (
+            {assetInfo?.links?.twitterScreenName && (
               <a
-                href={`https://twitter.com/${assetInfo.LINKS.TWITTER_SCREEN_NAME}`}
+                href={`https://twitter.com/${assetInfo.links.twitterScreenName}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
@@ -450,9 +452,9 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
                 Twitter
               </a>
             )}
-            {assetInfo?.LINKS?.SUBREDDIT_URL && (
+            {assetInfo?.links?.subredditUrl && (
               <a
-                href={assetInfo.LINKS.SUBREDDIT_URL}
+                href={assetInfo.links.subredditUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-full
