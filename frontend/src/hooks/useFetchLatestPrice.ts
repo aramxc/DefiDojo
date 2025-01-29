@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { priceService } from '../services/api/price.service';
 
-interface UseFetchLatestPriceResult {
-  price: number | null;
-  loading: boolean;
-  error: Error | null;
-  lastUpdateTime: Date;
-  refetch: () => Promise<void>;
-}
-
 /**
  * Hook for fetching the latest price of a crypto asset with optional real-time updates
  * @param symbol Trading symbol (e.g., 'BTC')
@@ -18,7 +10,7 @@ interface UseFetchLatestPriceResult {
 export const useFetchLatestPrice = (
   symbol: string,
   realTime: boolean = false
-): UseFetchLatestPriceResult => {
+) => {
   const [price, setPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
