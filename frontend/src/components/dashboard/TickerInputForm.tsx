@@ -3,7 +3,7 @@ import { Autocomplete, TextField } from '@mui/material';
 import { TICKER_SYMBOLS } from '../../config/constants';
 
 interface TickerInputFormProps {
-  onAddTickers?: (tickers: string[]) => void;
+  onAddTickers?: (tickers: { symbol: string; coingeckoId: string }[]) => void;
   onSelectTicker?: (ticker: string) => void;
   selectedTicker?: string;
   allowMultipleSelections?: boolean;
@@ -28,7 +28,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({
   }, [defaultTicker, onSelectTicker, selectedTicker]);
 
   const handleSubmit = () => {
-    onAddTickers?.(selectedTickers);
+    onAddTickers?.(selectedTickers.map(symbol => ({ symbol, coingeckoId: '' })));
     setSelectedTickers([]);
   };
 

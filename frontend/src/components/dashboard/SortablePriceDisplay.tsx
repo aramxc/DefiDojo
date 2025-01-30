@@ -6,15 +6,19 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 interface SortablePriceDisplayProps {
   id: string;
   symbol: string;
+  coingeckoId: string;
   onRemove: () => void;
   onSelectSymbol: (symbol: string) => void;
+  getRealTimeData?: boolean;
 }
 
 export const SortablePriceDisplay = ({
   id,
   symbol,
+  coingeckoId,
   onRemove,
   onSelectSymbol,
+  getRealTimeData
 }: SortablePriceDisplayProps) => {
   const {
     attributes,
