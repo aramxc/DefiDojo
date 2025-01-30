@@ -6,8 +6,8 @@ import { toast } from 'react-toastify';
  */
 export class WalletService {
   /**
-   * Request wallet connection from MetaMask
-   * This will trigger the MetaMask popup if user needs to connect
+   * Request wallet connection from MetaMask.
+   * This will trigger the MetaMask popup if user needs to connect.
    * @returns Promise<string | null> - Returns wallet address if connected, null if not
    * @throws Error if MetaMask is not installed or user rejects connection
    */
@@ -36,7 +36,7 @@ export class WalletService {
   }
 
   /**
-   * Disconnect the wallet by clearing permissions and local storage
+   * Disconnect the wallet by clearing permissions and local storage.
    * Note: MetaMask doesn't have a true "disconnect" method, so we clear permissions
    */
   static async disconnectWallet(): Promise<void> {
