@@ -196,4 +196,3 @@ export const purchaseProAccess = async (symbol: string): Promise<void> => {
     throw error;
   }
 };
-

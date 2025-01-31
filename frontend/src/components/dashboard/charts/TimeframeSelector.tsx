@@ -47,27 +47,22 @@ const TimeframeSelector = memo(({
                             transition-all duration-200
                             ${(tf === '5Y' || tf === 'Custom') 
                                 ? timeframe === tf || (tf === 'Custom' && isCustomMode)
-                                    ? `relative overflow-hidden
-                                       text-white
+                                    ? `relative overflow-hidden text-white
                                        before:absolute before:inset-0 
                                        before:rounded-lg
-                                       before:bg-gradient-to-r before:from-fuchsia-500/90 before:via-pink-500/90 before:to-fuchsia-400/90
+                                       before:bg-gradient-to-r before:from-pink-500/95 before:via-fuchsia-500/95 before:to-purple-500/95
                                        before:backdrop-blur-xl
-                                       before:animate-[burn_3s_ease-in-out_infinite]
-                                       after:absolute after:inset-0 
-                                       after:rounded-lg
-                                       after:bg-gradient-to-r after:from-fuchsia-500/60 after:via-pink-500/60 after:to-fuchsia-400/60
-                                       shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                                       [&>span]:animate-[pulse_2s_ease-in-out_infinite]`
-                                    : `relative overflow-hidden
-                                       text-white
+                                       before:animate-[burn_1s_ease-in-out_infinite]
+                                       shadow-[0_0_25px_rgba(236,72,153,0.7)]
+                                       hover:shadow-[0_0_30px_rgba(236,72,153,0.8)]
+                                       transition-all duration-300`
+                                    : `relative overflow-hidden text-white
                                        before:absolute before:inset-0 
                                        before:rounded-lg
-                                       before:bg-gradient-to-r before:from-fuchsia-500/60 before:via-pink-500/60 before:to-fuchsia-400/60
+                                       before:bg-gradient-to-r before:from-pink-500/80 before:via-fuchsia-500/80 before:to-purple-500/80
                                        before:backdrop-blur-xl
-                                       before:animate-[burn_3s_ease-in-out_infinite]
-                                       hover:shadow-[0_0_25px_rgba(236,72,153,0.5)]
-                                       hover:before:from-fuchsia-500/80 hover:before:via-pink-500/80 hover:before:to-fuchsia-400/80`
+                                       hover:shadow-[0_0_12px_rgba(236,72,153,0.6)]
+                                       transition-all duration-300`
                                 : timeframe === tf
                                     ? `relative overflow-hidden
                                        text-white

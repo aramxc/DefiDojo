@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { historicalPriceService, TimeframeType, HistoricalPriceData } from '../services/api/historicalPrice.service';
 
-interface UseHistoricalPricesParams {
+interface FetchHistoricalPricesParams {
   symbol: string;
-  timeframe: TimeframeType | null;
-  customRange?: {
-    from: number;
-    to: number;
-  };
+  timeframe: TimeframeType;
+  customRange?: { from: number; to: number };
 }
 
 /**
@@ -15,7 +12,7 @@ interface UseHistoricalPricesParams {
  * @param params Object containing symbol, timeframe, and optional custom date range
  * @returns Object containing historical price data, loading state, error state, and data availability flag
  */
-export const useFetchHistoricalPrices = ({ symbol, timeframe, customRange }: UseHistoricalPricesParams) => {
+export const useFetchHistoricalPrices = ({ symbol, timeframe, customRange }: FetchHistoricalPricesParams) => {
   const [data, setData] = useState<HistoricalPriceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

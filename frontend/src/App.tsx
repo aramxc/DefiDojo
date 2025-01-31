@@ -13,7 +13,7 @@ import CreateUserForm from './components/auth/CreateUserForm';
 import Dashboard from './pages/Dashboard';
 import LearningHub from './pages/LearningHub';
 import { News } from './pages/News';
-
+import Home from './pages/Home';
 import 'react-toastify/dist/ReactToastify.css';
 
 export const darkTheme = createTheme({
@@ -103,42 +103,6 @@ function App() {
   );
 }
 
-interface HomeProps {
-  account: string;
-  selectedTickers: Ticker[];
-  onAddTickers: (tickers: Ticker[]) => void;
-  onRemoveTicker: (symbol: string) => void;
-  isSidebarExpanded: boolean;
-}
 
-const Home = ({ 
-  account, 
-  selectedTickers, 
-  onAddTickers, 
-  onRemoveTicker,
-  isSidebarExpanded
-}: HomeProps) => {
-  const { hasProfile } = useWalletConnection();
-
-  if (!account) return <AuthLandingPage />;
-  if (!hasProfile) {
-    return (
-      <CreateUserForm 
-        isOpen={true}
-        onClose={() => {}} 
-        onSuccess={() => {}}
-        walletAddress={account}
-      />
-    );
-  }
-
-  return (
-    <Dashboard 
-      selectedTickers={selectedTickers} 
-      onAddTickers={onAddTickers} 
-      onRemoveTicker={onRemoveTicker}
-    />
-  );
-};
 
 export default App;

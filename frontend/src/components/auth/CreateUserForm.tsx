@@ -185,88 +185,79 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                   <p className="text-slate-400 mt-2">Join the Dojo today 🥷</p>
                 </motion.div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Username Field */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.username}
-                      onChange={(e) => handleUsernameChange(e.target.value)}
-                      className={`w-full p-3 rounded-lg bg-slate-800/50 border 
-                               text-slate-200 placeholder-slate-400
-                               focus:ring-2 transition-all duration-200
-                               ${usernameError 
-                                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
-                                 : 'border-slate-600 focus:border-purple-500 focus:ring-purple-500/20'
-                               }`}
-                      placeholder="Choose a username"
-                      required
-                    />
-                    {usernameError && (
-                      <p className="mt-1 text-sm text-red-400">{usernameError}</p>
-                    )}
-                  </motion.div>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Form Fields Group */}
+                  <div className="space-y-6">
+                    {/* Username Field */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        className={`w-full p-3 rounded-lg bg-slate-800/50 border 
+                                 text-slate-200 placeholder-slate-400
+                                 focus:ring-2 transition-all duration-200
+                                 ${usernameError 
+                                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                                   : 'border-slate-600 focus:border-purple-500 focus:ring-purple-500/20'
+                                 }`}
+                        placeholder="Choose a username"
+                        required
+                      />
+                      {usernameError && (
+                        <p className="mt-1 text-sm text-red-400">{usernameError}</p>
+                      )}
+                    </div>
 
-                  {/* Email Field */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full p-3 rounded-lg bg-slate-800/50 border border-slate-600 
-                               text-slate-200 placeholder-slate-400
-                               focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 
-                               transition-all duration-200"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </motion.div>
+                    {/* Email Field */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-slate-800/50 border border-slate-600 
+                                 text-slate-200 placeholder-slate-400
+                                 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 
+                                 transition-all duration-200"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
 
-                  {/* Password Field */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      className="w-full p-3 rounded-lg bg-slate-800/50 border border-slate-600 
-                               text-slate-200 placeholder-slate-400
-                               focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 
-                               transition-all duration-200"
-                      placeholder="Create a password"
-                      required
-                    />
-                  </motion.div>
+                    {/* Password Field */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                        className="w-full p-3 rounded-lg bg-slate-800/50 border border-slate-600 
+                                 text-slate-200 placeholder-slate-400
+                                 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 
+                                 transition-all duration-200"
+                        placeholder="Create a password"
+                        required
+                      />
+                    </div>
 
-                  {/* Wallet Connection */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-3 rounded-lg bg-slate-800/50 border border-slate-600"
-                  >
-                    <p className="text-sm text-slate-300">Connected Wallet</p>
-                    <p className="text-xs text-slate-400 truncate mt-1">{walletAddress}</p>
-                  </motion.div>
+                    {/* Connected Wallet */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
+                        Connected Wallet
+                      </label>
+                      <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-600">
+                        <p className="text-xs text-slate-400 truncate">{walletAddress}</p>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Submit Button */}
                   <motion.button

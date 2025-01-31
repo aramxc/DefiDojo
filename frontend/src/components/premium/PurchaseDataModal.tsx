@@ -18,6 +18,7 @@ export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess, timefram
     try {
       setIsProcessing(true);
       await purchaseProAccess(symbol);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       onSuccess(timeframe);
     } catch (error) {
       console.error('Purchase failed:', error);

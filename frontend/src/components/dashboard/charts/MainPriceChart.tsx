@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import { TimeframeType } from '../../../services/api/historicalPrice.service';
 import { formatTimestamp, formatValue, formatYAxisValue } from '../../../utils/formatters';
@@ -8,20 +8,30 @@ const PriceChart = memo(({
     dataType,
     timeframe, 
     selectedTimezone,
-    customDateRange 
+    customDateRange,
+    symbol
 }: { 
     data: Array<any>;
     dataType: 'price' | 'marketCap' | 'volume';
     timeframe: TimeframeType;
     selectedTimezone: string;
     customDateRange?: { from: Date | null; to: Date | null };
+    symbol: string;
 }) => {
+    // Add state to track the current data window
+    const [displayData, setDisplayData] = useState(data);
+
+    // Update display data when symbol, timeframe, or data changes
+    useEffect(() => {
+        setDisplayData(data);
+    }, [data, symbol, timeframe]);
+
     // Ensure we're using 'custom' timeframe when customDateRange is provided
     const effectiveTimeframe = customDateRange?.from && customDateRange?.to ? 'custom' : timeframe;
 
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 5, right: 5, left: 10, bottom: 15 }}>
+            <LineChart data={displayData} margin={{ top: 5, right: 5, left: 10, bottom: 15 }}>
                 {/* Chart Gradients */}
                 <defs> 
                     <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">

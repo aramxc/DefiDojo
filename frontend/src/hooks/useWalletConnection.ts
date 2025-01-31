@@ -1,33 +1,34 @@
-import { useState, useEffect } from 'react';
-import { requestAccount } from '../services/web3/contract.service';
+import { useState, useEffect, useCallback } from 'react';
+import { ethers } from 'ethers';
 
 /**
- * Hook for handling wallet connection and account changes
- * Manages wallet connection state and listens for MetaMask account changes
- * @returns Object containing account address and profile status
+ * Hook for handling wallet connection state
+ * Manages MetaMask connection and account state
+ * @returns Object containing account address and connection function
  */
 export const useWalletConnection = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [hasProfile, setHasProfile] = useState(false);
 
-  const connectWallet = async () => {
-    const connectedAccount = await requestAccount();
-    setAccount(connectedAccount);
-    return connectedAccount;
-  };
+  // Handle wallet connection request
+  const connect = useCallback(async () => {
+    try {
+      if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send('eth_requestAccounts', []);
+        setAccount(accounts[0]);
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+    }
+  }, []);
 
-  // Handle initial wallet connection and account changes
+  // Listen for account changes in MetaMask
   useEffect(() => {
-    connectWallet();
-
-    // Listen for account changes in MetaMask
     if (window.ethereum) {
-      const handleAccountChange = (accounts: string[]) => {
+      window.ethereum.on('accountsChanged', (accounts: string[]) => {
         setAccount(accounts[0] || null);
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountChange);
-      return () => window.ethereum?.removeListener('accountsChanged', handleAccountChange);
+      });
     }
   }, []);
 
@@ -48,5 +49,5 @@ export const useWalletConnection = () => {
     checkProfile();
   }, [account]);
 
-  return { account, hasProfile, connectWallet };
+  return { account, hasProfile, connect };
 };

@@ -1,10 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import ConnectWalletButton from '../components/auth/ConnectWalletButton';
-import { useWalletConnection } from '../hooks/useWalletConnection';
 
 const AuthLandingPage = () => {
-  const { connectWallet } = useWalletConnection();
   
   return (
     <div className="flex flex-col justify-center items-center min-h-screen relative overflow-hidden">

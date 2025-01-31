@@ -26,18 +26,16 @@ export const PriceAnalytics = memo(({
   onClose, 
   closeable = false 
 }: PriceAnalyticsProps) => {
-    // Core state
+    // Core state management
     const { selectedTimezone, setTimezone } = useTimezone();
     const [timeframe, setTimeframe] = useState<TimeframeType>('1D');
     const [dataType, setDataType] = useState<DataType>('price');
     const [currentData, setCurrentData] = useState<Array<any>>([]);
-    const [isChartLoading, setIsChartLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [metrics, setMetrics] = useState<any>(null);
-
-    // Modal and custom date state
+    const [error, setError] = useState<string | null>(null);
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-    const prevTimeframeRef = useRef<TimeframeType>('1D');
+    
+    // Custom date range states
     const [isCustomMode, setIsCustomMode] = useState(false);
     const [customDates, setCustomDates] = useState<{
         from: Date | null;
@@ -45,33 +43,62 @@ export const PriceAnalytics = memo(({
     }>({ from: null, to: null });
     const [customRange, setCustomRange] = useState<{from: number; to: number} | undefined>();
 
-    // Validation and data fetching
-    const isValidDateRange = useMemo(() => {
-        if (!customDates.from || !customDates.to) return false;
-        return customDates.to > customDates.from;
-    }, [customDates.from, customDates.to]);
+    // Track previous symbol to ensure proper data fetching on symbol changes
+    const prevSymbolRef = useRef(symbol);
+    useEffect(() => {
+        prevSymbolRef.current = symbol;
+    });
+    const prevSymbol = prevSymbolRef.current;
 
-    const effectiveTimeframe = useMemo(() => {
-        if (timeframe === 'Custom' && (!customRange || !isValidDateRange)) {
-            return null;
-        }
-        return timeframe;
-    }, [timeframe, customRange, isValidDateRange]);
+    // Reset all states when symbol changes
+    useEffect(() => {
+        setCurrentData([]);
+        setMetrics(null);
+        setIsCustomMode(false);
+        setCustomDates({ from: null, to: null });
+        setCustomRange(undefined);
+        setTimeframe('1D');
+    }, [symbol]);
 
-    const { data, loading } = useFetchHistoricalPrices({
+    // Fetch historical price data, forcing 1D timeframe on symbol change
+    const { data: currentTimeframeData } = useFetchHistoricalPrices({
         symbol,
-        timeframe: effectiveTimeframe,
-        customRange
+        timeframe: symbol !== prevSymbol ? '1D' : timeframe,
+        customRange,
     });
 
-    // Event handlers
+    // Update chart data when new data is received
+    useEffect(() => {
+        if (currentTimeframeData?.[symbol]) {
+            setCurrentData(currentTimeframeData[symbol].data);
+            setMetrics(currentTimeframeData[symbol].metrics);
+            setError(null);
+        }
+    }, [currentTimeframeData, symbol]);
+
+    // Verify premium access when user requests premium timeframes
+    useEffect(() => {
+        const verifyAccess = async () => {
+            if (timeframe === '5Y' || timeframe === 'Custom') {
+                const hasAccess = await checkProAccess(symbol);
+                if (!hasAccess) {
+                    setTimeframe('1D');
+                    setIsCustomMode(false);
+                    setCustomDates({ from: null, to: null });
+                    setCustomRange(undefined);
+                }
+            }
+        };
+
+        verifyAccess();
+    }, [timeframe]);
+
+    // Handle timeframe selection and premium access
     const handleTimeframeClick = async (tf: TimeframeType) => {
         if (tf === '5Y' || tf === 'Custom') {
             const hasAccess = await checkProAccess(symbol);
             if (!hasAccess) {
-                prevTimeframeRef.current = timeframe;
                 setShowPurchaseModal(true);
-                setTimeframe(tf);
                 return;
             }
         }
@@ -87,41 +114,42 @@ export const PriceAnalytics = memo(({
     };
 
     const handleDateChange = (type: 'from' | 'to', date: Date | null) => {
-        const newDates = { ...customDates, [type]: date };
-        setCustomDates(newDates);
-
-        if (newDates.from && newDates.to && newDates.to > newDates.from) {
-            setCustomRange({
-                from: newDates.from.getTime(),
-                to: newDates.to.getTime()
-            });
-        } else {
-            setCustomRange(undefined);
-        }
+        setCustomDates(prev => ({ ...prev, [type]: date }));
     };
 
-    // Effects
-    useEffect(() => {
-        if (timeframe !== '5Y') {
-            prevTimeframeRef.current = timeframe;
+    const isValidDateRange = !!(customDates.from && customDates.to && 
+        customDates.from < customDates.to);
+
+    // Handle successful purchase modal completion
+    const handlePurchaseSuccess = async (purchasedTimeframe: '5Y' | 'Custom') => {
+        try {
+            // Small delay to allow transaction to be mined
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Verify access was granted
+            const hasAccess = await checkProAccess(symbol);
+            if (hasAccess) {
+                setShowPurchaseModal(false);
+                setTimeframe(purchasedTimeframe);
+                if (purchasedTimeframe === 'Custom') {
+                    setIsCustomMode(true);
+                }
+            } else {
+                // If access check fails, try again after a longer delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const retryAccess = await checkProAccess(symbol);
+                if (retryAccess) {
+                    setShowPurchaseModal(false);
+                    setTimeframe(purchasedTimeframe);
+                    if (purchasedTimeframe === 'Custom') {
+                        setIsCustomMode(true);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error verifying access:', error);
         }
-    }, [timeframe]);
-
-    useEffect(() => {
-        if (data?.[symbol]) {
-            setCurrentData(data[symbol].data);
-            setMetrics(data[symbol].metrics);
-            setError(null);
-        }
-    }, [data, symbol]);
-
-    useEffect(() => {
-        setIsChartLoading(loading);
-    }, [loading]);
-
-    useEffect(() => {
-        onSymbolChange?.(symbol);
-    }, [symbol, onSymbolChange]);
+    };
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -188,8 +216,7 @@ export const PriceAnalytics = memo(({
                                                before:bg-gradient-to-r before:from-blue-500/0 before:to-cyan-500/0 
                                                before:backdrop-blur-xl
                                                before:transition-colors
-                                               hover:before:from-blue-500/10 hover:before:to-cyan-500/10`
-                                        }
+                                               hover:before:from-blue-500/10 hover:before:to-cyan-500/10`                                        }
                                     `}
                                 >
                                     <span className="relative z-10">
@@ -249,6 +276,7 @@ export const PriceAnalytics = memo(({
                                 timeframe={timeframe}
                                 selectedTimezone={selectedTimezone.value}
                                 customDateRange={customDates}
+                                symbol={symbol}
                             />
                         </div>
                     ) : !error ? (
@@ -263,17 +291,8 @@ export const PriceAnalytics = memo(({
 
             <PurchaseDataModal
                 isOpen={showPurchaseModal}
-                onClose={() => {
-                    setShowPurchaseModal(false);
-                    setTimeframe(prevTimeframeRef.current);
-                }}
-                onSuccess={(tf) => {
-                    setShowPurchaseModal(false);
-                    setTimeframe(tf);
-                    if (tf === 'Custom') {
-                        setIsCustomMode(true);
-                    }
-                }}
+                onClose={() => setShowPurchaseModal(false)}
+                onSuccess={handlePurchaseSuccess}
                 symbol={symbol}
                 timeframe={timeframe as '5Y' | 'Custom'}
             />

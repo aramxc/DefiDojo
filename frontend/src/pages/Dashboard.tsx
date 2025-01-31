@@ -102,7 +102,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     console.error('Metrics Error:', metricsError);
   }
 
-  // Define statCards here, before any conditional returns
   const statCards = [
     {
       title: "Market Overview",
