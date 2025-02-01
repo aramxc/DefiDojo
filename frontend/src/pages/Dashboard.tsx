@@ -34,15 +34,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   defaultTicker = 'BTC',
   getRealTimeData = true
 }) => {
-  // Prevent console clear
-  console.clear = () => {
-    console.log('Console clear prevented');
-  };
-  
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
-  // First fetch coingeckoId
+  // First fetch coingeckoId when selectedSymbol changes
   const { 
     coingeckoId,
     loading: idLoading,
@@ -55,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     loading: assetLoading, 
     error: assetError 
   } = useFetchAssetInfo(
-    coingeckoId, // This will trigger the hook only when coingeckoId is available
+    coingeckoId, 
     getRealTimeData // Request real-time data if coingeckoId is available
   );
 
@@ -67,17 +62,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     selectedSymbol,
     assetInfo?.coingeckoId || undefined
   );
-
-  console.log('Dashboard State:', {
-    selectedSymbol,
-    coingeckoId,
-    idLoading,
-    idError
-  });
-
-  console.log('Asset Info:', assetInfo);
-  console.log('Metrics:', metrics);
-  console.log('Loading States:', { idLoading, assetLoading, metricsLoading });
 
   useEffect(() => {
     if (!selectedSymbol) {

@@ -16,7 +16,6 @@ export class InfoService {
      */
     async getAssetIdBySymbol(symbol: string): Promise<AssetInfo> {
         try {
-            console.log('📡 InfoService: Fetching asset ID for symbol:', symbol);
             const response = await fetch(
                 `${this.baseUrl}/symbol/${symbol}?realTime=false`
             );
@@ -26,21 +25,16 @@ export class InfoService {
             }
             
             const data = await response.json();
-            console.log('✅ InfoService: Received data:', data);
             
-            // Check for either coingeckoId or id
             if (!data?.coingeckoId && !data?.id) {
-                console.warn('⚠️ InfoService: No ID found in response:', data);
                 throw new Error(`No coingeckoId found for symbol: ${symbol}`);
             }
             
             return {
                 ...data,
-                // Ensure we have a coingeckoId, fallback to id if needed
                 coingeckoId: data.coingeckoId || data.id
             };
         } catch (error) {
-            console.error('❌ InfoService: Error in getAssetIdBySymbol:', error);
             throw error;
         }
     }
@@ -53,12 +47,6 @@ export class InfoService {
      */
     async getAssetInfoBySymbol(symbol: string, getRealTimeData: boolean = false): Promise<AssetInfo> {
         try {
-            console.log('Fetching asset info:', {
-                url: `${this.baseUrl}/${symbol}?realTime=${getRealTimeData}`,
-                symbol,
-                getRealTimeData
-            });
-
             const response = await fetch(
                 `${this.baseUrl}/${symbol}?realTime=${getRealTimeData}`
             );
@@ -69,7 +57,6 @@ export class InfoService {
 
             return await response.json();
         } catch (error) {
-            console.error('Error fetching asset info:', error);
             throw error;
         }
     }
@@ -88,10 +75,8 @@ export class InfoService {
                 throw new Error(error.message || 'Failed to fetch top coins');
             }
 
-            const data = await response.json();
-            return data;
+            return await response.json();
         } catch (error) {
-            console.error('Error fetching top coins:', error);
             throw error;
         }
     }
@@ -109,29 +94,17 @@ export class InfoService {
                 throw new Error('Asset ID is required');
             }
 
-            console.log('📡 InfoService: Fetching asset info for ID:', {
-                coingeckoId,
-                getRealTimeData,
-                url: `${this.baseUrl}/id/${coingeckoId}?realTime=${getRealTimeData}`
-            });
-
             const response = await fetch(
                 `${this.baseUrl}/id/${coingeckoId}?realTime=${getRealTimeData}`
             );
 
-            console.log('📥 InfoService: Raw response:', response);
-
             if (!response.ok) {
-                console.error('❌ InfoService: Failed response:', response.status, response.statusText);
                 const error = await response.json();
                 throw new Error(error.message || 'Failed to fetch asset info');
             }
 
-            const data = await response.json();
-            console.log('✅ InfoService: Parsed asset info:', data);
-            return data;
+            return await response.json();
         } catch (error) {
-            console.error('❌ InfoService: Error in getAssetInfoById:', error);
             throw error;
         }
     }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { purchaseProAccess } from '../../services/web3/contract.service';
+import { purchaseProAccess, checkProAccess } from '../../services/web3/contract.service';
 import { CircularProgress } from '@mui/material';
+import { toast } from 'react-toastify';
 
 interface PurchaseDataModalProps {
   isOpen: boolean;
@@ -15,11 +16,22 @@ export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess, timefram
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePurchase = async () => {
+    if (isProcessing) return; // Prevent double submissions
+    
     try {
       setIsProcessing(true);
       await purchaseProAccess(symbol);
+      
+      // Short delay to ensure blockchain state is updated
       await new Promise(resolve => setTimeout(resolve, 1000));
-      onSuccess(timeframe);
+      
+      // Verify access one final time before closing modal
+      const hasAccess = await checkProAccess(symbol);
+      if (hasAccess) {
+        onSuccess(timeframe);
+      } else {
+        toast.error('Unable to verify access. Please try again or refresh the page.');
+      }
     } catch (error) {
       console.error('Purchase failed:', error);
     } finally {

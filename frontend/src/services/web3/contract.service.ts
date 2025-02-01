@@ -171,7 +171,8 @@ export const withdrawFunds = async (withdrawValue: string): Promise<void> => {
 export const checkProAccess = async (symbol: string): Promise<boolean> => {
   try {
     await initializeContract();
-    return await contract.hasProAccess(symbol);
+    const hasAccess = await contract.hasProAccess(symbol);
+    return hasAccess;
   } catch (error) {
     console.error('Error checking pro access:', error);
     return false;
@@ -180,19 +181,38 @@ export const checkProAccess = async (symbol: string): Promise<boolean> => {
 
 /**
  * Purchases pro access for a given symbol
+ * Verifies access before and after purchase using checkProAccess
  * @param symbol Trading symbol to purchase access for
  * @throws Error if purchase fails
  */
 export const purchaseProAccess = async (symbol: string): Promise<void> => {
-  try {
-    await initializeContract();
-    const price = await contract.getProAccessPrice();
-    toast.info(`Purchasing pro access for ${symbol}...`);
-    const purchaseTx = await contract.purchaseProAccess(symbol, { value: price });
-    await purchaseTx.wait();
-    toast.success(`Successfully purchased pro access for ${symbol}!`);
-  } catch (error: any) {
-    toast.error(`Error purchasing pro access: ${error.message}`);
-    throw error;
-  }
+    try {
+        await initializeContract();
+        
+        if (await checkProAccess(symbol)) {
+            return;
+        }
+        const price = await contract.getProAccessPrice();
+        console.log('Purchasing pro access:', {
+            symbol,
+            priceInWei: price.toString(),
+            priceInEth: formatEther(price)
+        });
+        
+        const purchaseTx = await contract.purchaseProAccess(symbol, { value: price });
+        await purchaseTx.wait();
+        
+        if (await checkProAccess(symbol)) {
+            toast.success(`Successfully purchased pro access for ${symbol}!`);
+        } else {
+            toast.error('Transaction completed but access not granted. Please try again.');
+        }
+    } catch (error: any) {
+        if (error.code === 'ACTION_REJECTED') {
+            toast.error('Transaction rejected by user');
+        } else {
+            toast.error(`Error purchasing pro access: ${error.message}`);
+        }
+        throw error;
+    }
 };

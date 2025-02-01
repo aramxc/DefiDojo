@@ -17,20 +17,15 @@ export class MarketMetricsService {
      */
     async getMarketMetrics(symbol: string, coingeckoId?: string): Promise<MarketMetrics> {
         try {
-            console.log('Fetching market metrics for:', symbol, coingeckoId ? `with CoinGecko ID: ${coingeckoId}` : '(from cache)');
-            
             // Build URL with optional coingeckoId
             const url = coingeckoId 
                 ? `${this.baseUrl}/${symbol}?coingeckoId=${coingeckoId}`
                 : `${this.baseUrl}/${symbol}`;
-                
-            console.log('Full URL:', url);
 
             const metricsResponse = await fetch(url);
             
             if (!metricsResponse.ok) {
                 const errorText = await metricsResponse.text();
-                console.error('Error response:', errorText);
                 throw new Error(`Failed to fetch market metrics: ${metricsResponse.status}`);
             }
 
@@ -39,9 +34,7 @@ export class MarketMetricsService {
 
         } catch (error) {
             console.error('Error in getMarketMetrics:', error);
-            throw error instanceof Error 
-                ? error 
-                : new Error('Failed to fetch market metrics');
+            throw error;
         }
     }
 }

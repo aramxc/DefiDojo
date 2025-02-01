@@ -14,27 +14,20 @@ export const useFetchCoingeckoId = (symbol: string) => {
   useEffect(() => {
     const fetchCoingeckoId = async () => {
       try {
-        console.log('🔍 Fetching coingeckoId for symbol:', symbol);
         setLoading(true);
         const response = await infoService.getAssetIdBySymbol(symbol);
-        console.log('📥 Received response:', response);
-        
-        // Check for both coingeckoId and id in the response
         const id = response?.coingeckoId || response?.id;
         
         if (!id) {
-          console.warn('⚠️ No valid ID found in response:', response);
           setError(new Error(`No coingeckoId found for symbol: ${symbol}`));
           return;
         }
         
-        console.log('✅ Setting coingeckoId:', id);
         setCoingeckoId(id);
-        setError(null); // Clear any previous errors
+        setError(null);
       } catch (err) {
-        console.error('❌ Error fetching coingeckoId:', err);
         setError(err as Error);
-        setCoingeckoId(''); // Clear coingeckoId on error
+        setCoingeckoId('');
       } finally {
         setLoading(false);
       }
@@ -43,7 +36,6 @@ export const useFetchCoingeckoId = (symbol: string) => {
     if (symbol) {
       fetchCoingeckoId();
     } else {
-      // Reset states if no symbol provided
       setCoingeckoId('');
       setError(null);
       setLoading(false);
