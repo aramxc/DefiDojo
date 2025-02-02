@@ -90,7 +90,7 @@ const NavigationBar = ({ isExpanded, onToggle }: NavigationBarProps) => {
                     setIsUpgradeOpen(true);
                   }}
                   to="/"
-                  className="relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
+                  className="h-10 relative overflow-hidden rounded-lg font-medium text-sm px-6 py-3
                            text-white transition-all duration-200
                            before:absolute before:inset-0 
                            before:bg-gradient-to-r before:from-blue-400 before:via-cyan-300 before:to-teal-400

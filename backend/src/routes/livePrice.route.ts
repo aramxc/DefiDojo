@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { PriceController } from '../controllers/price.controller';
+import { PriceController } from '../controllers/livePrice.controller';
 
 const router = Router();
 const priceController = new PriceController();

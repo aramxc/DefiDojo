@@ -81,13 +81,17 @@ export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess, timefram
           </h3>
           
           <p className="text-gray-300 mb-6">
-            Get access to advanced analytics including:
+            Get access to advanced data sets, premium analytics, and more, including:
           </p>
           
           <ul className="space-y-2 mb-6">
             <li className="flex items-center text-gray-300">
               <span className="mr-2">•</span>
-              5 Year Historical Data
+              5 Year, all time historical data
+            </li>
+            <li className="flex items-center text-gray-300">
+              <span className="mr-2">•</span>
+              Custom Timeframes and ability to save charts
             </li>
             <li className="flex items-center text-gray-300">
               <span className="mr-2">•</span>
@@ -95,9 +99,23 @@ export const PurchaseDataModal = ({ isOpen, onClose, symbol, onSuccess, timefram
             </li>
             <li className="flex items-center text-gray-300">
               <span className="mr-2">•</span>
-              Real-time Market Insights
+              Own your data and use it anywhere
             </li>
           </ul>
+
+          {/* Price Section */}
+          <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center mb-8"
+                >
+                  <div className="inline-block">
+                    <span className="text-xl font-bold text-slate-200">0.01 ETH</span>
+                    <span className="text-slate-400 ml-2">~$30 USD</span>
+                  </div>
+                  
+                </motion.div>
+
 
           <div className="flex justify-end space-x-4">
             <button
