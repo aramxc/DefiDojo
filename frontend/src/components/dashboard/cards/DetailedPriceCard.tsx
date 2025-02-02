@@ -45,21 +45,29 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
 
   // Format the last update time
   const getLastUpdateText = () => {
-    const diff = timeSinceUpdate.getTime() - lastUpdateTime.getTime();
+    if (isRealTime) {
+      return 'Just now';
+    }
     
-    if (diff < 1000) return 'Just now';
-    if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`; // 60 seconds
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`; // 60 minutes
+    const diff = timeSinceUpdate.getTime() - lastUpdateTime.getTime();
+    if (diff < 5000) return 'Just now';
+    if (diff < 10000) return '5 seconds ago';
+    if (diff < 30000) return '10 seconds ago';
+    if (diff < 60000) return '30 seconds ago';
+    if (diff < 3600000) {
+      const minutes = Math.floor(diff / 60000);
+      return `${minutes}m ago`;
+    }
     return lastUpdateTime.toLocaleTimeString();
   };
 
-  // Update the last update text
+  // Update the last update text every 5 seconds
   useEffect(() => {
-    if (!isRealTime) return;
+    if (isRealTime) return;
     
     const interval = setInterval(() => {
       setTimeSinceUpdate(new Date());
-    }, 1000);
+    }, 5000); 
 
     return () => clearInterval(interval);
   }, [isRealTime]);
@@ -203,7 +211,6 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               <Switch
                 checked={isRealTime}
                 onChange={(e) => {
-                  console.log('Switch toggled:', e.target.checked);
                   setIsRealTime(e.target.checked);
                 }}
                 size="small"
