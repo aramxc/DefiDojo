@@ -4,10 +4,11 @@ import { Schedule, ArrowDropUp, ArrowDropDown, Description, Language, Twitter, R
 import { formatPercentage, formatValue } from '../../../utils';
 import { AssetInfo } from '@defidojo/shared-types';
 import { Switch, CircularProgress, IconButton, Tooltip } from '@mui/material';
-import { useFetchLatestPrice } from '../../../hooks/useLivePrice';
+import { useLivePrice } from '../../../hooks/useLivePrice';
 
 interface DetailedPriceCardProps {
   symbol: string;
+  pythPriceFeedId: string;
   coingeckoId: string;  
   assetInfo: AssetInfo;
   isLoading?: boolean;
@@ -19,7 +20,8 @@ interface DetailedPriceCardProps {
 export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({ 
   symbol, 
   assetInfo, 
-  marketMetrics
+  marketMetrics,
+  pythPriceFeedId,
 }) => {
   const [isRealTime, setIsRealTime] = useState(false);
   const [timeSinceUpdate, setTimeSinceUpdate] = useState<Date>(new Date());
@@ -29,7 +31,7 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
     price: fetchedPrice, 
     loading: priceLoading,
     lastUpdateTime 
-  } = useFetchLatestPrice(symbol, isRealTime);
+  } = useLivePrice(symbol, isRealTime, pythPriceFeedId);
 
   // Set initial load to false after first price fetch
   useEffect(() => {
@@ -200,7 +202,10 @@ export const DetailedPriceCard: React.FC<DetailedPriceCardProps> = memo(({
               <span>{isRealTime ? 'Real-time' : 'Live'}</span>
               <Switch
                 checked={isRealTime}
-                onChange={() => setIsRealTime(!isRealTime)}
+                onChange={(e) => {
+                  console.log('Switch toggled:', e.target.checked);
+                  setIsRealTime(e.target.checked);
+                }}
                 size="small"
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': {

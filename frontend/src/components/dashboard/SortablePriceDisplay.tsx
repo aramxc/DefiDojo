@@ -7,6 +7,7 @@ interface SortablePriceDisplayProps {
   id: string;
   symbol: string;
   coingeckoId: string;
+  pythPriceFeedId: string;
   onRemove: () => void;
   onSelectSymbol: (symbol: string) => void;
   getRealTimeData?: boolean;
@@ -15,7 +16,7 @@ interface SortablePriceDisplayProps {
 export const SortablePriceDisplay = ({
   id,
   symbol,
-  coingeckoId,
+  pythPriceFeedId,
   onRemove,
   onSelectSymbol,
   getRealTimeData
@@ -50,6 +51,7 @@ export const SortablePriceDisplay = ({
       
       <PriceDisplay
         symbol={symbol}
+        pythPriceFeedId={pythPriceFeedId}
         onRemove={onRemove}
         onSelectSymbol={onSelectSymbol}
       />

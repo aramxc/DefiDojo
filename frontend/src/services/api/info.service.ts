@@ -9,10 +9,10 @@ export class InfoService {
     public baseUrl = `${API_BASE_URL}/info`;
 
     /**
-     * Fetches basic asset information including the CoinGecko ID for a given trading symbol
+     * Fetches basic asset information including external IDs for a given trading symbol
      * @param symbol Trading symbol (e.g., 'BTC')
-     * @returns Promise containing asset basic info including coingeckoId
-     * @throws Error if no coingeckoId is found or if the request fails
+     * @returns Promise containing asset basic info including coingeckoId and pythId
+     * @throws Error if no external IDs are found or if the request fails
      */
     async getAssetIdBySymbol(symbol: string): Promise<AssetInfo> {
         try {
@@ -26,13 +26,14 @@ export class InfoService {
             
             const data = await response.json();
             
-            if (!data?.coingeckoId && !data?.id) {
-                throw new Error(`No coingeckoId found for symbol: ${symbol}`);
+            if (!data?.coingeckoId && !data?.pythPriceFeedId) {
+                throw new Error(`No external IDs found for symbol: ${symbol}`);
             }
             
             return {
                 ...data,
-                coingeckoId: data.coingeckoId || data.id
+                coingeckoId: data.coingeckoId || data.id,
+                pythPriceFeedId: data.pythPriceFeedId
             };
         } catch (error) {
             throw error;

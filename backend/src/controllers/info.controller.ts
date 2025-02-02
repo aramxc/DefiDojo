@@ -38,6 +38,7 @@ export class InfoController {
             const response = {
                 symbol: asset.symbol,
                 coingeckoId: asset.coingeckoId,
+                pythPriceFeedId: asset.pythPriceFeedId,
                 name: asset.name
             };
             

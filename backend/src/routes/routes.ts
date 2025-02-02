@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import priceRoutes from './livePrice.route';
+import priceRoutes from './latestPrice.route';
 import historicalPriceRoutes from './historicalPrice.route';
 import marketMetricsRoutes from './marketMetrics.route';
 import userRoutes from './user.routes';

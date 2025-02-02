@@ -16,7 +16,7 @@ import { StatCard } from '../components/dashboard/cards/StatCard';
 import { useFetchAssetInfo } from '../hooks/useAssetInfo';
 import { useFetchMarketMetrics } from '../hooks/useMarketMetrics';
 import { formatValue, formatPercentage, formatChange, formatTimestamp } from '../utils/formatters';
-import { useFetchCoingeckoId } from '../hooks/useCoingeckoId';
+import { useExternalIds } from '../hooks/useExternalIds';
 import { AssetInfo } from '@defidojo/shared-types';
 import { Ticker } from '../hooks/useTickers';
 interface DashboardProps {
@@ -37,12 +37,12 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [selectedSymbol, setSelectedSymbol] = useState<string>(defaultTicker);
   const [items, setItems] = useState(selectedTickers);
   
-  // First fetch coingeckoId when selectedSymbol changes
+  // Fetch both coingeckoId and pythPriceFeedId when selectedSymbol changes
   const { 
-    coingeckoId,
+    externalIds,
     loading: idLoading,
     error: idError 
-  } = useFetchCoingeckoId(selectedSymbol);
+  } = useExternalIds(selectedSymbol);
   
   // Only fetch asset info once we have a coingeckoId
   const { 
@@ -50,8 +50,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     loading: assetLoading, 
     error: assetError 
   } = useFetchAssetInfo(
-    coingeckoId, 
-    getRealTimeData // Request real-time data if coingeckoId is available
+    externalIds.coingeckoId || '', 
+    getRealTimeData
   );
 
   const { 
@@ -60,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     error: metricsError 
   } = useFetchMarketMetrics(
     selectedSymbol,
-    assetInfo?.coingeckoId || undefined
+    externalIds.coingeckoId || undefined
   );
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   // Handle loading and error states
   if (idError) {
-    console.error('ID Error:', idError);
+    console.error('External IDs Error:', idError);
   }
 
   if (assetError) {
@@ -262,7 +262,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="h-full w-full">
                   <DetailedPriceCard
                     symbol={selectedSymbol}
-                    coingeckoId={coingeckoId}
+                    pythPriceFeedId={externalIds.pythPriceFeedId || ''}
+                    coingeckoId={externalIds.coingeckoId || ''}
                     assetInfo={assetInfo as AssetInfo}
                     isLoading={idLoading || assetLoading}
                     marketMetrics={metrics}

@@ -21,6 +21,7 @@ export class AssetRepository {
                     SYMBOL,
                     NAME,
                     COINGECKO_ID,
+                    PYTH_PRICE_FEED_ID,
                     IS_ACTIVE
                 FROM ASSETS
                 WHERE SYMBOL = ?

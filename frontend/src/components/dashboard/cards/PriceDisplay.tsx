@@ -6,10 +6,11 @@ import { Switch, CircularProgress } from '@mui/material';
 import { AssetPriceData, AssetInfo } from '@defidojo/shared-types';
 import { useFetchMarketMetrics } from '../../../hooks/useMarketMetrics';
 import { useFetchAssetInfo } from '../../../hooks/useAssetInfo';
-import { useFetchLatestPrice } from '../../../hooks/useLivePrice';
+import { useLivePrice } from '../../../hooks/useLivePrice';
 
 interface PriceDisplayProps {
   symbol: string;
+  pythPriceFeedId: string;
   onRemove: () => void;
   onSelectSymbol: (symbol: string) => void;
   getRealTimeData?: boolean;
@@ -111,6 +112,7 @@ const BackContent = memo(({ assetInfo, isLoading, error, CardControls }: {
 
 export const PriceDisplay: React.FC<PriceDisplayProps> = ({ 
   symbol, 
+  pythPriceFeedId,
   onRemove, 
   onSelectSymbol,
   getRealTimeData = false
@@ -122,7 +124,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
     price, 
     loading: priceLoading, 
     lastUpdateTime 
-  } = useFetchLatestPrice(symbol, isRealTime);
+  } = useLivePrice(symbol, isRealTime, pythPriceFeedId);
 
   const { 
     assetInfo, 
