@@ -19,6 +19,8 @@ import { formatValue, formatPercentage, formatChange, formatTimestamp } from '..
 import { useExternalIds } from '../hooks/useExternalIds';
 import { AssetInfo } from '@defidojo/shared-types';
 import { Ticker } from '../hooks/useTickers';
+import { DetailedMetricsPanel } from '../components/dashboard/DetailedMetricsPanel';
+
 interface DashboardProps {
   selectedTickers: Ticker[];
   onAddTickers: (tickers: Ticker[]) => void;
@@ -304,38 +306,12 @@ const Dashboard: React.FC<DashboardProps> = ({
         </motion.div>
       </div>
 
-      {/* Command Center Section */}
-      <div className="min-h-[calc(100vh-var(--navbar-height))] w-[98%] mx-auto 
-                      p-2 sm:p-4 md:p-6 lg:p-8">
-        <div className="w-full rounded-2xl overflow-hidden backdrop-blur-xl 
-                     bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80
-                     border border-slate-800/[0.25]
-                     shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-          <div className="p-6 border-b border-white/[0.05]">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Command Center
-            </h2>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {statCards.map((card, index) => (
-                <StatCard
-                  key={index}
-                  title={card.title}
-                  icon={card.icon}
-                  infoTooltip={card.infoTooltip}
-                  stats={card.stats as any}
-                  isLoading={idLoading || assetLoading || metricsLoading}
-                  className="backdrop-blur-xl bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-black/80 
-                            border border-white/[0.05] shadow-xl hover:shadow-2xl transition-all duration-300
-                            hover:border-white/[0.08]"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Second Section - Detailed Metrics */}
+      <DetailedMetricsPanel
+        assetInfo={assetInfo}
+        metrics={metrics}
+        isLoading={idLoading || assetLoading || metricsLoading}
+      />
     </div>
   );
 };
