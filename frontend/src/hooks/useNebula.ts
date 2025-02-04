@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { NebulaService } from '../services/web3/nebula.service';
 import { Session, ContextFilter, ExecuteConfig } from '@defidojo/shared-types';
 
@@ -8,10 +8,16 @@ interface Message {
     status?: 'typing' | 'complete' | 'error';
 }
 
-interface UseNebulaReturn {
+interface PresenceState {
+    isThinking: boolean;
+    currentAction: string;
+}
+
+export interface UseNebulaReturn {
     messages: Message[];
     isLoading: boolean;
     currentSession: Session | null;
+    presence: PresenceState;
     sendMessage: (message: string) => Promise<void>;
     setContext: (contextFilter?: ContextFilter, executeConfig?: ExecuteConfig) => void;
     error: Error | null;
@@ -26,9 +32,25 @@ export const useNebula = (
     const [isLoading, setIsLoading] = useState(false);
     const [currentSession, setCurrentSession] = useState<Session | null>(null);
     const [error, setError] = useState<Error | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [presence, setPresence] = useState<PresenceState>({
+        isThinking: false,
+        currentAction: ''
+    });
     
-    // Keep service instance in a ref to maintain through rerenders
     const serviceRef = useRef(new NebulaService(initialContext, initialConfig));
+
+    // Initialize chat when component mounts
+    useEffect(() => {
+        if (!isInitialized) {
+            setMessages([{
+                role: 'assistant',
+                content: 'Hello! How can I assist you today?',
+                status: 'complete'
+            }]);
+            setIsInitialized(true);
+        }
+    }, [isInitialized]);
 
     const setContext = useCallback((
         contextFilter?: ContextFilter,
@@ -38,66 +60,72 @@ export const useNebula = (
     }, []);
 
     const sendMessage = useCallback(async (message: string) => {
-        setIsLoading(true);
-        setError(null);
-
-        // Add user message immediately
-        setMessages(prev => [...prev, {
-            role: 'user',
-            content: message,
-            status: 'complete'
-        }]);
-
-        // Add empty assistant message that will be updated
-        setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: '',
-            status: 'typing'
-        }]);
-
         try {
+            setIsLoading(true);
+            let currentResponse = '';
+            
+            // Add user message immediately
+            setMessages(prev => [...prev, {
+                role: 'user',
+                content: message,
+                status: 'complete'
+            }]);
+
             await serviceRef.current.streamChat(
                 message,
-                // Handle streaming chunks
                 (deltaText) => {
-                    setMessages(prev => {
-                        const updated = [...prev];
-                        const lastMessage = updated[updated.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                            lastMessage.content += deltaText;
+                    currentResponse += deltaText;
+                    
+                    setMessages(messages => {
+                        const hasAssistantMessage = messages.some(m => 
+                            m.role === 'assistant' && m.status === 'typing'
+                        );
+                        
+                        if (!hasAssistantMessage) {
+                            // First delta - create assistant message with presence
+                            setPresence({
+                                isThinking: true,
+                                currentAction: 'Thinking'
+                            });
+                            return messages;
+                        } else {
+                            // Update existing message with new content
+                            return messages.map(msg => 
+                                msg.role === 'assistant' && msg.status === 'typing'
+                                    ? { ...msg, content: currentResponse }
+                                    : msg
+                            );
                         }
-                        return updated;
                     });
                 },
-                // Handle completion
+                (presenceData) => {
+                    if (currentResponse) {
+                        // Only update presence if we haven't started receiving deltas
+                        return;
+                    }
+                    setPresence({
+                        isThinking: true,
+                        currentAction: presenceData
+                    });
+                },
                 () => {
-                    setMessages(prev => {
-                        const updated = [...prev];
-                        const lastMessage = updated[updated.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                            lastMessage.status = 'complete';
-                        }
-                        return updated;
-                    });
+                    // On complete - add final message
+                    setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        content: currentResponse,
+                        status: 'complete'
+                    }]);
                     setIsLoading(false);
+                    setPresence({ isThinking: false, currentAction: '' });
                 },
-                // Handle errors
                 (error) => {
-                    setError(error);
-                    setMessages(prev => {
-                        const updated = [...prev];
-                        const lastMessage = updated[updated.length - 1];
-                        if (lastMessage.role === 'assistant') {
-                            lastMessage.status = 'error';
-                            lastMessage.content = 'Sorry, an error occurred while processing your message.';
-                        }
-                        return updated;
-                    });
+                    console.error('Stream error:', error);
                     setIsLoading(false);
+                    setPresence({ isThinking: false, currentAction: '' });
                 }
             );
-        } catch (err) {
-            setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+        } catch (error) {
+            console.error('Error in sendMessage:', error);
             setIsLoading(false);
         }
     }, []);
@@ -111,6 +139,7 @@ export const useNebula = (
         messages,
         isLoading,
         currentSession,
+        presence,
         sendMessage,
         setContext,
         error,

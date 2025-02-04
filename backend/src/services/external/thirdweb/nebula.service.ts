@@ -22,15 +22,21 @@ import { Request, Response } from 'express';
  * Uses singleton pattern to ensure single instance across application
  */
 export class NebulaService {
-    private baseUrl: string;
-    private apiKey: string;
-   
     private static instance: NebulaService;
+    private readonly apiKey: string;
+    private readonly baseUrl: string;
 
-    constructor() {
+    private constructor() {
         validateNebulaKey();
         this.baseUrl = config.nebula.baseUrl;
         this.apiKey = config.nebula.secretKey!;
+    }
+
+    public static getInstance(): NebulaService {
+        if (!NebulaService.instance) {
+            NebulaService.instance = new NebulaService();
+        }
+        return NebulaService.instance;
     }
 
     private get headers() {
@@ -173,30 +179,28 @@ export class NebulaService {
      */
     public async createChatStream(req: Request, res: Response): Promise<void> {
         try {
-            const contextFilter: ContextFilter = {
-                chain_ids: [req.query.chainId as string],
-                wallet_addresses: [req.query.walletAddress as string],
-                contract_addresses: req.query.contractAddresses as string[],
+            // Log the incoming request body for debugging
+            console.log('Incoming request body:', req.body);
+            
+            const requestBody = {
+                message: req.body.message,
+                user_id: req.body.user_id,
+                stream: true,
+                session_id: req.query.sessionId || undefined,
+                context_filter: req.body.context_filter || {},
+                execute_config: req.body.execute_config || { mode: 'client' }
             };
 
-            const executeConfig: ExecuteConfig = {
-                mode: 'client',
-                signer_wallet_address: req.query.walletAddress as string,
-            };
+            console.log('Outgoing request body:', requestBody);
 
-            const response = await axios.get(`${this.baseUrl}/chat`, {
-                params: {
-                    message: String(req.query.message || ''),
-                    user_id: String(req.query.walletAddress || 'default-user'),
-                    stream: true,
-                    session_id: req.query.sessionId,
-                },
+            const response = await axios({
+                method: 'POST',
+                url: `${this.baseUrl}/chat`,
                 headers: this.headers,
-                data: { context_filter: contextFilter, execute_config: executeConfig },
+                data: requestBody,
                 responseType: 'stream'
             });
 
-            // Set streaming headers
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
@@ -209,7 +213,9 @@ export class NebulaService {
 
         } catch (error) {
             console.error('Nebula service error:', error);
-            throw error;
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Failed to process chat request' });
+            }
         }
     }
 
@@ -237,16 +243,6 @@ export class NebulaService {
             console.error('Failed to execute action:', error);
             throw error;
         }
-    }
-
-    /**
-     * Returns the singleton instance of NebulaService
-     */
-    public static getInstance(): NebulaService {
-        if (!NebulaService.instance) {
-            NebulaService.instance = new NebulaService();
-        }
-        return NebulaService.instance;
     }
 }
 

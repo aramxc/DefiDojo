@@ -4,10 +4,16 @@ import { NebulaService } from '../services/external/thirdweb/nebula.service';
 export class NebulaController {
     async streamChat(req: Request, res: Response) {
         try {
+            const message = req.body.message;
+            if (!message) {
+                throw new Error('Message is required');
+            }
             await NebulaService.getInstance().createChatStream(req, res);
         } catch (error) {
             console.error('Chat stream error:', error);
-            res.status(500).json({ error: 'Failed to initialize chat stream' });
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Failed to initialize chat stream' });
+            }
         }
     }
 

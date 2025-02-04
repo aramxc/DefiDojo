@@ -21,6 +21,7 @@ export interface ExecuteConfig {
 export interface MessageRequest {
     message: string;
     stream?: boolean;
+    user_id?: string;
     session_id?: string;
     execute_config?: ExecuteConfig;
     context_filter?: ContextFilter;

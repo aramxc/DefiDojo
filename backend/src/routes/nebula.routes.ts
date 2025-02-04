@@ -4,7 +4,7 @@ import { nebulaController } from '../controllers/nebula.controller';
 const router = Router();
 
 // Chat stream endpoint
-router.get('/stream', async (req, res) => {
+router.post('/stream', async (req, res) => {
     try {
         await nebulaController.streamChat(req, res);
     } catch (error) {

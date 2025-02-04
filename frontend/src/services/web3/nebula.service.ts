@@ -7,6 +7,7 @@ import {
     Session,
     SessionUpdateRequest,
 } from '@defidojo/shared-types';
+import { API_BASE_URL } from '../../config/constants';
 
 /**
  * Service for handling Nebula AI chat interactions
@@ -42,34 +43,77 @@ export class NebulaService {
      * Sends a message with streaming response
      * @param message - User's input message
      * @param onDelta - Callback for receiving message chunks
+     * @param onPresence - Callback for receiving presence updates
      * @param onComplete - Callback for stream completion
      * @param onError - Callback for error handling
      */
     public async streamChat(
         message: string,
         onDelta: (text: string) => void,
+        onPresence: (data: any) => void,
         onComplete: () => void,
         onError: (error: any) => void,
-        options?: {
-            contextFilter?: ContextFilter;
-            executeConfig?: ExecuteConfig;
-        }
     ) {
         try {
             this.closeConnection();
-            this.eventSource = new EventSource(`/api/chat/stream?${new URLSearchParams({
-                message,
-                sessionId: this.currentSessionId || '',
-            })}`);
 
-            let messageText = '';
-            this.setupEventListeners(messageText, onDelta, onComplete, onError);
+            const url = new URL(`${API_BASE_URL}/chat/stream`);
+            if (this.currentSessionId) {
+                url.searchParams.append('sessionId', this.currentSessionId);
+            }
+            
+            // Match the exact format from the Nebula API docs
+            const body: MessageRequest = {
+                message: message,
+                stream: true,
+                user_id: 'default-user',
+                context_filter: this.contextFilter || {},
+                execute_config: this.executeConfig || {
+                    mode: 'client'
+                }
+            };
+
+            const response = await fetch(url.toString(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.body) {
+                throw new Error('No response body received');
+            }
+
+            // Create reader for streaming response
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.type === 'delta' && data.v) {
+                            onDelta(data.v);
+                        } else if (data.type === 'presence') {
+                            onPresence(data.data);
+                        }
+                    }
+                }
+            }
+
+            onComplete();
         } catch (error) {
+            console.error('Stream error:', error);
             onError(error);
-            this.closeConnection();
         }
     }
-
 
     /**
      * Session Management Methods
@@ -173,6 +217,16 @@ export class NebulaService {
         onError: (error: any) => void
     ) {
         if (!this.eventSource) return;
+
+        this.eventSource.onopen = () => {
+            console.log('Stream connection opened');
+        };
+
+        this.eventSource.onerror = (event) => {
+            console.error('Stream error:', event);
+            this.closeConnection();
+            onError(event);
+        };
 
         this.eventSource.addEventListener('init', (event: MessageEvent) => {
             try {
