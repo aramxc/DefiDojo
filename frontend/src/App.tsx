@@ -15,6 +15,9 @@ import LearningHub from './pages/LearningHub';
 import { News } from './pages/News';
 import Home from './pages/Home';
 import 'react-toastify/dist/ReactToastify.css';
+import { ChatProvider } from './contexts/ChatContext';
+import ChatButton from './components/nebula_chat/ChatToggleButton';
+import ChatWindow from './components/nebula_chat/ChatWindow';
 
 export const darkTheme = createTheme({
   palette: {
@@ -30,79 +33,81 @@ function App() {
   return (
     <UserProvider>
       <TimezoneProvider>
-        <ThemeProvider theme={darkTheme}>
-          <Router>
-            <div className="min-h-screen bg-slate-900" style={{ '--navbar-height': '5rem' } as React.CSSProperties}>
-              <NavigationBar 
-                isExpanded={isSidebarExpanded}
-                onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
-              />
-              <ToastContainer />
-              
-              <div className="flex">
-                {account && (
-                  <PaymentsSidebar 
-                    account={account}
-                    isExpanded={isSidebarExpanded}
-                    onClose={() => setIsSidebarExpanded(false)}
-                  />
-                )}
+        <ChatProvider>
+          <ThemeProvider theme={darkTheme}>
+            <Router>
+              <div className="min-h-screen bg-slate-900" style={{ '--navbar-height': '5rem' } as React.CSSProperties}>
+                <NavigationBar 
+                  isExpanded={isSidebarExpanded}
+                  onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                />
+                <ToastContainer />
                 
-                <div className="flex-1">
-                  <Routes>
-                    <Route 
-                      path="/" 
-                      element={
-                        account ? (
-                          <Home 
-                            account={account}
-                            selectedTickers={tickers}
-                            onAddTickers={addTickers}
-                            onRemoveTicker={removeTicker}
-                            isSidebarExpanded={isSidebarExpanded}
-                          />
-                        ) : (
-                          <AuthLandingPage />
-                        )
-                      }
+                <div className="flex">
+                  {account && (
+                    <PaymentsSidebar 
+                      account={account}
+                      isExpanded={isSidebarExpanded}
+                      onClose={() => setIsSidebarExpanded(false)}
                     />
-                    <Route 
-                      path="/dashboard" 
-                      element={
-                        account ? (
-                          <Dashboard 
-                            selectedTickers={tickers}
-                            onAddTickers={addTickers}
-                            onRemoveTicker={removeTicker}
-                          />
-                        ) : (
-                          <AuthLandingPage />
-                        )
-                      }
-                    />
-                    <Route 
-                      path="/learning" 
-                      element={
-                        account ? <LearningHub /> : <AuthLandingPage />
-                      }
-                    />
-                    <Route 
-                      path="/news" 
-                      element={
-                        account ? <News /> : <AuthLandingPage />
-                      }
-                    />
-                  </Routes>
+                  )}
+                  
+                  <div className="flex-1">
+                    <Routes>
+                      <Route 
+                        path="/" 
+                        element={
+                          account ? (
+                            <Home 
+                              account={account}
+                              selectedTickers={tickers}
+                              onAddTickers={addTickers}
+                              onRemoveTicker={removeTicker}
+                              isSidebarExpanded={isSidebarExpanded}
+                            />
+                          ) : (
+                            <AuthLandingPage />
+                          )
+                        }
+                      />
+                      <Route 
+                        path="/dashboard" 
+                        element={
+                          account ? (
+                            <Dashboard 
+                              selectedTickers={tickers}
+                              onAddTickers={addTickers}
+                              onRemoveTicker={removeTicker}
+                            />
+                          ) : (
+                            <AuthLandingPage />
+                          )
+                        }
+                      />
+                      <Route 
+                        path="/learning" 
+                        element={
+                          account ? <LearningHub /> : <AuthLandingPage />
+                        }
+                      />
+                      <Route 
+                        path="/news" 
+                        element={
+                          account ? <News /> : <AuthLandingPage />
+                        }
+                      />
+                    </Routes>
+                  </div>
                 </div>
+                <ChatButton />
+                <ChatWindow />
               </div>
-            </div>
-          </Router>
-        </ThemeProvider>
+            </Router>
+          </ThemeProvider>
+        </ChatProvider>
       </TimezoneProvider>
     </UserProvider>
   );
 }
-
-
 
 export default App;

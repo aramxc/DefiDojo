@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
-  // Make these optional with default values or null
   flipside: {
     apiKey: process.env.FLIPSIDE_CRYPTO_API_KEY || null,
     baseUrl: 'https://api-v2.flipsidecrypto.xyz'
@@ -25,6 +24,11 @@ export const config = {
     apiKey: process.env.GOOGLE_CSE_API_KEY,
     baseUrl: 'https://www.googleapis.com/customsearch/v1',
     searchEngineId: process.env.GOOGLE_SEARCH_ENGINE_ID
+  },
+  nebula: {
+    clientId: process.env.NEBULA_CLIENT_ID,
+    secretKey: process.env.NEBULA_SECRET_KEY,
+    baseUrl: 'https://nebula-api.thirdweb.com'
   }
 };
 
@@ -40,6 +44,12 @@ export const validateCoinGeckoKey = () => {
     throw new Error('COINGECKO_PRO_API_KEY is not defined in .env file');
   }
   return true;
+};
+
+export const validateNebulaKey = () => {
+  if (!config.nebula.secretKey) {
+    throw new Error('Nebula API key is not configured');
+  }
 };
 
 export const SYMBOL_TO_PYTH_ID: Record<string, string> = {
