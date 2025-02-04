@@ -3,6 +3,8 @@
  * Organized by category for easy maintenance and discovery
  */
 
+import { differenceInDays, differenceInMonths, differenceInYears } from 'date-fns';
+
 // ======================================
 // Wallet Address & Blockchain Related Functions
 // ======================================
@@ -61,10 +63,12 @@ export const formatValue = (
 };
 
 /**
- * Formats a percentage with proper decimals
+ * Formats a percentage with proper decimals and commas if value is greater than 100
  */
-export const formatPercentage = (value: number | null | undefined): string => {
+export const formatPercentage = (value: number | string | null | undefined): string => {
   if (!value && value !== 0) return 'N/A';
+  if (typeof value === 'string') value = parseFloat(value);
+            
   return `${value.toFixed(2)}%`;
 };
 
@@ -114,46 +118,87 @@ export const formatYAxisValue = (value: number, type: 'price' | 'marketCap' | 'v
 // ======================================
 
 /**
- * Formats a timestamp based on timeframe or custom date range
- * @param timestamp - Unix timestamp
- * @param timeframe - Chart timeframe
+ * Formats a time difference in a human-readable format (e.g., "2 years ago")
+ * @param timestamp - Unix timestamp (in milliseconds) or ISO date string
+ * @returns Formatted time difference string
+ */
+export const formatTimeDifference = (timestamp: number | string | null | undefined): string => {
+  if (!timestamp) return 'N/A';
+  
+  const date = new Date(timestamp);
+  if (date.toString() === 'Invalid Date') return 'N/A';
+  
+  try {
+    const now = new Date();
+    const years = differenceInYears(now, date);
+    const months = differenceInMonths(now, date);
+    const days = differenceInDays(now, date);
+
+    if (years > 0) return `${years} year${years > 1 ? 's' : ''} ago`;
+    if (months > 0) return `${months} month${months > 1 ? 's' : ''} ago`;
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  } catch {
+    return 'N/A';
+  }
+};
+
+/**
+ * Formats a timestamp based on timeframe or custom date range with validation
+ * @param timestamp - Unix timestamp (in milliseconds) or ISO date string
+ * @param timeframe - Chart timeframe or date format
  * @param timezone - User's timezone
  * @param customDateRange - Optional date range for custom view
+ * @returns Formatted date string or 'N/A' if invalid
  */
 export const formatTimestamp = (
-    timestamp: number, 
-    timeframe: string, 
+    timestamp: number | string | null | undefined,
+    timeframe: string,
     timezone: string,
     customDateRange?: { from: Date | null; to: Date | null }
 ): string => {
-    const date = new Date(timestamp);
+    if (!timestamp) return 'N/A';
     
-    const durationInDays = timeframe === 'custom' && customDateRange?.from && customDateRange?.to
-        ? Math.ceil((customDateRange.to.getTime() - customDateRange.from.getTime()) / (1000 * 60 * 60 * 24))
-        : null;
+    const date = new Date(timestamp);
+    if (date.toString() === 'Invalid Date') return 'N/A';
 
-    switch (true) {
-        case timeframe === '1D' || (durationInDays && durationInDays <= 1):
-            return date.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                timeZone: timezone 
-            });
-            
-        case timeframe === '7D' || (durationInDays && durationInDays <= 7):
-            return date.toLocaleDateString([], { 
-                month: 'short', 
-                day: 'numeric',
-                timeZone: timezone
-            });
-            
-        default:
-            return date.toLocaleDateString([], { 
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                timeZone: timezone
-            });
+    try {
+        const durationInDays = timeframe === 'custom' && customDateRange?.from && customDateRange?.to
+            ? Math.ceil((customDateRange.to.getTime() - customDateRange.from.getTime()) / (1000 * 60 * 60 * 24))
+            : null;
+
+        switch (true) {
+            case timeframe === '1D' || (durationInDays && durationInDays <= 1):
+                return date.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZone: timezone 
+                });
+                
+            case timeframe === '7D' || (durationInDays && durationInDays <= 7):
+                return date.toLocaleDateString([], { 
+                    month: 'short', 
+                    day: 'numeric',
+                    timeZone: timezone
+                });
+                
+            case timeframe === 'MMM DD, YYYY':
+                return date.toLocaleDateString([], { 
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    timeZone: timezone
+                });
+                
+            default:
+                return date.toLocaleDateString([], { 
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    timeZone: timezone
+                });
+        }
+    } catch {
+        return 'N/A';
     }
 };
 

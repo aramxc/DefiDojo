@@ -10,7 +10,9 @@ import {
 import { StatCard } from './cards/StatCard';
 import { AssetInfo } from '@defidojo/shared-types';
 import { MarketMetrics } from '@defidojo/shared-types';
-import { formatValue, formatPercentage, formatTimestamp } from '../../utils/formatters';
+import { formatValue, formatPercentage, formatTimestamp, formatTimeDifference } from '../../utils/formatters';
+
+import { useTimezone } from '../../contexts/TimezoneContext';
 
 interface DetailedMetricsPanelProps {
   assetInfo: AssetInfo | null;
@@ -23,6 +25,8 @@ export const DetailedMetricsPanel: React.FC<DetailedMetricsPanelProps> = ({
   metrics,
   isLoading
 }) => {
+  const { selectedTimezone } = useTimezone();
+
   const statCards = [
     {
       title: "Market Overview",
@@ -36,8 +40,8 @@ export const DetailedMetricsPanel: React.FC<DetailedMetricsPanelProps> = ({
         },
         { 
           label: "Market Sentiment", 
-          value: "",
-          change: assetInfo?.sentimentVotesUpPercentage
+          value: assetInfo?.sentimentVotesUpPercentage,
+          
         },
         { 
           label: "Total Supply", 
@@ -52,113 +56,114 @@ export const DetailedMetricsPanel: React.FC<DetailedMetricsPanelProps> = ({
       ]
     },
     {
-        title: "ATH/ATL Statistics",
-        icon: <ShowChart />,
-        infoTooltip: "All Time High and All Time Low",
-        stats: [
-          { 
-            label: "All Time High", 
-            value: formatValue(assetInfo?.marketData?.ath?.usd, 'price'),
-            change: assetInfo?.marketData?.athChangePercentage,
-            
-          },
-          { 
-            label: "All Time High Date", 
-            value: formatTimestamp(Number(assetInfo?.marketData?.athDate?.usd || 0), 'MM/DD/YYYY', 'America/Denver'),
-          },
-          { 
-            label: "All Time Low", 
-            value: formatValue(assetInfo?.marketData?.atl?.usd, 'price'),
-            change: assetInfo?.marketData?.atlChangePercentage,
-           
-          },
-          { 
-            label: "All Time Low Date", 
-            value: formatTimestamp(Number(assetInfo?.marketData?.atlDate?.usd || 0), 'MM/DD/YYYY', 'America/Denver'),
-          }
-        ]
-      },
-      {
-        title: "Volatility Metrics",
-        icon: <TrendingUp />,
-        infoTooltip: "Measures how much the price tends to change over time. Higher percentages mean more dramatic price swings. We look at price movements across different time windows (daily, weekly, monthly) to understand both short-term and long-term price stability",
-        stats: [
-          { 
-            label: "Daily", 
-            value: formatPercentage(metrics?.volatility?.daily|| 0),
-          },
-          { 
-            label: "Weekly", 
-            value: formatPercentage(metrics?.volatility?.weekly|| 0)
-          },
-          { 
-            label: "Monthly", 
-            value: formatPercentage(metrics?.volatility?.monthly|| 0)
-          },
-          { 
-            label: "Standard Deviation", 
-            value: formatPercentage(metrics?.volatility?.standardDeviation|| 0)
-          }
-        ]
-      },
-      {
-        title: "Developer Activity",
-        icon: <GitHub />,
-        infoTooltip: "GitHub repository metrics",
-        stats: [
-          { 
-            label: "GitHub Stars", 
-            value: formatValue(assetInfo?.developerData?.stars, 'number'),
-            className: "text-yellow-500"
-          },
-          { 
-            label: "Total Forks", 
-            value: formatValue(assetInfo?.developerData?.forks, 'number')
-          },
-          { 
-            label: "Active Contributors", 
-            value: formatValue(assetInfo?.developerData?.pullRequestContributors, 'number'),
-            className: "text-green-500"
-          }
-        ]
-      },
-      {
-        title: "Development Health",
-        icon: <Code />,
-        infoTooltip: "Project development metrics",
-        stats: [
-          { 
-            label: "Issue Resolution Rate", 
-            value: formatPercentage((assetInfo?.developerData?.closedIssues || 0) / (assetInfo?.developerData?.totalIssues || 1) * 100),
-            
-          },
-          { 
-            label: "Total PRs Merged", 
-            value: formatValue(assetInfo?.developerData?.pullRequestsMerged, 'compact')
-          },
-          { 
-            label: "Active Subscribers", 
-            value: formatValue(assetInfo?.developerData?.subscribers, 'compact')
-          }
-        ]
-      },
-      {
-        title: "Community Insights",
-        icon: <Psychology />,
-        infoTooltip: "Community engagement and sentiment",
-        stats: [
-          { 
-            label: "Sentiment Score", 
-            value: formatPercentage(assetInfo?.sentimentVotesUpPercentage),
-            change: assetInfo?.sentimentVotesUpPercentage
-          },
-          { 
-            label: "Categories", 
-            value: `${assetInfo?.categories?.length || 0} Tags`
-          }
-        ]
-      }
-    
+      title: "ATH/ATL Statistics",
+      icon: <ShowChart />,
+      infoTooltip: "All Time High and All Time Low",
+      stats: [
+        { 
+          label: "All-time high", 
+          value: formatValue(assetInfo?.marketData?.ath?.usd, 'price'),
+          subLabel: formatTimestamp(
+            assetInfo?.marketData?.athDate?.usd,
+            'MMM DD, YYYY',
+            selectedTimezone.value
+          ),
+          timeAgo: formatTimeDifference(assetInfo?.marketData?.athDate?.usd),
+          change: assetInfo?.marketData?.athChangePercentage?.usd,
+        },
+        { 
+          label: "All-time low", 
+          value: formatValue(assetInfo?.marketData?.atl?.usd, 'price'),
+          subLabel: formatTimestamp(
+            assetInfo?.marketData?.atlDate?.usd, 
+            'MMM DD, YYYY',
+            selectedTimezone.value
+          ),
+          timeAgo: formatTimeDifference(assetInfo?.marketData?.atlDate?.usd),
+          change: assetInfo?.marketData?.atlChangePercentage?.usd,
+        }
+      ]
+    },
+    {
+      title: "Volatility Metrics",
+      icon: <TrendingUp />,
+      infoTooltip: "Measures how much the price tends to change over time. Higher percentages mean more dramatic price swings. We look at price movements across different time windows (daily, weekly, monthly) to understand both short-term and long-term price stability",
+      stats: [
+        { 
+          label: "Daily", 
+          value: formatPercentage(metrics?.volatility?.daily|| 0),
+        },
+        { 
+          label: "Weekly", 
+          value: formatPercentage(metrics?.volatility?.weekly|| 0)
+        },
+        { 
+          label: "Monthly", 
+          value: formatPercentage(metrics?.volatility?.monthly|| 0)
+        },
+        { 
+          label: "Standard Deviation", 
+          value: formatPercentage(metrics?.volatility?.standardDeviation|| 0)
+        }
+      ]
+    },
+    {
+      title: "Developer Activity",
+      icon: <GitHub />,
+      infoTooltip: "GitHub repository metrics",
+      stats: [
+        { 
+          label: "GitHub Stars", 
+          value: formatValue(assetInfo?.developerData?.stars, 'number'),
+          className: "text-yellow-500"
+        },
+        { 
+          label: "Total Forks", 
+          value: formatValue(assetInfo?.developerData?.forks, 'number')
+        },
+        { 
+          label: "Active Contributors", 
+          value: formatValue(assetInfo?.developerData?.pullRequestContributors, 'number'),
+          className: "text-green-500"
+        }
+      ]
+    },
+    {
+      title: "Development Health",
+      icon: <Code />,
+      infoTooltip: "Project development metrics",
+      stats: [
+        { 
+          label: "Issue Resolution Rate", 
+          value: formatPercentage((assetInfo?.developerData?.closedIssues || 0) / (assetInfo?.developerData?.totalIssues || 1) * 100),
+          
+        },
+        { 
+          label: "Total PRs Merged", 
+          value: formatValue(assetInfo?.developerData?.pullRequestsMerged, 'compact')
+        },
+        { 
+          label: "Active Subscribers", 
+          value: formatValue(assetInfo?.developerData?.subscribers, 'compact')
+        }
+      ]
+    },
+    {
+      title: "Community Insights",
+      icon: <Psychology />,
+      infoTooltip: "Community engagement and sentiment",
+      stats: [
+        { 
+          label: "Sentiment Score", 
+          value: assetInfo?.sentimentVotesUpPercentage
+        },
+        { 
+          label: "Categories", 
+          value: `${assetInfo?.categories?.length || 0} Tags`
+        }
+      ]
+    }
+  
   ];
 
   return (

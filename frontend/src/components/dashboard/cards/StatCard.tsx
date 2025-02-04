@@ -13,8 +13,8 @@ interface StatCardProps {
     value?: string | number;
     change?: number | null;
     className?: string;
-    suffix?: string;
-    timestamp?: string;
+    subLabel?: string;
+    timeAgo?: string;
   }[];
   className?: string;
   isLoading?: boolean;
@@ -94,24 +94,34 @@ export const StatCard: React.FC<StatCardProps> = memo(({
             </Tooltip>
           )}
         </div>
-        <div className="space-y-2 flex-1">
-          {stats.map(({ label, value, change, className: statClassName, suffix }) => (
-            <div key={label} className="flex justify-between items-center min-h-[24px]">
-              <span className="text-gray-400 text-sm truncate mr-2">{label}</span>
-              <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="space-y-2">
+          {stats.map(({ label, value, change, className: statClassName, subLabel, timeAgo }) => (
+            <div key={label} className="flex flex-col">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 text-sm">{label}</span>
                 {value !== undefined && (
                   <span className={`text-gray-200 font-medium ${statClassName || ''}`}>
-                    {value}{suffix && <span className="ml-1 text-xs text-gray-400">{suffix}</span>}
-                  </span>
-                )}
-                {typeof change === 'number' && (
-                  <span className={`text-xs font-medium whitespace-nowrap ${
-                    change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-gray-400'
-                  }`}>
-                    {formatChange(change)}
+                    {value}
                   </span>
                 )}
               </div>
+              {(subLabel || change !== undefined) && (
+                <div className="flex justify-between items-center mt-2">
+                  <div className="text-gray-400 text-sm">
+                    {subLabel}
+                    {timeAgo && (
+                      <span className="text-gray-500 ml-1">({timeAgo})</span>
+                    )}
+                  </div>
+                  {typeof change === 'number' && (
+                    <span className={`text-sm font-medium ${
+                      change > 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {formatChange(change)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
