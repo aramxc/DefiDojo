@@ -109,6 +109,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({
                       right: '9px',
                     },
                     '& .MuiAutocomplete-popper': {
+                      zIndex: 40,
                       '& .MuiPaper-root': {
                         backgroundColor: 'rgba(30, 41, 59, 0.95)',
                         backdropFilter: 'blur(8px)',
@@ -205,6 +206,7 @@ const TickerInputForm: React.FC<TickerInputFormProps> = ({
                       right: '9px',
                     },
                     '& .MuiAutocomplete-popper': {
+                      zIndex: 20,
                       '& .MuiPaper-root': {
                         backgroundColor: 'rgba(30, 41, 59, 0.95)',
                         backdropFilter: 'blur(8px)',

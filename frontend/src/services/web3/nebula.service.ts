@@ -2,7 +2,7 @@ import {
     ContextFilter, 
     ExecuteConfig, 
     MessageRequest, 
-    StreamEvent, 
+    StreamEvent,
     DeltaEvent,
     Session,
     SessionUpdateRequest,
@@ -56,6 +56,7 @@ export class NebulaService {
     ) {
         try {
             this.closeConnection();
+            
 
             const url = new URL(`${API_BASE_URL}/chat/stream`);
             if (this.currentSessionId) {
@@ -84,7 +85,6 @@ export class NebulaService {
                 throw new Error('No response body received');
             }
 
-            // Create reader for streaming response
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
 
@@ -92,29 +92,21 @@ export class NebulaService {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                    if (!line.trim() || !line.startsWith('data: ')) continue;
-                    
-                    try {
+                const text = decoder.decode(value);
+                text.split('\n').forEach(line => {
+                    if (line.startsWith('data: ')) {
                         const data = JSON.parse(line.slice(6));
-                        
                         if ('v' in data) {
                             onDelta(data.v);
-                        } else if (data.type === 'presence' && data.data) {
+                        } else if (data.type === 'presence') {
                             onPresence(data.data);
                         }
-                    } catch (e) {
-                        console.error('Failed to parse stream data:', e);
                     }
-                }
+                });
             }
 
             onComplete();
         } catch (error) {
-            console.error('Stream error:', error);
             onError(error);
         }
     }
@@ -209,86 +201,6 @@ export class NebulaService {
             console.error('Failed to clear session:', error);
             throw error;
         }
-    }
-
-    /**
-     * Private Helper Methods
-     */
-    private setupEventListeners(
-        messageText: string,
-        onDelta: (text: string) => void,
-        onComplete: () => void,
-        onError: (error: any) => void
-    ) {
-        if (!this.eventSource) return;
-
-        this.eventSource.onopen = () => {
-            console.log('Stream connection opened');
-        };
-
-        this.eventSource.onerror = (event) => {
-            console.error('Stream error:', event);
-            this.closeConnection();
-            onError(event);
-        };
-
-        this.eventSource.addEventListener('init', (event: MessageEvent) => {
-            try {
-                const data: StreamEvent = JSON.parse(event.data);
-                this.currentSessionId = data.session_id;
-                console.log('Stream initialized:', data);
-            } catch (e) {
-                onError(new Error('Failed to parse init event'));
-            }
-        });
-
-        this.eventSource.addEventListener('presence', (event: MessageEvent) => {
-            try {
-                const data: StreamEvent = JSON.parse(event.data);
-                console.log('Backend status:', data.data);
-            } catch (e) {
-                onError(new Error('Failed to parse presence event'));
-            }
-        });
-
-        this.eventSource.addEventListener('action', (event: MessageEvent) => {
-            try {
-                const data: StreamEvent = JSON.parse(event.data);
-                if (data.type === 'sign_transaction') {
-                    this.handleTransaction(data.data);
-                }
-                console.log('Received action:', data);
-            } catch (e) {
-                onError(new Error('Failed to parse action event'));
-            }
-        });
-
-        this.eventSource.addEventListener('delta', (event: MessageEvent) => {
-            try {
-                const data: DeltaEvent = JSON.parse(event.data);
-                messageText += data.v;
-                onDelta(data.v);
-                console.log('Current message:', messageText);
-            } catch (e) {
-                onError(new Error('Failed to parse delta event'));
-            }
-        });
-
-        this.eventSource.addEventListener('error', (event: Event) => {
-            try {
-                if (event instanceof MessageEvent && event.data) {
-                    const error = JSON.parse(event.data);
-                    onError(error);
-                } else {
-                    onError(new Error('Stream connection error'));
-                }
-            } catch (e) {
-                onError(new Error('Stream connection error'));
-            } finally {
-                this.closeConnection();
-                onComplete();
-            }
-        });
     }
 
     /**

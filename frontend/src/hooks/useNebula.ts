@@ -41,6 +41,7 @@ export const useNebula = (
     const [messages, setMessages] = useState<Message[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
     const serviceRef = useRef(new NebulaService(initialContext, initialConfig));
+    const contentRef = useRef('');
 
     // Initialize chat with welcome message
     useEffect(() => {
@@ -68,14 +69,17 @@ export const useNebula = (
      * Sends a message to the AI and handles the streaming response
      */
     const sendMessage = useCallback(async (message: string) => {
-        // Add user message to chat
+        // Reset content buffer
+        contentRef.current = '';
+        
+        // Add user message
         setMessages(prev => [...prev, {
             role: 'user',
             content: message,
             status: 'complete'
         }]);
 
-        // Initialize assistant message in thinking state
+        // Initialize assistant message
         setMessages(prev => [...prev, {
             role: 'assistant',
             content: '',
@@ -85,22 +89,24 @@ export const useNebula = (
         try {
             await serviceRef.current.streamChat(
                 message,
-                // Handle incoming delta updates
+                // Handle delta updates
                 (deltaText) => {
+                    contentRef.current += deltaText;
                     setMessages(prev => {
                         const newMessages = [...prev];
                         const lastMessage = newMessages[newMessages.length - 1];
-                        
                         if (lastMessage?.role === 'assistant') {
                             lastMessage.status = 'typing';
-                            lastMessage.content = lastMessage.content + deltaText;
+                            lastMessage.content = contentRef.current;
                         }
                         return newMessages;
                     });
                 },
-                // Handle presence updates (if needed for future features)
-                (presenceData) => {},
-                // Handle stream completion
+                // Handle presence updates
+                (presenceData) => {
+                    console.log('Presence update:', presenceData);
+                },
+                // Handle completion
                 () => {
                     setMessages(prev => prev.map(msg => 
                         msg.status === 'typing' 
@@ -108,15 +114,15 @@ export const useNebula = (
                             : msg
                     ));
                 },
-                // Handle stream errors
+                // Handle errors
                 (error) => {
                     console.error('Stream error:', error);
-                    // Could add error handling UI here
+                    contentRef.current = '';
                 }
             );
         } catch (error) {
             console.error('Error in sendMessage:', error);
-            // Could add error handling UI here
+            contentRef.current = '';
         }
     }, []);
 
@@ -126,6 +132,7 @@ export const useNebula = (
     const clearMessages = useCallback(() => {
         setMessages([]);
         setIsInitialized(false);
+        contentRef.current = '';
     }, []);
 
     return {

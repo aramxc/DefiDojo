@@ -56,7 +56,7 @@ const ChatWindow: React.FC = () => {
       <div className="flex justify-between items-center p-4 border-b border-white/[0.05]">
         <h3 className="text-lg font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400 
                     bg-clip-text text-transparent">
-          AI Assistant
+          Nebula AI Assistant
         </h3>
         <button
           onClick={toggleChat}
