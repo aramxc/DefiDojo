@@ -54,8 +54,6 @@ export class NebulaService {
         onComplete: () => void,
         onError: (error: any) => void,
     ) {
-        console.log('🔄 Starting stream for message:', message);
-        
         try {
             this.closeConnection();
 
@@ -92,10 +90,7 @@ export class NebulaService {
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) {
-                    console.log('📡 Stream finished');
-                    break;
-                }
+                if (done) break;
 
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
@@ -105,24 +100,21 @@ export class NebulaService {
                     
                     try {
                         const data = JSON.parse(line.slice(6));
-                        console.log('📄 Processing event:', data);
                         
                         if ('v' in data) {
-                            console.log('➡️ Delta received:', data.v);
                             onDelta(data.v);
                         } else if (data.type === 'presence' && data.data) {
-                            console.log('🎯 Presence received:', data.data);
                             onPresence(data.data);
                         }
                     } catch (e) {
-                        console.error('Failed to parse line:', line, e);
+                        console.error('Failed to parse stream data:', e);
                     }
                 }
             }
 
             onComplete();
         } catch (error) {
-            console.error('💥 Stream error:', error);
+            console.error('Stream error:', error);
             onError(error);
         }
     }
