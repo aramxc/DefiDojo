@@ -3,9 +3,10 @@ import { useChat } from '../../contexts/ChatContext';
 import { useNebula } from '../../hooks/useNebula';
 import ChatInput from './ChatInput';
 import { Close } from '@mui/icons-material';
+import { Message } from '../../hooks/useNebula';
 
 const ChatWindow: React.FC = () => {
-  const { isOpen, toggleChat, messages, error, isLoading, presence } = useChat();
+  const { isOpen, toggleChat, messages } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -19,6 +20,34 @@ const ChatWindow: React.FC = () => {
   }, [messages, isOpen]);
 
   if (!isOpen) return null;
+
+  // Inline ThinkingDots component
+  const ThinkingDots: React.FC = () => (
+    <span className="inline-flex items-center">
+      <span className="animate-pulse">.</span>
+      <span className="animate-pulse" style={{ animationDelay: '200ms' }}>.</span>
+      <span className="animate-pulse" style={{ animationDelay: '400ms' }}>.</span>
+    </span>
+  );
+
+  const renderMessageContent = (message: Message) => {
+    if (message.status === 'thinking') {
+      return (
+        <span className="flex items-center">
+          Thinking<ThinkingDots />
+        </span>
+      );
+    }
+
+    if (message.status === 'typing') {
+      return (
+        <span className="flex items-center">
+          Typing<ThinkingDots />
+        </span>
+      );
+    }
+    return message.content;
+  };
 
   return (
     <div className="fixed bottom-24 right-6 w-[30%] h-[75%] bg-slate-900 
@@ -51,27 +80,11 @@ const ChatWindow: React.FC = () => {
                   : 'bg-slate-800/50 text-gray-100'
               }`}
             >
-              {message.content}
+              {renderMessageContent(message)}
             </div>
           </div>
         ))}
-        {presence.isThinking && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] p-3 rounded-lg bg-slate-800/50 text-gray-100">
-              <span className="inline-flex items-center">
-                <span className="mr-2">{presence.currentAction}</span>
-                <span className="typing-dots">
-                  
-                </span>
-              </span>
-            </div>
-          </div>
-        )}
-        {error && (
-          <div className="text-red-400 text-center p-2">
-            {error.message}
-          </div>
-        )}
+        
         <div ref={messagesEndRef} />
       </div>
       

@@ -54,6 +54,8 @@ export class NebulaService {
         onComplete: () => void,
         onError: (error: any) => void,
     ) {
+        console.log('🔄 Starting stream for message:', message);
+        
         try {
             this.closeConnection();
 
@@ -62,9 +64,8 @@ export class NebulaService {
                 url.searchParams.append('sessionId', this.currentSessionId);
             }
             
-            // Match the exact format from the Nebula API docs
             const body: MessageRequest = {
-                message: message,
+                message,
                 stream: true,
                 user_id: 'default-user',
                 context_filter: this.contextFilter || {},
@@ -91,26 +92,37 @@ export class NebulaService {
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                    console.log('📡 Stream finished');
+                    break;
+                }
 
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
-
+                
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
+                    if (!line.trim() || !line.startsWith('data: ')) continue;
+                    
+                    try {
                         const data = JSON.parse(line.slice(6));
-                        if (data.type === 'delta' && data.v) {
+                        console.log('📄 Processing event:', data);
+                        
+                        if ('v' in data) {
+                            console.log('➡️ Delta received:', data.v);
                             onDelta(data.v);
-                        } else if (data.type === 'presence') {
+                        } else if (data.type === 'presence' && data.data) {
+                            console.log('🎯 Presence received:', data.data);
                             onPresence(data.data);
                         }
+                    } catch (e) {
+                        console.error('Failed to parse line:', line, e);
                     }
                 }
             }
 
             onComplete();
         } catch (error) {
-            console.error('Stream error:', error);
+            console.error('💥 Stream error:', error);
             onError(error);
         }
     }
